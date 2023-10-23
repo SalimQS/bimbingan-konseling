@@ -248,7 +248,7 @@ a.article:hover {
 .small-box {
   position: relative;
   display: block;
-  border: solid 1px rgb(109, 109, 109);
+  border: solid 1px rgb(187, 187, 187);
   -webkit-border-radius: 5px;
   -moz-border-radius: 5px;
   border-radius: 5px;

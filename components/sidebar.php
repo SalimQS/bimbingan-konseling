@@ -24,19 +24,9 @@
                     "href" => "siswa",
                 ],
                 [
-                    "label" => "Data Mata Kuliah",
-                    "icon" => "fa-clipboard-list",
-                    "href" => "matkul",
-                ],
-                [
-                    "label" => "Data Jadwal Kuliah",
-                    "icon" => "fa-list",
-                    "href" => "jadwal",
-                ],
-                [
-                    "label" => "Data Pengumuman",
-                    "icon" => "fa-bullhorn",
-                    "href" => "pengumuman",
+                    "label" => "Log Pelanggaran",
+                    "icon" => "fa-exclamation-circle",
+                    "href" => "pelanggaran",
                 ]
             ];
             if ($_SESSION['role'] == 'admin') {

@@ -1,5 +1,5 @@
 <?php
-$query = "SELECT id FROM users WHERE id_role = 2";
+/*$query = "SELECT id FROM users WHERE id_role = 2";
 $result = $connect->query($query);
 $siswa = $result->num_rows;
 
@@ -13,15 +13,15 @@ $prodi = $result->num_rows;
 
 $query = "SELECT id FROM fakultas";
 $result = $connect->query($query);
-$fakultas = $result->num_rows;
+$fakultas = $result->num_rows;*/
 
 ?>
 <div class="row mt-3">
-  <div class="col">
+<div class="col">
     <div class="small-box bg-primary">
       <div class="inner">
-          <h3> <?= $siswa ?> </h3>
-          <p class='text-light'> Siswa </p>
+          <h3> 1 </h3>
+          <p class='text-light'> Jumlah Siswa </p>
       </div>
       <i class="icon fas fa-users"></i>
     </div>
@@ -30,30 +30,30 @@ $fakultas = $result->num_rows;
   <div class="col">
     <div class="small-box bg-success">
       <div class="inner">
-          <h3> <?= $mata_kuliah ?> </h3>
-          <p class='text-light'> Mata Kuliah </p>
+          <h3> 1 </h3>
+          <p class='text-light'> Jumlah Guru </p>
       </div>
-      <i class="icon fas fa-book"></i>
+      <i class="icon fas fa-chalkboard-teacher"></i></i>
     </div>
   </div>
-
+  
   <div class="col">
     <div class="small-box bg-warning">
       <div class="inner">
-          <h3> <?= $prodi ?> </h3>
-          <p class='text-light'> Program Studi </p>
+          <h3> 1 </h3>
+          <p class='text-light'> List Pelanggaran </p>
       </div>
-      <i class="icon fas fa-clipboard-list"></i>
+      <i class="icon fas fa-book"></i></i>
     </div>
   </div>
 
   <div class="col">
     <div class="small-box bg-danger">
       <div class="inner">
-          <h3> <?= $fakultas ?> </h3>
-          <p class='text-light'> Fakultas </p>
+          <h3> 1 </h3>
+          <p class='text-light'> Jumlah Pelanggaran </p>
       </div>
-      <i class="icon fas fa-graduation-cap"></i>
+      <i class="icon fas fa-exclamation-circle"></i>
     </div>
   </div>
 

@@ -10,21 +10,21 @@
   $errorFoto = false;
   $errorFotoText = "";
 
-  if (isset($_POST['changeFoto'])) {
+  if(isset($_POST['changeFoto'])) {
     $fileName = "uploads/" . basename($_FILES['foto']['name']);
     $ext = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
     $file = "uploads/" . time() . "." . $ext;
     $maxSize = 2097152;
     $imgSize = getimagesize($_FILES['foto']['tmp_name']);
-    if (($_FILES['foto']['size'] >= $maxSize)) {
+    if(($_FILES['foto']['size'] >= $maxSize)) {
       $errorFoto = true;
       $errorFotoText = "Ukuran foto maksimal 2MB";
     } else {
       $connect->begin_transaction();
       $query = "UPDATE biodata SET foto='$file' WHERE id_user = '". $_SESSION['id_user'] ."'";
       $result = $connect->query($query);
-      if ($result) {
-        if (move_uploaded_file($_FILES['foto']['tmp_name'], $file)) {
+      if($result) {
+        if(move_uploaded_file($_FILES['foto']['tmp_name'], $file)) {
           $successFoto = true;
           $connect->commit();
         } else {
@@ -51,7 +51,7 @@
     $query .= "no_telepon='". $_POST['no_telepon'] ."'";
     $query .= "WHERE id_user='" . $_SESSION['id_user'] . "'";
     $result = $connect->query($query);
-    if ($result) {
+    if($result) {
         $success = true;
         $_SESSION['nama_lengkap'] = $_POST['nama_lengkap'];
     } else {
@@ -61,19 +61,19 @@
 
   $query = "SELECT biodata.*, users.username ";
 
-  if ($_SESSION['role'] == 'siswa') {
+  if($_SESSION['role'] == 'siswa') {
     $query .= ", prodi.nama_prodi, fakultas.nama_fakultas ";
   }
   $query .= "FROM users ";
   $query .= "LEFT JOIN biodata ON biodata.id_user = users.id ";
-  if ($_SESSION['role'] == 'siswa') {
+  if($_SESSION['role'] == 'siswa') {
     $query .= "LEFT JOINsiswa ONsiswa.id_user = users.id ";
     $query .= "LEFT JOIN prodi ONsiswa.id_prodi = prodi.id ";
     $query .= "LEFT JOIN fakultas ON prodi.id_fakultas = fakultas.id ";
   }
   $query .= "WHERE users.id='" . $_SESSION['id_user'] . "'";
   $result = $connect->query($query);
-  if ($result->num_rows > 0) {
+  if($result->num_rows > 0) {
       $user = $result->fetch_assoc();
   } else {
       header("location: login.php");
@@ -81,13 +81,13 @@
 ?>
 <div class="row">
    <div class="col-md-3 border-right">
-      <?php if ($successFoto) {?>
+      <?php if($successFoto) {?>
         <div class="alert alert-success d-flex align-items-center" role="alert">
             <i class="fas fa-check bi flex-shrink-0 me-2" width="24" height="24"></i>
             <div><strong>Berhasil!</strong> Foto berhasil diperbarui</div>
         </div>
         <?php } ?>
-        <?php if ($errorFoto) {?>
+        <?php if($errorFoto) {?>
         <div class="alert alert-danger d-flex align-items-center" role="alert">
             <i class="fas fa-exclamation-triangle bi flex-shrink-0 me-2" width="24" height="24"></i>
             <div><strong>Gagal!</strong> <?= $errorFotoText ?></div>
@@ -106,13 +106,13 @@
          <div class="d-flex justify-content-between align-items-center mb-3">
             <h4 class="text-right">Data Siswa</h4>
          </div>
-         <?php if ($success) {?>
+         <?php if($success) {?>
         <div class="alert alert-success d-flex align-items-center" role="alert">
             <i class="fas fa-check bi flex-shrink-0 me-2" width="24" height="24"></i>
             <div><strong>Berhasil!</strong> Biodata berhasil diperbarui</div>
         </div>
         <?php } ?>
-         <?php if ($error) {?>
+         <?php if($error) {?>
         <div class="alert alert-danger d-flex align-items-center" role="alert">
             <i class="fas fa-exclamation-triangle bi flex-shrink-0 me-2" width="24" height="24"></i>
             <div><strong>Gagal!</strong> Biodata gagal diperbarui</div>
@@ -126,9 +126,9 @@
                 <div class="col-md-12 mb-2">
                 <label class="labels">
                 <?php 
-                    if ($_SESSION['role'] == 'admin') {
+                    if($_SESSION['role'] == 'admin') {
                         echo "Username";
-                    } else if ($_SESSION['role'] == 'siswa'){
+                    } else if($_SESSION['role'] == 'siswa'){
                         echo "NIM";
                     } else {
                         echo "NIP";
@@ -145,8 +145,8 @@
                 <label class="labels">Jenis Kelamin</label>
                 <select class="form-select" aria-label="Jenis Kelamin" name='jenis_kelamin'>
                     <option>Pilih Jenis Kelamin</option>
-                    <option value="0" <?php if ($user['jenis_kelamin'] == 0) echo 'selected'; ?>>Laki-laki</option>
-                    <option value="1" <?php if ($user['jenis_kelamin'] == 1) echo 'selected'; ?>>Perempuan</option>
+                    <option value="0" <?php if($user['jenis_kelamin'] == 0) echo 'selected'; ?>>Laki-laki</option>
+                    <option value="1" <?php if($user['jenis_kelamin'] == 1) echo 'selected'; ?>>Perempuan</option>
                 </select>
                 </div>
                 <div class="col-md-6 mb-2">
@@ -161,23 +161,23 @@
                 <label class="labels">Golongan Darah</label>
                 <select class="form-select" aria-label="Golongan Darah" name='golongan_darah'>
                     <option selected>Pilih Golongan Darah</option>
-                    <option value="0" <?php if ($user['golongan_darah'] == 0) echo 'selected'; ?>>A</option>
-                    <option value="1" <?php if ($user['golongan_darah'] == 1) echo 'selected'; ?>>B</option>
-                    <option value="2" <?php if ($user['golongan_darah'] == 2) echo 'selected'; ?>>AB</option>
-                    <option value="3" <?php if ($user['golongan_darah'] == 3) echo 'selected'; ?>>O</option>
+                    <option value="0" <?php if($user['golongan_darah'] == 0) echo 'selected'; ?>>A</option>
+                    <option value="1" <?php if($user['golongan_darah'] == 1) echo 'selected'; ?>>B</option>
+                    <option value="2" <?php if($user['golongan_darah'] == 2) echo 'selected'; ?>>AB</option>
+                    <option value="3" <?php if($user['golongan_darah'] == 3) echo 'selected'; ?>>O</option>
                 </select>
                 </div>
                 <div class="col-md-6 mb-2">
                 <label class="labels">Agama</label>
                 <select class="form-select" aria-label="Agama" name='agama'>
                     <option selected>Pilih Agama</option>
-                    <option value="0" <?php if ($user['agama'] == 0) echo 'selected'; ?>>Islam</option>
-                    <option value="1" <?php if ($user['agama'] == 1) echo 'selected'; ?>>Kristen</option>
-                    <option value="2" <?php if ($user['agama'] == 2) echo 'selected'; ?>>Katholik</option>
-                    <option value="3" <?php if ($user['agama'] == 3) echo 'selected'; ?>>Hindu</option>
-                    <option value="4" <?php if ($user['agama'] == 4) echo 'selected'; ?>>Budha</option>
-                    <option value="5" <?php if ($user['agama'] == 5) echo 'selected'; ?>>Konghucu</option>
-                    <option value="6" <?php if ($user['agama'] == 6) echo 'selected'; ?>>Protestan</option>
+                    <option value="0" <?php if($user['agama'] == 0) echo 'selected'; ?>>Islam</option>
+                    <option value="1" <?php if($user['agama'] == 1) echo 'selected'; ?>>Kristen</option>
+                    <option value="2" <?php if($user['agama'] == 2) echo 'selected'; ?>>Katholik</option>
+                    <option value="3" <?php if($user['agama'] == 3) echo 'selected'; ?>>Hindu</option>
+                    <option value="4" <?php if($user['agama'] == 4) echo 'selected'; ?>>Budha</option>
+                    <option value="5" <?php if($user['agama'] == 5) echo 'selected'; ?>>Konghucu</option>
+                    <option value="6" <?php if($user['agama'] == 6) echo 'selected'; ?>>Protestan</option>
                 </select>
                 </div>
                 <div class="col-md-12 mb-2">
@@ -190,7 +190,7 @@
                 </div>
             </div>
             <?php
-                if ($_SESSION['role'] == 'siswa') {
+                if($_SESSION['role'] == 'siswa') {
             ?>
             <div class="d-flex justify-content-between align-items-center">
                 <h6 class="text-right">Informasi Akademik</h6>
@@ -226,23 +226,23 @@
           $passwordLama = md5($_POST['password_lama']);
           $passwordBaru = md5($_POST['password_baru']);
           $konfirmasiPasswordBaru = md5($_POST['konfirmasi_password_baru']);
-          if ($passwordLama == '') {
+          if($passwordLama == '') {
             $errorPass = true;
             $errorText = 'Password lama tidak boleh kosong';
-          } else if ($passwordBaru == '') { 
+          } else if($passwordBaru == '') { 
             $errorPass = true;
             $errorText = 'Password baru tidak boleh kosong';
-          } else if ($passwordBaru != $konfirmasiPasswordBaru) {
+          } else if($passwordBaru != $konfirmasiPasswordBaru) {
             $errorPass = true;
             $errorText = 'Konfirmasi password tidak sama';
           } else {
               $errorPass = false;
               $query = "SELECT id FROM users WHERE id='" . $_SESSION['id_user'] . "' AND password='". $passwordLama ."'";
               $result = $connect->query($query);
-              if ($result->num_rows > 0) {
+              if($result->num_rows > 0) {
                   $query = "UPDATE users SET password='". $passwordBaru ."' WHERE id='". $_SESSION['id_user'] ."'";
                   $result = $connect->query($query);
-                  if ($result) {
+                  if($result) {
                     $successPass = true;
                   } else {
                     $errorPass = true;
@@ -257,13 +257,13 @@
    ?>
    <div class="col-md-4 mt-5">
       <div class="p-3">
-         <?php if ($successPass) { ?>
+         <?php if($successPass) { ?>
         <div class="alert alert-success d-flex align-items-center" role="alert">
             <i class="fas fa-check bi flex-shrink-0 me-2" width="24" height="24"></i>
             <div><strong>Berhasil!</strong> Password berhasil diperbarui</div>
         </div>
         <?php } ?>
-         <?php if ($errorPass) { ?>
+         <?php if($errorPass) { ?>
         <div class="alert alert-danger d-flex align-items-center" role="alert">
             <i class="fas fa-exclamation-triangle bi flex-shrink-0 me-2" width="24" height="24"></i>
             <div><strong>Gagal!</strong> <?= $errorText ?></div>

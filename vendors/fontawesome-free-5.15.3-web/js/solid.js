@@ -9,8 +9,8 @@
   var _DOCUMENT = {};
 
   try {
-    if (typeof window !== 'undefined') _WINDOW = window;
-    if (typeof document !== 'undefined') _DOCUMENT = document;
+    if(typeof window !== 'undefined') _WINDOW = window;
+    if(typeof document !== 'undefined') _DOCUMENT = document;
   } catch (e) {}
 
   var _ref = _WINDOW.navigator || {},
@@ -36,14 +36,14 @@
     try {
       fn();
     } catch (e) {
-      if (!PRODUCTION) {
+      if(!PRODUCTION) {
         throw e;
       }
     }
   }
 
   function _defineProperty(obj, key, value) {
-    if (key in obj) {
+    if(key in obj) {
       Object.defineProperty(obj, key, {
         value: value,
         enumerable: true,
@@ -62,7 +62,7 @@
       var source = arguments[i] != null ? arguments[i] : {};
       var ownKeys = Object.keys(source);
 
-      if (typeof Object.getOwnPropertySymbols === 'function') {
+      if(typeof Object.getOwnPropertySymbols === 'function') {
         ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) {
           return Object.getOwnPropertyDescriptor(source, sym).enumerable;
         }));
@@ -77,10 +77,10 @@
   }
 
   var w = WINDOW || {};
-  if (!w[NAMESPACE_IDENTIFIER]) w[NAMESPACE_IDENTIFIER] = {};
-  if (!w[NAMESPACE_IDENTIFIER].styles) w[NAMESPACE_IDENTIFIER].styles = {};
-  if (!w[NAMESPACE_IDENTIFIER].hooks) w[NAMESPACE_IDENTIFIER].hooks = {};
-  if (!w[NAMESPACE_IDENTIFIER].shims) w[NAMESPACE_IDENTIFIER].shims = [];
+  if(!w[NAMESPACE_IDENTIFIER]) w[NAMESPACE_IDENTIFIER] = {};
+  if(!w[NAMESPACE_IDENTIFIER].styles) w[NAMESPACE_IDENTIFIER].styles = {};
+  if(!w[NAMESPACE_IDENTIFIER].hooks) w[NAMESPACE_IDENTIFIER].hooks = {};
+  if(!w[NAMESPACE_IDENTIFIER].shims) w[NAMESPACE_IDENTIFIER].shims = [];
   var namespace = w[NAMESPACE_IDENTIFIER];
 
   function defineIcons(prefix, icons) {
@@ -91,7 +91,7 @@
       var icon = icons[iconName];
       var expanded = !!icon.icon;
 
-      if (expanded) {
+      if(expanded) {
         acc[icon.iconName] = icon.icon;
       } else {
         acc[iconName] = icon;
@@ -100,7 +100,7 @@
       return acc;
     }, {});
 
-    if (typeof namespace.hooks.addPack === 'function' && !skipHooks) {
+    if(typeof namespace.hooks.addPack === 'function' && !skipHooks) {
       namespace.hooks.addPack(prefix, normalized);
     } else {
       namespace.styles[prefix] = _objectSpread({}, namespace.styles[prefix] || {}, normalized);
@@ -113,7 +113,7 @@
      */
 
 
-    if (prefix === 'fas') {
+    if(prefix === 'fas') {
       defineIcons('fa', icons);
     }
   }

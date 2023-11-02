@@ -14,7 +14,7 @@ changeStatusForm.forEach((form) => {
       showCancelButton: true,
       cancelButtonText: "Tidak!",
     }).then((response) => {
-      if (response.isConfirmed) {
+      if(response.isConfirmed) {
         currForm.submit();
       }
     });
@@ -36,7 +36,7 @@ deleteForm.forEach((form) => {
       showCancelButton: true,
       cancelButtonText: "Tidak!",
     }).then((response) => {
-      if (response.isConfirmed) {
+      if(response.isConfirmed) {
         currForm.submit();
       }
     });

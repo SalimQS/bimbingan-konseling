@@ -365,3 +365,8 @@ label {
     display: none;
   }
 }
+
+.submit-btn{
+  background-color: #182869;
+  color: white;
+}

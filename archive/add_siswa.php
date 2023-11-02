@@ -22,27 +22,27 @@
     $dosen = $_POST['dosen'];
     $password = md5($nim);
 
-    if ($nim == '') {
+    if($nim == '') {
       $errorText = "NIM tidak boleh kosong";
-    } else if ($nama_lengkap == '') {
+    } else if($nama_lengkap == '') {
       $errorText = "Nama lengkap tidak boleh kosong";
-    } else if ($jenis_kelamin == '-1') {
+    } else if($jenis_kelamin == '-1') {
       $errorText = "Jenis kelamin tidak boleh kosong";
-    } else if ($tempat_lahir == '') {
+    } else if($tempat_lahir == '') {
       $errorText = "Tempat lahir tidak boleh kosong";
-    } else if ($tanggal_lahir == '') {
+    } else if($tanggal_lahir == '') {
       $errorText = "Tanggal lahir tidak boleh kosong";
-    } else if ($golongan_darah == '-1') {
+    } else if($golongan_darah == '-1') {
       $errorText = "Golongan darah tidak boleh kosong";
-    } else if ($agama == '-1') {
+    } else if($agama == '-1') {
       $errorText = "Agama tidak boleh kosong";
-    } else if ($alamat == '') {
+    } else if($alamat == '') {
       $errorText = "Alamat tidak boleh kosong";
-    } else if ($no_telepon == '') {
+    } else if($no_telepon == '') {
       $errorText = "No telepon tidak boleh kosong";
-    } else if ($prodi == '-1') {
+    } else if($prodi == '-1') {
       $errorText = "Program Studi tidak boleh kosong";
-    } else if ($dosen == '-1') {
+    } else if($dosen == '-1') {
       $errorText = "Dosen wali tidak boleh kosong";
     } else {
       $error = false;
@@ -54,18 +54,18 @@
       try {
         $query = "SELECT id FROM users WHERE username ='$nim'";
         $result = $connect->query($query);
-        if ($result->num_rows > 0) {
+        if($result->num_rows > 0) {
           $error = true;
           $errorText = "Nim sudah terdaftar";
         } else {
           $error = false;
-          if ($hasFoto) {
+          if($hasFoto) {
             $fileName = "uploads/" . basename($_FILES['foto']['name']);
             $ext = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
             $file = "uploads/" . time() . "." . $ext;
             $maxSize = 2097152;
             $imgSize = getimagesize($_FILES['foto']['tmp_name']);
-            if (($_FILES['foto']['size'] >= $maxSize)) {
+            if(($_FILES['foto']['size'] >= $maxSize)) {
               $error = true;
               $errorText = "Ukuran foto maksimal 2MB";
             } else {
@@ -73,23 +73,23 @@
             }
           }
 
-          if (!$error) {
+          if(!$error) {
             $query = "INSERT INTO users (id_role, username, password) ";
             $query .= "VALUES(2, '$nim', '$password')";
             $result = $connect->query($query);
-            if ($result === TRUE) {
+            if($result === TRUE) {
               $id_user = $connect->insert_id;
 
               $query = "INSERT INTOsiswa (id_user, id_dosen, id_prodi, semester) ";
               $query .= "VALUES('$id_user', '$dosen', '$prodi', 1)";
               $result = $connect->query($query);
-              if ($result) {
-                if ($hasFoto) {
+              if($result) {
+                if($hasFoto) {
                   $query = "INSERT INTO biodata (id_user, nama_lengkap, foto, jenis_kelamin, tempat_lahir, tanggal_lahir, golongan_darah, agama, alamat, no_telepon, status) ";
                   $query .= "VALUES('$id_user', '$nama_lengkap', '$file', '$jenis_kelamin', '$tempat_lahir', '$tanggal_lahir', '$golongan_darah', '$agama', '$alamat', '$no_telepon', 1)";
                   $result = $connect->query($query);
-                  if ($result) {
-                    if (move_uploaded_file($_FILES['foto']['tmp_name'], $file)) {
+                  if($result) {
+                    if(move_uploaded_file($_FILES['foto']['tmp_name'], $file)) {
                       $error = false;
                       $connect->commit();
                       ?>
@@ -118,7 +118,7 @@
                   $query = "INSERT INTO biodata (id_user, nama_lengkap, jenis_kelamin, tempat_lahir, tanggal_lahir, golongan_darah, agama, alamat, no_telepon, status) ";
                   $query .= "VALUES('$id_user', '$nama_lengkap', '$jenis_kelamin', '$tempat_lahir', '$tanggal_lahir', '$golongan_darah', '$agama', '$alamat', '$no_telepon', 1)";
                   $result = $connect->query($query);
-                  if ($result) {
+                  if($result) {
                     $error = false;
                     $connect->commit();
                     ?>
@@ -170,7 +170,7 @@
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h4 class="text-right">Data Siswa</h4>
         </div>
-        <?php if ($error) {?>
+        <?php if($error) {?>
         <div class="alert alert-danger d-flex align-items-center" role="alert">
             <i class="fas fa-exclamation-triangle bi flex-shrink-0 me-2" width="24" height="24"></i>
             <div><strong>Gagal!</strong> <?= $errorText ?></div>
@@ -192,8 +192,8 @@
                 <label class="labels">Jenis Kelamin</label>
                 <select class="form-select" aria-label="Jenis Kelamin" name='jenis_kelamin'>
                     <option value='-1'>Pilih Jenis Kelamin</option>
-                    <option value="0" <?php if (@$_POST['jenis_kelamin'] == 0) echo 'selected'; ?>>Laki-laki</option>
-                    <option value="1" <?php if (@$_POST['jenis_kelamin'] == 1) echo 'selected'; ?>>Perempuan</option>
+                    <option value="0" <?php if(@$_POST['jenis_kelamin'] == 0) echo 'selected'; ?>>Laki-laki</option>
+                    <option value="1" <?php if(@$_POST['jenis_kelamin'] == 1) echo 'selected'; ?>>Perempuan</option>
                 </select>
                 </div>
                 <div class="col-md-6 mb-2">
@@ -208,23 +208,23 @@
                 <label class="labels">Golongan Darah</label>
                 <select class="form-select" aria-label="Golongan Darah" name='golongan_darah'>
                     <option value='-1' selected>Pilih Golongan Darah</option>
-                    <option value="0" <?php if (@$_POST['golongan_darah'] == 0) echo 'selected'; ?>>A</option>
-                    <option value="1" <?php if (@$_POST['golongan_darah'] == 1) echo 'selected'; ?>>B</option>
-                    <option value="2" <?php if (@$_POST['golongan_darah'] == 2) echo 'selected'; ?>>AB</option>
-                    <option value="3" <?php if (@$_POST['golongan_darah'] == 3) echo 'selected'; ?>>O</option>
+                    <option value="0" <?php if(@$_POST['golongan_darah'] == 0) echo 'selected'; ?>>A</option>
+                    <option value="1" <?php if(@$_POST['golongan_darah'] == 1) echo 'selected'; ?>>B</option>
+                    <option value="2" <?php if(@$_POST['golongan_darah'] == 2) echo 'selected'; ?>>AB</option>
+                    <option value="3" <?php if(@$_POST['golongan_darah'] == 3) echo 'selected'; ?>>O</option>
                 </select>
                 </div>
                 <div class="col-md-6 mb-2">
                 <label class="labels">Agama</label>
                 <select class="form-select" aria-label="Agama" name='agama'>
                     <option value='-1' selected>Pilih Agama</option>
-                    <option value="0" <?php if (@$_POST['agama'] == 0) echo 'selected'; ?>>Islam</option>
-                    <option value="1" <?php if (@$_POST['agama'] == 1) echo 'selected'; ?>>Kristen</option>
-                    <option value="2" <?php if (@$_POST['agama'] == 2) echo 'selected'; ?>>Katholik</option>
-                    <option value="3" <?php if (@$_POST['agama'] == 3) echo 'selected'; ?>>Hindu</option>
-                    <option value="4" <?php if (@$_POST['agama'] == 4) echo 'selected'; ?>>Budha</option>
-                    <option value="5" <?php if (@$_POST['agama'] == 5) echo 'selected'; ?>>Konghucu</option>
-                    <option value="6" <?php if (@$_POST['agama'] == 6) echo 'selected'; ?>>Protestan</option>
+                    <option value="0" <?php if(@$_POST['agama'] == 0) echo 'selected'; ?>>Islam</option>
+                    <option value="1" <?php if(@$_POST['agama'] == 1) echo 'selected'; ?>>Kristen</option>
+                    <option value="2" <?php if(@$_POST['agama'] == 2) echo 'selected'; ?>>Katholik</option>
+                    <option value="3" <?php if(@$_POST['agama'] == 3) echo 'selected'; ?>>Hindu</option>
+                    <option value="4" <?php if(@$_POST['agama'] == 4) echo 'selected'; ?>>Budha</option>
+                    <option value="5" <?php if(@$_POST['agama'] == 5) echo 'selected'; ?>>Konghucu</option>
+                    <option value="6" <?php if(@$_POST['agama'] == 6) echo 'selected'; ?>>Protestan</option>
                 </select>
                 </div>
                 <div class="col-md-12 mb-2">
@@ -243,12 +243,12 @@
             $result = $connect->query($query);
             $prodi = [];
             $dosen = [];
-            if ($result->num_rows > 0) {
+            if($result->num_rows > 0) {
               $prodi = $result->fetch_all(MYSQLI_ASSOC);
             }
             $query = "SELECT * from dosen";
             $result = $connect->query($query);
-            if ($result->num_rows > 0) {
+            if($result->num_rows > 0) {
               $dosen = $result->fetch_all(MYSQLI_ASSOC);
             }
             ?>
@@ -261,7 +261,7 @@
                   <select class="form-select" aria-label="Program Studi" name='prodi'>
                       <option value='-1'>Pilih Program Studi</option>
                       <?php                        
-                        if (count($prodi) == 0) {
+                        if(count($prodi) == 0) {
                             echo "<option value='-1'> selected>Tidak ada program studi</option>";
                         }
                         foreach ($prodi as $item) {
@@ -276,7 +276,7 @@
                   <select class="form-select" aria-label="Dosen Wali" name='dosen'>
                       <option value='-1'>Pilih Dosen Wali</option>
                       <?php                        
-                        if (count($dosen) == 0) {
+                        if(count($dosen) == 0) {
                             echo "<option value='-1' selected>Tidak ada dosen wali</option>";
                         }
                         foreach ($dosen as $item) {

@@ -1,7 +1,7 @@
 <?php
 session_start();
 $error = false;
-if (isset($_SESSION['nim'])) {
+if(isset($_SESSION['nim'])) {
   header("location: index.php");
 } else {
       include_once('./config/db.php');
@@ -50,36 +50,36 @@ if (isset($_SESSION['nim'])) {
           $warning = false;
           $warningText = "";
           $success = false;
-          if (isset($_POST['submit'])) {
+          if(isset($_POST['submit'])) {
             $warning = true;
-            if ($_POST['nama_lengkap'] == '') {
+            if($_POST['nama_lengkap'] == '') {
               $warningText = "Nama lengkap tidak boleh kosong";
-            } else if ($_POST['jenis_kelamin'] == '-1') {
+            } else if($_POST['jenis_kelamin'] == '-1') {
               $warningText = "Jenis kelamin tidak boleh kosong";
-            } else if ($_POST['tempat_lahir'] == '') {
+            } else if($_POST['tempat_lahir'] == '') {
               $warningText = "Tempat lahir tidak boleh kosong";
-            } else if ($_POST['tanggal_lahir'] == '') {
+            } else if($_POST['tanggal_lahir'] == '') {
               $warningText = "Tanggal lahir tidak boleh kosong";
-            } else if ($_POST['golongan_darah'] == '-1') {
+            } else if($_POST['golongan_darah'] == '-1') {
               $warningText = "Golongan darah tidak boleh kosong";
-            } else if ($_POST['agama'] == '-1') {
+            } else if($_POST['agama'] == '-1') {
               $warningText = "Agama tidak boleh kosong";
-            } else if ($_POST['no_telepon'] == '') {
+            } else if($_POST['no_telepon'] == '') {
               $warningText = "No Telepon tidak boleh kosong";
-            } else if ($_POST['alamat'] == '') {
+            } else if($_POST['alamat'] == '') {
               $warningText = "Alamat tidak boleh kosong";
-            } else if ($_POST['nim'] == '') {
+            } else if($_POST['nim'] == '') {
               $warningText = "NIM tidak boleh kosong";
-            } else if ($_POST['prodi'] == '-1') {
+            } else if($_POST['prodi'] == '-1') {
               $warningText = "Program Studi tidak boleh kosong";
-            } else if ($_POST['dosen'] == '-1') {
+            } else if($_POST['dosen'] == '-1') {
               $warningText = "Dosen wali tidak boleh kosong";
             } else {
               $warning = false;
               $query = "SELECT nim FROM biodata WHERE nim='".$_POST['nim']."'";
               $result = $connect->query($query);
               $error = true;
-              if ($result->num_rows > 0) {
+              if($result->num_rows > 0) {
                 $errorText = "NIM sudah terdaftar, silahkan gunakan NIM lain";
               } else {
                 $nim = $_POST['nim'];
@@ -97,7 +97,7 @@ if (isset($_SESSION['nim'])) {
                 $query = "INSERT INTO biodata (nim, nama_lengkap, jenis_kelamin, tempat_lahir, tanggal_lahir, golongan_darah, agama, alamat, no_telepon, id_dosen, id_prodi, semester, status, password) VALUES ";
                 $query .= "('$nim', '$nama_lengkap', '$jenis_kelamin', '$tempat_lahir', '$tanggal_lahir', '$golongan_darah', '$agama', '$alamat', '$no_telp', '$dosen', '  $prodi', '1', 1, '$password')";
                 $result = $connect->query($query);
-                if ($result) {
+                if($result) {
                   $error = false;
                   $success = true;
                 } else {
@@ -112,7 +112,7 @@ if (isset($_SESSION['nim'])) {
             <h3 class="fw-bold mb-5">Register</h3>
             <form method="POST">
             <?php
-              if ($error) {
+              if($error) {
             ?>
             <div class="alert alert-danger d-flex align-items-center" role="alert">
               <i class="fas fa-exclamation-triangle bi flex-shrink-0 me-2" width="24" height="24"></i>
@@ -122,7 +122,7 @@ if (isset($_SESSION['nim'])) {
               }
             ?>
             <?php
-              if ($warning) {
+              if($warning) {
             ?>
             <div class="alert alert-warning d-flex align-items-center" role="alert">
               <i class="fas fa-exclamation-triangle bi flex-shrink-0 me-2" width="24" height="24"></i>
@@ -132,7 +132,7 @@ if (isset($_SESSION['nim'])) {
               }
             ?>
             <?php
-              if ($success) {
+              if($success) {
             ?>
             <div class="alert alert-success d-flex align-items-center" role="alert">
               <i class="fas fa-check bi flex-shrink-0 me-2" width="24" height="24"></i>
@@ -208,12 +208,12 @@ if (isset($_SESSION['nim'])) {
             $result = $connect->query($query);
             $prodi = [];
             $dosen = [];
-            if ($result->num_rows > 0) {
+            if($result->num_rows > 0) {
               $prodi = $result->fetch_all(MYSQLI_ASSOC);
             }
             $query = "SELECT * from dosen";
             $result = $connect->query($query);
-            if ($result->num_rows > 0) {
+            if($result->num_rows > 0) {
               $dosen = $result->fetch_all(MYSQLI_ASSOC);
             }
             ?>
@@ -227,7 +227,7 @@ if (isset($_SESSION['nim'])) {
                   <select class="form-select" aria-label="Program Studi" name='prodi'>
                       <option value='-1'>Pilih Program Studi</option>
                       <?php                        
-                        if (count($prodi) == 0) {
+                        if(count($prodi) == 0) {
                             echo "<option selected>Tidak ada program studi</option>";
                         }
                         foreach ($prodi as $item) {
@@ -242,7 +242,7 @@ if (isset($_SESSION['nim'])) {
                   <select class="form-select" aria-label="Dosen Wali" name='dosen'>
                       <option value='-1'>Pilih Dosen Wali</option>
                       <?php                        
-                        if (count($dosen) == 0) {
+                        if(count($dosen) == 0) {
                             echo "<option selected>Tidak ada dosen wali</option>";
                         }
                         foreach ($dosen as $item) {

@@ -6,21 +6,21 @@
               $successTambah = false;
               $errorTambah = false;
               $errorTambahText = "";
-              if (isset($_POST['tambah'])) {
+              if(isset($_POST['tambah'])) {
                 $judul = $_POST['judul'];
                 $isi_berita = $_POST['isi_berita'];
 
                 $errorTambah = true;
-                if ($judul == '') {
+                if($judul == '') {
                   $errorTambahText = "Judul tidak boleh kosong";
-                } else if ($isi_berita == '') {
+                } else if($isi_berita == '') {
                   $errorTambahText = "Isi pengumuman tidak boleh kosong";
                 } else {
                   $errorTambah = false;
                   $query = "INSERT into berita (judul, berita) ";
                   $query .= "VALUES ('$judul', '$isi_berita')";
                   $result = $connect->query($query);
-                  if ($result) {
+                  if($result) {
                     $successTambah = true;
                     $successTambahText = 'dipublish';
                   } else {
@@ -30,22 +30,22 @@
                 }
               }
 
-              if (isset($_POST['update'])) {
+              if(isset($_POST['update'])) {
                 $id = $_POST['id'];
                 $judul = $_POST['judul'];
                 $isi_berita = $_POST['isi_berita'];
 
                 $errorTambah = true;
-                if ($judul == '') {
+                if($judul == '') {
                   $errorTambahText = "Judul tidak boleh kosong";
-                } else if ($isi_berita == '') {
+                } else if($isi_berita == '') {
                   $errorTambahText = "Isi pengumuman tidak boleh kosong";
                 } else {
                   $errorTambah = false;
                   $query = "UPDATE berita SET judul = '$judul', berita = '$isi_berita' ";
                   $query .= "WHERE id = $id";
                   $result = $connect->query($query);
-                  if ($result) {
+                  if($result) {
                     $successTambah = true;
                     $successTambahText = "diubah";
                   } else {
@@ -56,13 +56,13 @@
               }
 
               ?>
-                <?php if ($successTambah) { ?>
+                <?php if($successTambah) { ?>
                 <div class="alert alert-success d-flex align-items-center" role="alert">
                     <i class="fas fa-check bi flex-shrink-0 me-2" width="24" height="24"></i>
                     <div><strong>Sukses!</strong> Pengumuman berhasil <?= $successTambahText ?></div>
                 </div>
                 <?php } ?>
-                <?php if ($errorTambah) { ?>
+                <?php if($errorTambah) { ?>
                 <div class="alert alert-danger d-flex align-items-center" role="alert">
                     <i class="fas fa-exclamation-triangle bi flex-shrink-0 me-2" width="24" height="24"></i>
                     <div><strong>Gagal!</strong> <?= $errorTambahText ?></div>
@@ -70,11 +70,11 @@
                 <?php } ?>
               <?php
               // EDIT BERITA
-                if (@$_GET['action'] == 'edit' && isset($_GET['id'])) {
+                if(@$_GET['action'] == 'edit' && isset($_GET['id'])) {
                   $query = "SELECT * FROM berita ";
                   $query .= "WHERE id = '". $_GET['id'] ."'";
                   $result = $connect->query($query);
-                  if ($result->num_rows > 0) {
+                  if($result->num_rows > 0) {
                     $pengumuman = $result->fetch_assoc();
                   }
               ?>
@@ -125,13 +125,13 @@
                 $errorStatus = false;
                 $errorText = "";
 
-                if (isset($_POST['delete'])) {
+                if(isset($_POST['delete'])) {
                     $query = "SELECT id FROM berita WHERE id= '". $_POST['id'] ."'";
                     $result = $connect->query($query);
-                    if ($result->num_rows > 0) {
+                    if($result->num_rows > 0) {
                       $query = "DELETE FROM berita WHERE id = '". $_POST['id'] ."'";
                       $result = $connect->query($query);
-                      if ($result) {
+                      if($result) {
                         $successStatus = true;
                         $successText = "Berhasil dihapus";
                       } else {
@@ -145,13 +145,13 @@
                 }
 
                 ?>
-                <?php if ($successStatus) { ?>
+                <?php if($successStatus) { ?>
                 <div class="alert alert-success d-flex align-items-center" role="alert">
                     <i class="fas fa-check bi flex-shrink-0 me-2" width="24" height="24"></i>
                     <div><strong>Sukses!</strong> Pengumuman <?= $successText ?></div>
                 </div>
                 <?php } ?>
-                <?php if ($errorStatus) { ?>
+                <?php if($errorStatus) { ?>
                 <div class="alert alert-danger d-flex align-items-center" role="alert">
                     <i class="fas fa-exclamation-triangle bi flex-shrink-0 me-2" width="24" height="24"></i>
                     <div><strong>Gagal!</strong> Pengumuman <?= $errorText ?></div>
@@ -159,7 +159,7 @@
                 <?php } ?>
                 <?php      
                   $query = "SELECT * FROM berita ";
-                  if (isset($_POST['btn-cari'])) {
+                  if(isset($_POST['btn-cari'])) {
                     $cari = $_POST['cari'];
                     $query .= "WHERE judul LIKE '%$cari%' OR berita LIKE '%$cari%' ";
                   }
@@ -191,7 +191,7 @@
                             <tbody>
                             <?php
                             $result = $connect->query($query);
-                            if ($result->num_rows > 0) {
+                            if($result->num_rows > 0) {
                                 $berita = $result->fetch_all(MYSQLI_ASSOC);
                                 for ($i = 0; $i < count($berita); $i++) {
                                     ?>                                

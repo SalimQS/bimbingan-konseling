@@ -29,7 +29,7 @@
                     "href" => "pelanggaran",
                 ]
             ];
-            if ($_SESSION['role'] == 'admin') {
+            if($_SESSION['role'] == 'admin') {
                 foreach ($menuAdmin as $menu) {
         ?>
         <li class="<?= $page === $menu['href'] ? 'active' : '' ?>">
@@ -52,7 +52,7 @@
                     "href" => "matkul",
                 ],
             ];
-            if ($_SESSION['role'] == 'siswa') {
+            if($_SESSION['role'] == 'siswa') {
                 foreach ($menuSiswa as $menu) {
         ?>
         <li class="<?= $page === $menu['href'] ? 'active' : '' ?>">

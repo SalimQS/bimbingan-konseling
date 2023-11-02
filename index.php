@@ -1,6 +1,6 @@
 <?php
 session_start();
-if (!isset($_SESSION['id_user'])) {
+if(!isset($_SESSION['id_user'])) {
   header("location: login.php");
 }
 include_once('./config/db.php');
@@ -31,40 +31,38 @@ include_once('./config/db.php');
     <script defer src="./assets/js/script.js"></script>
     <?php   
       $page = @$_GET['page'];
-      $action = @$_GET['action'];
+      //$action = @$_GET['action'];
       $file = '';
       $title = '';
       $script = '';
-      if (isset($page)) {
+      if(isset($page)) {
         // ROUTE ADMIN
-        if ($_SESSION['role'] == 'admin') {
-          if ($page === '') {
+        if($_SESSION['role'] == 'admin') {
+          if($page === '') {
             $file = 'admin/dashboard.php';
             $title = 'Dashboard - ';
-          } else if ($page === 'siswa') {
+          } else if($page === 'siswa') {
             $script = '<script src="vendors/sweetalert/sweetalert.min.js"></script>';
-            if ($action === '') {
-              $file = 'admin/siswa.php';
-              $title = 'Data Siswa - ';
-              $script .= '<script src="assets/js/siswa.js"></script>';
-            }
-          } else if ($page === 'matkul') {
-            $file = 'admin/matkul.php';
-            $title = 'Mata Kuliah - ';
+            $file = 'admin/siswa.php';
+            $title = 'Data Siswa - ';
+            $script .= '<script src="assets/js/siswa.js"></script>';
+          } else if($page === 'pelanggaran') {
             $script = '<script src="vendors/sweetalert/sweetalert.min.js"></script>';
-            $script .= '<script src="assets/js/matkul.js"></script>';
-          } 
+            $file = 'admin/pelanggaran.php';
+            $title = 'Data Pelanggaran - ';
+            $script .= '<script src="assets/js/pelanggaran.js"></script>';
+          }
         }
 
         // ROUTE siswa
-        if ($_SESSION['role'] == 'siswa') {
-          if ($page === '') {
+        if($_SESSION['role'] == 'siswa') {
+          if($page === '') {
             $file = 'dashboard.php';
             $title = 'Dashboard - ';
           }
         }
       } else {
-        if ($_SESSION['role'] == 'admin') {
+        if($_SESSION['role'] == 'admin') {
           $file = 'admin/dashboard.php';
         } else {
           $file = 'dashboard.php';

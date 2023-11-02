@@ -67,7 +67,7 @@ $fakultas = $result->num_rows;*/
       <?php
       $query = "SELECT * FROM berita";
       $result = $connect->query($query);
-      if ($result->num_rows > 0) {
+      if($result->num_rows > 0) {
         $berita = $result->fetch_all(MYSQLI_ASSOC);
         for ($i = 0; $i < count($berita); $i++) {
       ?>                     

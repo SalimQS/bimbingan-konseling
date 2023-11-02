@@ -6,7 +6,7 @@
               $successTambah = false;
               $errorTambah = false;
               $errorTambahText = "";
-              if (isset($_POST['tambah'])) {
+              if(isset($_POST['tambah'])) {
                 $matkul = $_POST['matkul'];
                 $dosen = $_POST['dosen'];
                 $jam_kuliah = $_POST['jam_kuliah'];
@@ -14,22 +14,22 @@
                 $ruang = $_POST['ruang'];
 
                 $errorTambah = true;
-                if ($matkul == '-1') {
+                if($matkul == '-1') {
                   $errorTambahText = "Mata kuliah tidak boleh kosong";
-                } else if ($dosen == '-1') {
+                } else if($dosen == '-1') {
                   $errorTambahText = "Dosen tidak boleh kosong";
-                } else if ($jam_kuliah == '') {
+                } else if($jam_kuliah == '') {
                   $errorTambahText = "Jam kuliah tidak boleh kosong";
-                } else if ($hari_kuliah == '-1') {
+                } else if($hari_kuliah == '-1') {
                   $errorTambahText = "Hari kuliah tidak boleh kosong";
-                } else if ($ruang == '') {
+                } else if($ruang == '') {
                   $errorTambahText = "Ruang tidak boleh kosong";
                 } else {
                   $errorTambah = false;
                   $query = "INSERT into jadwal_kuliah (id_mata_kuliah, id_dosen, jam_kuliah, hari_kuliah, ruang) ";
                   $query .= "VALUES ('$matkul', '$dosen', '$jam_kuliah', '$hari_kuliah', '$ruang')";
                   $result = $connect->query($query);
-                  if ($result) {
+                  if($result) {
                     $successTambah = true;
                     $successTambahText = 'ditambah';
                   } else {
@@ -39,7 +39,7 @@
                 }
               }
 
-              if (isset($_POST['update'])) {
+              if(isset($_POST['update'])) {
                 $id = $_POST['id'];
                 $matkul = $_POST['matkul'];
                 $dosen = $_POST['dosen'];
@@ -48,22 +48,22 @@
                 $ruang = $_POST['ruang'];
 
                 $errorTambah = true;
-                if ($matkul == '-1') {
+                if($matkul == '-1') {
                   $errorTambahText = "Mata kuliah tidak boleh kosong";
-                } else if ($dosen == '-1') {
+                } else if($dosen == '-1') {
                   $errorTambahText = "Dosen tidak boleh kosong";
-                } else if ($jam_kuliah == '') {
+                } else if($jam_kuliah == '') {
                   $errorTambahText = "Jam kuliah tidak boleh kosong";
-                } else if ($hari_kuliah == '-1') {
+                } else if($hari_kuliah == '-1') {
                   $errorTambahText = "Hari kuliah tidak boleh kosong";
-                } else if ($ruang == '') {
+                } else if($ruang == '') {
                   $errorTambahText = "Ruang tidak boleh kosong";
                 } else {
                   $errorTambah = false;
                   $query = "UPDATE jadwal_kuliah SET id_mata_kuliah = '$matkul', id_dosen = '$dosen' , jam_kuliah = '$jam_kuliah', hari_kuliah = '$hari_kuliah', ruang = '$ruang' ";
                   $query .= "WHERE id = $id";
                   $result = $connect->query($query);
-                  if ($result) {
+                  if($result) {
                     $successTambah = true;
                     $successTambahText = "diubah";
                   }
@@ -71,13 +71,13 @@
               }
 
               ?>
-                <?php if ($successTambah) { ?>
+                <?php if($successTambah) { ?>
                 <div class="alert alert-success d-flex align-items-center" role="alert">
                     <i class="fas fa-check bi flex-shrink-0 me-2" width="24" height="24"></i>
                     <div><strong>Sukses!</strong> Jadwal kuliah berhasil <?= $successTambahText ?></div>
                 </div>
                 <?php } ?>
-                <?php if ($errorTambah) { ?>
+                <?php if($errorTambah) { ?>
                 <div class="alert alert-danger d-flex align-items-center" role="alert">
                     <i class="fas fa-exclamation-triangle bi flex-shrink-0 me-2" width="24" height="24"></i>
                     <div><strong>Gagal!</strong> <?= $errorTambahText ?></div>
@@ -85,13 +85,13 @@
                 <?php } ?>
               <?php
               // EDIT MATKUL
-                if (@$_GET['action'] == 'edit' && isset($_GET['id'])) {
+                if(@$_GET['action'] == 'edit' && isset($_GET['id'])) {
                   $query = "SELECT mata_kuliah.id as matkul, dosen.nip as dosen, jadwal_kuliah.* FROM jadwal_kuliah ";
                   $query .= "LEFT JOIN mata_kuliah ON mata_kuliah.id = jadwal_kuliah.id_mata_kuliah ";
                   $query .= "LEFT JOIN dosen ON dosen.nip = jadwal_kuliah.id_dosen ";
                   $query .= "WHERE jadwal_kuliah.id = '". $_GET['id'] ."'";
                   $result = $connect->query($query);
-                  if ($result->num_rows > 0) {
+                  if($result->num_rows > 0) {
                     $jadwal = $result->fetch_assoc();
                   }
               ?>
@@ -103,7 +103,7 @@
                     $query .= "ORDER BY prodi.nama_prodi, nama_mata_kuliah";
                     $result = $connect->query($query);
                     $matkul = [];
-                    if ($result->num_rows > 0) {
+                    if($result->num_rows > 0) {
                       $matkul = $result->fetch_all(MYSQLI_ASSOC);
                     }
                   ?>
@@ -112,7 +112,7 @@
                     <select class="form-select" aria-label="Mata kuliah" name='matkul'>
                         <option value='-1'>Pilih Mata kuliah</option>
                         <?php                        
-                          if (count($matkul) == 0) {
+                          if(count($matkul) == 0) {
                               echo "<option selected>Tidak ada Mata kuliah</option>";
                           }
                           foreach ($matkul as $item) {
@@ -127,7 +127,7 @@
                     $query .= "ORDER BY nama_dosen";
                     $result = $connect->query($query);
                     $dosen = [];
-                    if ($result->num_rows > 0) {
+                    if($result->num_rows > 0) {
                       $dosen = $result->fetch_all(MYSQLI_ASSOC);
                     }
                   ?>
@@ -136,7 +136,7 @@
                     <select class="form-select" aria-label="Dosen" name='dosen'>
                         <option value='-1'>Pilih Dosen</option>
                         <?php                        
-                          if (count($dosen) == 0) {
+                          if(count($dosen) == 0) {
                               echo "<option selected>Tidak ada Dosen</option>";
                           }
                           foreach ($dosen as $item) {
@@ -181,7 +181,7 @@
                     $query .= "ORDER BY prodi.nama_prodi, nama_mata_kuliah";
                     $result = $connect->query($query);
                     $matkul = [];
-                    if ($result->num_rows > 0) {
+                    if($result->num_rows > 0) {
                       $matkul = $result->fetch_all(MYSQLI_ASSOC);
                     }
                   ?>
@@ -190,7 +190,7 @@
                     <select class="form-select" aria-label="Mata kuliah" name='matkul'>
                         <option value='-1'>Pilih Mata kuliah</option>
                         <?php                        
-                          if (count($matkul) == 0) {
+                          if(count($matkul) == 0) {
                               echo "<option selected>Tidak ada Mata kuliah</option>";
                           }
                           foreach ($matkul as $item) {
@@ -204,7 +204,7 @@
                     $query .= "ORDER BY nama_dosen";
                     $result = $connect->query($query);
                     $dosen = [];
-                    if ($result->num_rows > 0) {
+                    if($result->num_rows > 0) {
                       $dosen = $result->fetch_all(MYSQLI_ASSOC);
                     }
                   ?>
@@ -213,7 +213,7 @@
                     <select class="form-select" aria-label="Dosen" name='dosen'>
                         <option value='-1'>Pilih Dosen</option>
                         <?php                        
-                          if (count($dosen) == 0) {
+                          if(count($dosen) == 0) {
                               echo "<option selected>Tidak ada Dosen</option>";
                           }
                           foreach ($dosen as $item) {
@@ -260,13 +260,13 @@
                 $errorStatus = false;
                 $errorText = "";
 
-                if (isset($_POST['delete'])) {
+                if(isset($_POST['delete'])) {
                     $query = "SELECT id FROM mata_kuliah WHERE id= '". $_POST['id'] ."'";
                     $result = $connect->query($query);
-                    if ($result->num_rows > 0) {
+                    if($result->num_rows > 0) {
                       $query = "DELETE FROM mata_kuliah WHERE id = '". $_POST['id'] ."'";
                       $result = $connect->query($query);
-                      if ($result) {
+                      if($result) {
                         $successStatus = true;
                         $successText = "Berhasil dihapus";
                       } else {
@@ -280,13 +280,13 @@
                 }
 
                 ?>
-                <?php if ($successStatus) { ?>
+                <?php if($successStatus) { ?>
                 <div class="alert alert-success d-flex align-items-center" role="alert">
                     <i class="fas fa-check bi flex-shrink-0 me-2" width="24" height="24"></i>
                     <div><strong>Sukses!</strong> Jadwal kuliah <?= $successText ?></div>
                 </div>
                 <?php } ?>
-                <?php if ($errorStatus) { ?>
+                <?php if($errorStatus) { ?>
                 <div class="alert alert-danger d-flex align-items-center" role="alert">
                     <i class="fas fa-exclamation-triangle bi flex-shrink-0 me-2" width="24" height="24"></i>
                     <div><strong>Gagal!</strong> Jadwal kuliah <?= $errorText ?></div>
@@ -296,7 +296,7 @@
                   $query = "SELECT jadwal_kuliah.*, mata_kuliah.nama_mata_kuliah, dosen.nama_dosen FROM jadwal_kuliah ";
                   $query .= "LEFT JOIN mata_kuliah ON mata_kuliah.id = jadwal_kuliah.id_mata_kuliah ";
                   $query .= "LEFT JOIN dosen ON dosen.nip = jadwal_kuliah.id_dosen ";
-                  if (isset($_POST['btn-cari'])) {
+                  if(isset($_POST['btn-cari'])) {
                     $cari = $_POST['cari'];
                     $query .= "WHERE mata_kuliah.nama_mata_kuliah LIKE '%$cari%' OR dosen.nama_dosen LIKE '%$cari%' ";
                   }
@@ -329,7 +329,7 @@
                             <tbody>
                             <?php
                             $result = $connect->query($query);
-                            if ($result->num_rows > 0) {
+                            if($result->num_rows > 0) {
                                 $mataKuliah = $result->fetch_all(MYSQLI_ASSOC);
                                 for ($i = 0; $i < count($mataKuliah); $i++) {
                                     ?>                                

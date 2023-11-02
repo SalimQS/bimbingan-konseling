@@ -10,7 +10,7 @@ function toggleButton () {
 function handlePreview (e) {
   var preview = document.querySelector("#previewFoto");
   var [files] = e.files;
-  if (files) {
+  if(files) {
     preview.src = URL.createObjectURL(files);
   }
   toggleButton();

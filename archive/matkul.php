@@ -6,34 +6,34 @@
               $successTambah = false;
               $errorTambah = false;
               $errorTambahText = "";
-              if (isset($_POST['tambah'])) {
+              if(isset($_POST['tambah'])) {
                 $nama_mata_kuliah = $_POST['nama_mata_kuliah'];
                 $sks = $_POST['sks'];
                 $semester = $_POST['semester'];
                 $prodi = $_POST['prodi'];
 
                 $errorTambah = true;
-                if ($nama_mata_kuliah == '') {
+                if($nama_mata_kuliah == '') {
                   $errorTambahText = "Mata kuliah tidak boleh kosong";
-                } else if ($sks == '') {
+                } else if($sks == '') {
                   $errorTambahText = "SKS tidak boleh kosong";
-                } else if ($semester == '') {
+                } else if($semester == '') {
                   $errorTambahText = "Semester tidak boleh kosong";
-                } else if ($prodi == '-1') {
+                } else if($prodi == '-1') {
                   $errorTambahText = "Program Studi tidak boleh kosong";
                 } else {
                   $errorTambah = false;
                   $query = "INSERT into mata_kuliah (nama_mata_kuliah, id_prodi, sks, semester) ";
                   $query .= "VALUES ('$nama_mata_kuliah', '$prodi', '$sks', '$semester')";
                   $result = $connect->query($query);
-                  if ($result) {
+                  if($result) {
                     $successTambah = true;
                     $successTambahText = 'ditambah';
                   }
                 }
               }
 
-              if (isset($_POST['update'])) {
+              if(isset($_POST['update'])) {
                 $id = $_POST['id'];
                 $nama_mata_kuliah = $_POST['nama_mata_kuliah'];
                 $sks = $_POST['sks'];
@@ -41,20 +41,20 @@
                 $prodi = $_POST['prodi'];
 
                 $errorTambah = true;
-                if ($nama_mata_kuliah == '') {
+                if($nama_mata_kuliah == '') {
                   $errorTambahText = "Mata kuliah tidak boleh kosong";
-                } else if ($sks == '') {
+                } else if($sks == '') {
                   $errorTambahText = "SKS tidak boleh kosong";
-                } else if ($semester == '') {
+                } else if($semester == '') {
                   $errorTambahText = "Semester tidak boleh kosong";
-                } else if ($prodi == '-1') {
+                } else if($prodi == '-1') {
                   $errorTambahText = "Program Studi tidak boleh kosong";
                 } else {
                   $errorTambah = false;
                   $query = "UPDATE mata_kuliah SET nama_mata_kuliah = '$nama_mata_kuliah', id_prodi = '$prodi' , sks = '$sks', semester = '$semester' ";
                   $query .= "WHERE id = $id";
                   $result = $connect->query($query);
-                  if ($result) {
+                  if($result) {
                     $successTambah = true;
                     $successTambahText = "diubah";
                   }
@@ -62,13 +62,13 @@
               }
 
               ?>
-                <?php if ($successTambah) { ?>
+                <?php if($successTambah) { ?>
                 <div class="alert alert-success d-flex align-items-center" role="alert">
                     <i class="fas fa-check bi flex-shrink-0 me-2" width="24" height="24"></i>
                     <div><strong>Sukses!</strong> Mata kuliah berhasil <?= $successTambahText ?></div>
                 </div>
                 <?php } ?>
-                <?php if ($errorTambah) { ?>
+                <?php if($errorTambah) { ?>
                 <div class="alert alert-danger d-flex align-items-center" role="alert">
                     <i class="fas fa-exclamation-triangle bi flex-shrink-0 me-2" width="24" height="24"></i>
                     <div><strong>Gagal!</strong> <?= $errorTambahText ?></div>
@@ -76,12 +76,12 @@
                 <?php } ?>
               <?php
               // EDIT MATKUL
-                if (@$_GET['action'] == 'edit' && isset($_GET['id'])) {
+                if(@$_GET['action'] == 'edit' && isset($_GET['id'])) {
                   $query = "SELECT mata_kuliah.*, prodi.id as prodi FROM mata_kuliah ";
                   $query .= "LEFT JOIN prodi ON mata_kuliah.id_prodi = prodi.id ";
                   $query .= "WHERE mata_kuliah.id = '". $_GET['id'] ."'";
                   $result = $connect->query($query);
-                  if ($result->num_rows > 0) {
+                  if($result->num_rows > 0) {
                     $matkul = $result->fetch_assoc();
                   }
               ?>
@@ -106,7 +106,7 @@
                     $result = $connect->query($query);
                     $prodi = [];
                     $dosen = [];
-                    if ($result->num_rows > 0) {
+                    if($result->num_rows > 0) {
                       $prodi = $result->fetch_all(MYSQLI_ASSOC);
                     }
                   ?>
@@ -115,7 +115,7 @@
                     <select class="form-select" aria-label="Program Studi" name='prodi'>
                         <option value='-1'>Pilih Program Studi</option>
                         <?php                        
-                          if (count($prodi) == 0) {
+                          if(count($prodi) == 0) {
                               echo "<option selected>Tidak ada program studi</option>";
                           }
                           foreach ($prodi as $item) {
@@ -154,7 +154,7 @@
                     $result = $connect->query($query);
                     $prodi = [];
                     $dosen = [];
-                    if ($result->num_rows > 0) {
+                    if($result->num_rows > 0) {
                       $prodi = $result->fetch_all(MYSQLI_ASSOC);
                     }
                   ?>
@@ -163,7 +163,7 @@
                     <select class="form-select" aria-label="Program Studi" name='prodi'>
                         <option value='-1'>Pilih Program Studi</option>
                         <?php                        
-                          if (count($prodi) == 0) {
+                          if(count($prodi) == 0) {
                               echo "<option selected>Tidak ada program studi</option>";
                           }
                           foreach ($prodi as $item) {
@@ -191,13 +191,13 @@
                 $errorStatus = false;
                 $errorText = "";
 
-                if (isset($_POST['delete'])) {
+                if(isset($_POST['delete'])) {
                     $query = "SELECT id FROM mata_kuliah WHERE id= '". $_POST['id'] ."'";
                     $result = $connect->query($query);
-                    if ($result->num_rows > 0) {
+                    if($result->num_rows > 0) {
                       $query = "DELETE FROM mata_kuliah WHERE id = '". $_POST['id'] ."'";
                       $result = $connect->query($query);
-                      if ($result) {
+                      if($result) {
                         $successStatus = true;
                         $successText = "Berhasil dihapus";
                       } else {
@@ -211,13 +211,13 @@
                 }
 
                 ?>
-                <?php if ($successStatus) { ?>
+                <?php if($successStatus) { ?>
                 <div class="alert alert-success d-flex align-items-center" role="alert">
                     <i class="fas fa-check bi flex-shrink-0 me-2" width="24" height="24"></i>
                     <div><strong>Sukses!</strong> Mata kuliah <?= $successText ?></div>
                 </div>
                 <?php } ?>
-                <?php if ($errorStatus) { ?>
+                <?php if($errorStatus) { ?>
                 <div class="alert alert-danger d-flex align-items-center" role="alert">
                     <i class="fas fa-exclamation-triangle bi flex-shrink-0 me-2" width="24" height="24"></i>
                     <div><strong>Gagal!</strong> Mata kuliah <?= $errorText ?></div>
@@ -226,7 +226,7 @@
                 <?php      
                   $query = "SELECT mata_kuliah.*, prodi.nama_prodi FROM mata_kuliah ";
                   $query .= "LEFT JOIN prodi ON mata_kuliah.id_prodi = prodi.id ";
-                  if (isset($_POST['btn-cari'])) {
+                  if(isset($_POST['btn-cari'])) {
                     $cari = $_POST['cari'];
                     $query .= "WHERE mata_kuliah.nama_mata_kuliah LIKE '%$cari%' ";
                   }
@@ -258,7 +258,7 @@
                             <tbody>
                             <?php
                             $result = $connect->query($query);
-                            if ($result->num_rows > 0) {
+                            if($result->num_rows > 0) {
                                 $mataKuliah = $result->fetch_all(MYSQLI_ASSOC);
                                 for ($i = 0; $i < count($mataKuliah); $i++) {
                                     ?>                                

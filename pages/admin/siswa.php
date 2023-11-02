@@ -9,11 +9,11 @@
                 $successText = "";
                 $errorStatus = false;
                 $errorText = "";
-                if (isset($_POST['change-status'])) {
+                if(isset($_POST['change-status'])) {
                     $status = $_POST['status'] ? 0 : 1;
                     $query = "UPDATE biodata SET status = '$status'  WHERE id_user = '". $_POST['id'] ."'";
                     $result = $connect->query($query);
-                    if ($result) {
+                    if($result) {
                         $successStatus = true;
                         $successText = $_POST['status'] ? "dinonaktifkan" : "diaktifkan";
                     } else {
@@ -22,10 +22,10 @@
                     }
                 }
 
-                if (isset($_POST['delete'])) {
+                if(isset($_POST['delete'])) {
                     $query = "DELETE FROM users WHERE id = '". $_POST['id'] ."'";
                     $result = $connect->query($query);
-                    if ($result) {
+                    if($result) {
                         $successStatus = true;
                         $successText = "dihapus";
                     } else {
@@ -35,13 +35,13 @@
                 }
 
                 ?>
-                <?php if ($successStatus) { ?>
+                <?php if($successStatus) { ?>
                 <div class="alert alert-success d-flex align-items-center" role="alert">
                     <i class="fas fa-check bi flex-shrink-0 me-2" width="24" height="24"></i>
                     <div><strong>Sukses!</strong> Mahasiwa Berhasil <?= $successText ?></div>
                 </div>
                 <?php } ?>
-                <?php if ($errorStatus) { ?>
+                <?php if($errorStatus) { ?>
                 <div class="alert alert-danger d-flex align-items-center" role="alert">
                     <i class="fas fa-exclamation-triangle bi flex-shrink-0 me-2" width="24" height="24"></i>
                     <div><strong>Gagal!</strong> Mahasiwa gagal <?= $errorText ?></div>
@@ -53,7 +53,7 @@
                   $query .= "LEFT JOIN  siswa ON siswa.id_user = users.id ";
                   $query .= "LEFT JOIN prodi ON siswa.id_prodi = prodi.id ";
                   $query .= "WHERE id_role=2 ";
-                  if (isset($_POST['btn-cari'])) {
+                  if(isset($_POST['btn-cari'])) {
                     $cari = $_POST['cari'];
                     $query .= "AND (users.username LIKE '%$cari%' OR biodata.nama_lengkap LIKE '%$cari%') ";
                   }
@@ -91,7 +91,7 @@
                             <tbody>
                             <?php
                             $result = $connect->query($query);
-                            if ($result->num_rows > 0) {
+                            if($result->num_rows > 0) {
                                 $siswa = $result->fetch_all(MYSQLI_ASSOC);
                                 for ($i = 0; $i < count($siswa); $i++) {
                                     $nama = $siswa[$i]['nama_lengkap'];
@@ -124,7 +124,7 @@
                                                     </div>
                                                     <div class="col-12 col-md-6">
                                                         <?php
-                                                            if ($siswa[$i]['status']) {
+                                                            if($siswa[$i]['status']) {
                                                         ?>
                                                         <button 
                                                             class='btn btn-sm btn-warning text-white' 

@@ -8,7 +8,7 @@ $query .= "LEFT JOIN fakultas ON prodi.id_fakultas = fakultas.id ";
 $query .= "LEFT JOIN dosen ON dosen.nip = siswa.id_dosen ";
 $query .= "WHERE users.id='". $_SESSION['id_user'] ."'";
 $result = $connect->query($query);
-if ($result->num_rows > 0) {
+if($result->num_rows > 0) {
     $user = $result->fetch_assoc();
 }
 
@@ -49,26 +49,26 @@ if ($result->num_rows > 0) {
                     $errorInsertMatkul = false;
                     $successDelete = false;
                     $errorDelete = false;
-                    if (isset($_POST['insertMatkul'])) {
+                    if(isset($_POST['insertMatkul'])) {
                         $idMataKuliah = $_POST['selected_matkul'];
                         $query = "SELECT id FROM jadwal_kuliah WHERE id_mata_kuliah='".$idMataKuliah."'";
                         $result = $connect->query($query)->fetch_assoc();
                         $query = "INSERT INTO jadwal_siswa (id_jadwal_kuliah, id_user, semester) ";
                         $query .= "VALUES('".$result['id']."', '".$_SESSION['id_user']."', '".$user['semester']."')";
                         $result = $connect->query($query);
-                        if ($result) {
+                        if($result) {
                             $successInsertMatkul = true;
                         } else {
                             $errorInsertMatkul = true;
                         }
                     }
-                    if (isset($_POST['delete'])) {
+                    if(isset($_POST['delete'])) {
                         $query = "SELECT id FROM jadwal_siswa WHERE id='" . $_POST['id'] . "'";
                         $result = $connect->query($query);
-                        if ($result->num_rows > 0) {
+                        if($result->num_rows > 0) {
                             $query = "DELETE FROM jadwal_siswa WHERE id = '" . $_POST['id'] . "'";
                             $result = $connect->query($query);
-                            if ($query) {
+                            if($query) {
                                 $successDelete = true;
                             } else {
                                 $errorDelete = true;
@@ -77,25 +77,25 @@ if ($result->num_rows > 0) {
                     }
 
                 ?>                    
-                <?php if ($successInsertMatkul) { ?>
+                <?php if($successInsertMatkul) { ?>
                 <div class="alert alert-success d-flex align-items-center" role="alert">
                     <i class="fas fa-check bi flex-shrink-0 me-2" width="24" height="24"></i>
                     <div><strong>Berhasil!</strong> Mata kuliah berhasil ditambah</div>
                 </div>
                 <?php } ?>
-                <?php if ($errorInsertMatkul) { ?>
+                <?php if($errorInsertMatkul) { ?>
                 <div class="alert alert-danger d-flex align-items-center" role="alert">
                     <i class="fas fa-exclamation-triangle bi flex-shrink-0 me-2" width="24" height="24"></i>
                     <div><strong>Gagal!</strong> Mata kuliah gagal ditambah</div>
                 </div>
                 <?php } ?>
-                <?php if ($successDelete) { ?>
+                <?php if($successDelete) { ?>
                 <div class="alert alert-success d-flex align-items-center" role="alert">
                     <i class="fas fa-check bi flex-shrink-0 me-2" width="24" height="24"></i>
                     <div><strong>Sukses!</strong> Mata kuliah berhasil dihapus</div>
                 </div>
                 <?php } ?>
-                <?php if ($errorDelete) { ?>
+                <?php if($errorDelete) { ?>
                 <div class="alert alert-danger d-flex align-items-center" role="alert">
                     <i class="fas fa-exclamation-triangle bi flex-shrink-0 me-2" width="24" height="24"></i>
                     <div><strong>Gagal!</strong> Mata kuliah gagal dihapus</div>
@@ -108,7 +108,7 @@ if ($result->num_rows > 0) {
                     $result = $connect->query($query);
                     $matkul = [];
                     $resultMatkul = [];
-                    if ($result->num_rows > 0) {
+                    if($result->num_rows > 0) {
                         $matkul = $result->fetch_all(MYSQLI_ASSOC);
                     }
                     $query = "SELECT mata_kuliah.id, mata_kuliah.nama_mata_kuliah, mata_kuliah.semester FROM jadwal_siswa ";
@@ -117,7 +117,7 @@ if ($result->num_rows > 0) {
                     $query .= "WHERE jadwal_siswa.id_user='".$_SESSION['id_user']."' AND jadwal_siswa.semester='".$user['semester']."'";
                     $result = $connect->query($query);
                     $availMatkul = [];
-                    if ($result->num_rows > 0) {
+                    if($result->num_rows > 0) {
                         $availMatkul = $result->fetch_all(MYSQLI_ASSOC);
                     }
                     foreach ($matkul as $item) {
@@ -132,7 +132,7 @@ if ($result->num_rows > 0) {
                             <div class="form-group">
                                 <select class="form-control" name="selected_matkul" id="" <?php echo count($resultMatkul) == 0 ? "disabled" : "" ?>>
                                 <?php
-                                    if (count($resultMatkul) == 0) {
+                                    if(count($resultMatkul) == 0) {
                                         echo "<option>Tidak ada mata kuliah</option>";
                                     }
                                     foreach ($resultMatkul as $item) {
@@ -171,7 +171,7 @@ if ($result->num_rows > 0) {
                             $query .= "WHERE jadwal_siswa.id_user='". $_SESSION['id_user'] ."' AND jadwal_siswa.semester='". $user['semester'] ."' ";
                             $result = $connect->query($query);
                             $totalSKS = 0;
-                            if ($result->num_rows > 0) {
+                            if($result->num_rows > 0) {
                                 $mata_kuliah = $result->fetch_all(MYSQLI_ASSOC);
                                 for ($i = 0; $i < count($mata_kuliah); $i++) {
                                     $totalSKS += $mata_kuliah[$i]['sks'];

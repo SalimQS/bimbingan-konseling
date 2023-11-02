@@ -9,7 +9,7 @@
 }(this, (function (exports) { 'use strict';
 
   function _typeof(obj) {
-    if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
+    if(typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
       _typeof = function (obj) {
         return typeof obj;
       };
@@ -23,7 +23,7 @@
   }
 
   function _defineProperty(obj, key, value) {
-    if (key in obj) {
+    if(key in obj) {
       Object.defineProperty(obj, key, {
         value: value,
         enumerable: true,
@@ -42,7 +42,7 @@
       var source = arguments[i] != null ? arguments[i] : {};
       var ownKeys = Object.keys(source);
 
-      if (typeof Object.getOwnPropertySymbols === 'function') {
+      if(typeof Object.getOwnPropertySymbols === 'function') {
         ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) {
           return Object.getOwnPropertyDescriptor(source, sym).enumerable;
         }));
@@ -60,8 +60,8 @@
   var _DOCUMENT = {};
 
   try {
-    if (typeof window !== 'undefined') _WINDOW = window;
-    if (typeof document !== 'undefined') _DOCUMENT = document;
+    if(typeof window !== 'undefined') _WINDOW = window;
+    if(typeof document !== 'undefined') _DOCUMENT = document;
   } catch (e) {}
 
   var _ref = _WINDOW.navigator || {},
@@ -86,13 +86,13 @@
 
   var loaded = false;
 
-  if (IS_DOM) {
+  if(IS_DOM) {
     loaded = (DOCUMENT.documentElement.doScroll ? /^loaded|^c/ : /^loaded|^i|^c/).test(DOCUMENT.readyState);
-    if (!loaded) DOCUMENT.addEventListener('DOMContentLoaded', listener);
+    if(!loaded) DOCUMENT.addEventListener('DOMContentLoaded', listener);
   }
 
   function domready (fn) {
-    if (!IS_DOM) return;
+    if(!IS_DOM) return;
     loaded ? setTimeout(fn, 0) : functions.push(fn);
   }
 
@@ -102,14 +102,14 @@
     var timedOutTests = {};
 
     for (var key in nodesFound) {
-      if (!(nodesTested.conflict[key] || nodesTested.noConflict[key])) {
+      if(!(nodesTested.conflict[key] || nodesTested.noConflict[key])) {
         timedOutTests[key] = nodesFound[key];
       }
     }
 
     var conflictsCount = Object.keys(nodesTested.conflict).length;
 
-    if (conflictsCount > 0) {
+    if(conflictsCount > 0) {
       console.info("%cConflict".concat(conflictsCount > 1 ? 's' : '', " found:"), 'color: darkred; font-size: large');
       var data = {};
 
@@ -127,7 +127,7 @@
 
     var noConflictsCount = Object.keys(nodesTested.noConflict).length;
 
-    if (noConflictsCount > 0) {
+    if(noConflictsCount > 0) {
       console.info("%cNo conflict".concat(noConflictsCount > 1 ? 's' : '', " found with ").concat(noConflictsCount == 1 ? 'this' : 'these', ":"), 'color: green; font-size: large');
       var _data = {};
 
@@ -145,7 +145,7 @@
 
     var timeOutCount = Object.keys(timedOutTests).length;
 
-    if (timeOutCount > 0) {
+    if(timeOutCount > 0) {
       console.info("%cLeftovers--we timed out before collecting test results for ".concat(timeOutCount == 1 ? 'this' : 'these', ":"), 'color: blue; font-size: large');
       var _data2 = {};
 
@@ -454,7 +454,7 @@
         var hash;
         ipad[15] = opad[15] = undefined;
 
-        if (bkey.length > 16) {
+        if(bkey.length > 16) {
           bkey = binlMD5(bkey, key.length * 8);
         }
 
@@ -557,22 +557,22 @@
 
 
       function md5(string, key, raw) {
-        if (!key) {
-          if (!raw) {
+        if(!key) {
+          if(!raw) {
             return hexMD5(string);
           }
 
           return rawMD5(string);
         }
 
-        if (!raw) {
+        if(!raw) {
           return hexHMACMD5(key, string);
         }
 
         return rawHMACMD5(key, string);
       }
 
-      if (module.exports) {
+      if(module.exports) {
         module.exports = md5;
       } else {
         $.md5 = md5;
@@ -581,13 +581,13 @@
   });
 
   function md5ForNode(node) {
-    if (null === node || 'object' !== _typeof(node)) return undefined;
+    if(null === node || 'object' !== _typeof(node)) return undefined;
 
-    if (node.src) {
+    if(node.src) {
       return md5(node.src);
-    } else if (node.href) {
+    } else if(node.href) {
       return md5(node.href);
-    } else if (node.innerText && '' !== node.innerText) {
+    } else if(node.innerText && '' !== node.innerText) {
       // eslint-disable-line yoda
       return md5(node.innerText);
     } else {
@@ -625,18 +625,18 @@
         setTimeout(function () {
           var result = fn();
 
-          if (showProgress) {
+          if(showProgress) {
             console.info(progressIndicator);
           }
 
-          if (!!result) {
+          if(!!result) {
             // eslint-disable-line no-extra-boolean-cast
             resolve(result);
           } else {
             var nextDuration = 250;
             var nextCumulativeDuration = nextDuration + cumulativeDuration;
 
-            if (nextCumulativeDuration <= maxDuration) {
+            if(nextCumulativeDuration <= maxDuration) {
               poll(nextDuration, nextCumulativeDuration);
             } else {
               reject('timeout'); // eslint-disable-line prefer-promise-reject-errors
@@ -654,14 +654,14 @@
       return !t.hasAttribute(detectionIgnoreAttr);
     });
     var styleTags = Array.from(DOCUMENT.getElementsByTagName('style')).filter(function (t) {
-      if (t.hasAttribute(detectionIgnoreAttr)) {
+      if(t.hasAttribute(detectionIgnoreAttr)) {
         return false;
       } // If the browser has loaded the FA5 CSS, let's not test that <style> element.
       // Its enough that we'll be testing for traces of the corresponding JS being loaded, and testing
       // this <style> would only produce a false negative anyway.
 
 
-      if (WINDOW.FontAwesomeConfig && t.innerText.match(new RegExp("svg:not\\(:root\\)\\.".concat(WINDOW.FontAwesomeConfig.replacementClass)))) {
+      if(WINDOW.FontAwesomeConfig && t.innerText.match(new RegExp("svg:not\\(:root\\)\\.".concat(WINDOW.FontAwesomeConfig.replacementClass)))) {
         return false;
       }
 
@@ -693,7 +693,7 @@
             var computedStyle = window.getComputedStyle(iEl);
             var fontFamily = computedStyle.getPropertyValue('font-family');
 
-            if (!!fontFamily.match(/FontAwesome/) || !!fontFamily.match(/Font Awesome 5/)) {
+            if(!!fontFamily.match(/FontAwesome/) || !!fontFamily.match(/Font Awesome 5/)) {
               return true;
             } else {
               return false;
@@ -712,7 +712,7 @@
         }).catch(function (e) {
           var node = document.getElementById(nodeUnderTestId);
 
-          if (e === 'timeout') {
+          if(e === 'timeout') {
             parent.postMessage({
               type: 'no-conflict',
               technology: 'webfont',
@@ -783,11 +783,11 @@
       scriptUnderTest.setAttribute(md5Attr, md5ForScript);
       scriptsByMD5[md5ForScript] = scripts[scriptIdx];
 
-      if (scripts[scriptIdx].src !== '') {
+      if(scripts[scriptIdx].src !== '') {
         scriptUnderTest.src = scripts[scriptIdx].src;
       }
 
-      if (scripts[scriptIdx].innerText !== '') {
+      if(scripts[scriptIdx].innerText !== '') {
         scriptUnderTest.innerText = scripts[scriptIdx].innerText;
       }
 
@@ -814,7 +814,7 @@
         }).catch(function (e) {
           var scriptNode = document.getElementById(nodeUnderTestId);
 
-          if (e === 'timeout') {
+          if(e === 'timeout') {
             parent.postMessage({
               type: 'no-conflict',
               src: scriptNode.src,
@@ -865,11 +865,11 @@
     };
 
     WINDOW.onmessage = function (e) {
-      if (WINDOW.location.origin === 'file://' || e.origin === WINDOW.location.origin) {
-        if (e && e.data) {
-          if (e.data.type === 'fontawesome-conflict') {
+      if(WINDOW.location.origin === 'file://' || e.origin === WINDOW.location.origin) {
+        if(e && e.data) {
+          if(e.data.type === 'fontawesome-conflict') {
             nodesTested.conflict[e.data.md5] = e.data;
-          } else if (e.data.type === 'no-conflict') {
+          } else if(e.data.type === 'no-conflict') {
             nodesTested.noConflict[e.data.md5] = e.data;
           }
         }
@@ -891,7 +891,7 @@
     var masterTimeout = WINDOW.FontAwesomeDetection.timeout + WINDOW.FontAwesomeDetection.resultsCollectionMaxWait;
     console.group('Font Awesome Detector');
 
-    if (testCount === 0) {
+    if(testCount === 0) {
       console.info('%cAll Good!', 'color: green; font-size: large');
       console.info('We didn\'t find anything that needs testing for conflicts. Ergo, no conflicts.');
     } else {
@@ -920,7 +920,7 @@
         });
         console.groupEnd();
       }).catch(function (e) {
-        if (e === 'timeout') {
+        if(e === 'timeout') {
           console.info('TIME OUT! We waited until we got tired. Here\'s what we found:');
           setDoneResults({
             nodesTested: nodesTested,
@@ -979,14 +979,14 @@
     try {
       fn();
     } catch (e) {
-      if (!PRODUCTION) {
+      if(!PRODUCTION) {
         throw e;
       }
     }
   }
 
   bunker(function () {
-    if (IS_BROWSER && IS_DOM) {
+    if(IS_BROWSER && IS_DOM) {
       conflictDetection(window.FontAwesomeDetection.report);
     }
   });

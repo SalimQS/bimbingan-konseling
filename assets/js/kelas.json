@@ -1,0 +1,38 @@
+{ "kelasList": [
+    {   "id": 0,
+        "name": "X RPL"
+    },
+    {   "id": 1,
+        "name": "X MM"
+    },
+    {   "id": 2,
+        "name": "X TBSM"
+    },
+    {   "id": 3,
+        "name": "X BDP"
+    },
+    {   "id": 4,
+        "name": "XI RPL"
+    },
+    {   "id": 5,
+        "name": "XI MM"
+    },
+    {   "id": 6,
+        "name": "XI TBSM"
+    },
+    {   "id": 7,
+        "name": "XI BDP"
+    },
+    {   "id": 8,
+        "name": "XII RPL"
+    },
+    {   "id": 9,
+        "name": "XII MM"
+    },
+    {   "id": 10,
+        "name": "XII TBSM"
+    },
+    {   "id": 11,
+        "name": "XII BDP"
+    }
+]}

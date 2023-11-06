@@ -9,7 +9,7 @@
     
   if(isset($_POST['simpan'])) {
     $error = true;
-    $nim = $_POST['nim'];
+    $nick = $_POST['nick'];
     $nama_lengkap = $_POST['nama_lengkap'];
     $jenis_kelamin = $_POST['jenis_kelamin'];
     $tempat_lahir = $_POST['tempat_lahir'];
@@ -18,12 +18,11 @@
     $agama = $_POST['agama'];
     $alamat = $_POST['alamat'];
     $no_telepon = $_POST['no_telepon'];
-    $prodi = $_POST['prodi'];
-    $dosen = $_POST['dosen'];
-    $password = md5($nim);
+    $kelas = $_POST['kelas'];
+    $password = md5($nick);
 
-    if($nim == '') {
-      $errorText = "NIM tidak boleh kosong";
+    if($nick == '') {
+      $errorText = "NIckname tidak boleh kosong";
     } else if($nama_lengkap == '') {
       $errorText = "Nama lengkap tidak boleh kosong";
     } else if($jenis_kelamin == '-1') {
@@ -40,10 +39,8 @@
       $errorText = "Alamat tidak boleh kosong";
     } else if($no_telepon == '') {
       $errorText = "No telepon tidak boleh kosong";
-    } else if($prodi == '-1') {
-      $errorText = "Program Studi tidak boleh kosong";
-    } else if($dosen == '-1') {
-      $errorText = "Dosen wali tidak boleh kosong";
+    } else if($kelas == '') {
+      $errorText = "Kelas tidak boleh kosong";
     } else {
       $error = false;
       $foto = $_FILES['foto'];
@@ -52,11 +49,11 @@
       $connect->begin_transaction();
       
       try {
-        $query = "SELECT id FROM users WHERE username ='$nim'";
+        $query = "SELECT id FROM users WHERE username ='$nick'";
         $result = $connect->query($query);
         if($result->num_rows > 0) {
           $error = true;
-          $errorText = "Nim sudah terdaftar";
+          $errorText = "Nickname sudah terdaftar";
         } else {
           $error = false;
           if($hasFoto) {
@@ -74,13 +71,13 @@
           }
 
           if(!$error) {
-            $query = "INSERT INTO users (id_role, username, password) ";
-            $query .= "VALUES(2, '$nim', '$password')";
+            $query = "INSERT INTO users (admin, username, password) ";
+            $query .= "VALUES(user, '$nick', '$password')";
             $result = $connect->query($query);
             if($result === TRUE) {
               $id_user = $connect->insert_id;
 
-              $query = "INSERT INTOsiswa (id_user, id_dosen, id_prodi, semester) ";
+              $query = "INSERT INTO siswa (id_user, id_dosen, id_prodi, semester) ";
               $query .= "VALUES('$id_user', '$dosen', '$prodi', 1)";
               $result = $connect->query($query);
               if($result) {
@@ -111,7 +108,7 @@
                     }
                   } else {
                       $error = true;
-                      $errorText = "Gagal menambahsiswa";
+                      $errorText = "Gagal menambah siswa";
                       $connect->rollback();
                   }
                 } else {
@@ -181,8 +178,8 @@
         </div>
             <div class="row mt-2">
                 <div class="col-md-12 mb-2">
-                <label class="labels">NIM</label>
-                <input type="text" class="form-control" placeholder="Nomor Induk Siswa" name='nim' value="<?= @$_POST['nim'] ?>">
+                <label class="labels">Nickname</label>
+                <input type="text" class="form-control" placeholder="Nama Unik Siswa" name='nick' value="<?= @$_POST['nick'] ?>">
                 </div>
                 <div class="col-md-12 mb-2">
                 <label class="labels">Nama Lengkap</label>
@@ -227,66 +224,24 @@
                     <option value="6" <?php if(@$_POST['agama'] == 6) echo 'selected'; ?>>Protestan</option>
                 </select>
                 </div>
+                <div class="col-md-12 mb-4">
+                  <label class="labels">Kelas</label>
+                  <input type="text" list="kelas-list" class="form-control" placeholder="Kelas" name="kelas" value="<?= @$_POST['kelas'] ?>">
+                  <datalist id="kelas-list"></datalist>
+                </div>
                 <div class="col-md-12 mb-2">
-                <label class="labels">Alamat</label>
-                <textarea class="form-control" id="alamat" rows="3" name='alamat'><?= @$_POST['alamat'] ?></textarea>
+                  <label class="labels">Alamat</label>
+                  <textarea class="form-control" id="alamat" rows="3" name='alamat'><?= @$_POST['alamat'] ?></textarea>
                 </div>
                 <div class="col-md-12 mb-4">
-                <label class="labels">No Telepon</label>
-                <input type="text" class="form-control" placeholder="Nomor Telepon" name="no_telepon" value="<?= @$_POST['no_telepon'] ?>">
+                  <label class="labels">No Telepon</label>
+                  <input type="text" class="form-control" placeholder="Nomor Telepon" name="no_telepon" value="<?= @$_POST['no_telepon'] ?>">
                 </div>
             </div>
-            <?php            
-            $query = "SELECT prodi.id, CONCAT(fakultas.nama_fakultas, ' - ', prodi.nama_prodi) as nama_prodi FROM prodi ";
-            $query .= "LEFT JOIN fakultas ON fakultas.id = prodi.id_fakultas ";
-            $query .= "ORDER BY nama_fakultas";
-            $result = $connect->query($query);
-            $prodi = [];
-            $dosen = [];
-            if($result->num_rows > 0) {
-              $prodi = $result->fetch_all(MYSQLI_ASSOC);
-            }
-            $query = "SELECT * from dosen";
-            $result = $connect->query($query);
-            if($result->num_rows > 0) {
-              $dosen = $result->fetch_all(MYSQLI_ASSOC);
-            }
-            ?>
             <div class="d-flex justify-content-between align-items-center">
                 <h6 class="text-right">Informasi Akademik</h6>
             </div>
-            <div class="row mt-2">
-                <div class="col-md-12 mb-2">
-                  <label class="labels">Program Studi</label>
-                  <select class="form-select" aria-label="Program Studi" name='prodi'>
-                      <option value='-1'>Pilih Program Studi</option>
-                      <?php                        
-                        if(count($prodi) == 0) {
-                            echo "<option value='-1'> selected>Tidak ada program studi</option>";
-                        }
-                        foreach ($prodi as $item) {
-                          $selected = @$_POST['prodi'] == $item['id'] ? 'selected' : '';
-                          echo "<option value='".$item['id']."' " . $selected . ">" . $item['nama_prodi'] . "</option>";
-                        }
-                      ?>
-                  </select>
-                </div>
-                <div class="col-md-12 mb-4">
-                  <label class="labels">Dosen Wali</label>
-                  <select class="form-select" aria-label="Dosen Wali" name='dosen'>
-                      <option value='-1'>Pilih Dosen Wali</option>
-                      <?php                        
-                        if(count($dosen) == 0) {
-                            echo "<option value='-1' selected>Tidak ada dosen wali</option>";
-                        }
-                        foreach ($dosen as $item) {
-                          $selected = @$_POST['dosen'] == $item['nip'] ? 'selected' : '';
-                            echo "<option value='".$item['nip']."' " . $selected . ">" . $item['nama_dosen'] . "</option>";
-                        }
-                      ?>
-                  </select>
-                </div>
-            </div>
+            
             <div class="row">
             <div class="col-12 col-md-6">
                 <button class="btn btn-warning" type="submit" name='resetPassword' onClick="javascript: return confirm('Yakin ingin mereset password?');">Reset Password</button>

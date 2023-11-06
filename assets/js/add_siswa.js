@@ -23,3 +23,16 @@ function handleCancel(def) {
   preview.src = def;
   toggleButton();
 }
+
+window.onload = () => {
+  var url, classOption;
+  url = 'assets/js/kelas.json';
+
+  $.getJSON(url, function(data) {
+    $(data.kelasList).each(function() {
+      classOption = "<option>" + this.name + "</option>";
+      $('#kelas-list').append(classOption);
+      console.log(classOption);
+    });
+  });
+};

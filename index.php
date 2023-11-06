@@ -31,7 +31,7 @@ include_once('./config/db.php');
     <script defer src="./assets/js/script.js"></script>
     <?php   
       $page = @$_GET['page'];
-      //$action = @$_GET['action'];
+      $action = @$_GET['action'];
       $file = '';
       $title = '';
       $script = '';
@@ -41,12 +41,31 @@ include_once('./config/db.php');
           if($page === '') {
             $file = 'admin/dashboard.php';
             $title = 'Dashboard - ';
-          } else if($page === 'siswa') {
+          } 
+          else if($page === 'siswa') {
             $script = '<script src="vendors/sweetalert/sweetalert.min.js"></script>';
-            $file = 'admin/siswa.php';
-            $title = 'Data Siswa - ';
-            $script .= '<script src="assets/js/siswa.js"></script>';
-          } else if($page === 'pelanggaran') {
+            if ($action === '') {
+              $file = 'admin/siswa.php';
+              $title = 'Data Siswa - ';
+              $script .= '<script src="assets/js/siswa.js"></script>';
+            } 
+            else if ($action === 'edit') {
+              $file = 'admin/edit_siswa.php';
+              $title = 'Ubah Data Siswa - ';
+              $script .= '<script src="assets/js/edit_siswa.js"></script>';
+            } 
+            else if ($action === 'add') {
+              $file = 'admin/add_siswa.php';
+              $title = 'Tambah Data Siswa - ';
+              $script .= '<script src="assets/js/add_siswa.js"></script>';
+            } 
+            else {
+              $file = 'admin/siswa.php';
+              $title = 'Data Siswa - ';
+              $script .= '<script src="assets/js/siswa.js"></script>';
+            }
+          } 
+          else if($page === 'pelanggaran') {
             $script = '<script src="vendors/sweetalert/sweetalert.min.js"></script>';
             $file = 'admin/pelanggaran.php';
             $title = 'Data Pelanggaran - ';

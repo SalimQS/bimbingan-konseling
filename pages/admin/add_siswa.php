@@ -82,7 +82,7 @@
               $result = $connect->query($query);
               if($result) {
                 if($hasFoto) {
-                  $query = "INSERT INTO biodata (id_user, nama_lengkap, foto, jenis_kelamin, tempat_lahir, tanggal_lahir, golongan_darah, agama, alamat, no_telepon, status) ";
+                  $query = "INSERT INTO data (id_user, nama_lengkap, foto, jenis_kelamin, tempat_lahir, tanggal_lahir, golongan_darah, agama, alamat, no_telepon, status) ";
                   $query .= "VALUES('$id_user', '$nama_lengkap', '$file', '$jenis_kelamin', '$tempat_lahir', '$tanggal_lahir', '$golongan_darah', '$agama', '$alamat', '$no_telepon', 1)";
                   $result = $connect->query($query);
                   if($result) {
@@ -253,4 +253,4 @@
       </div>
     </div>
   </div>
-</form>
+</form>  

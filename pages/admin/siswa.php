@@ -48,9 +48,10 @@
                 </div>
                 <?php } ?>
                 <?php
-                  $query = "SELECT users.id, users.username, data.nama_lengkap, data.foto, data.jenis_kelamin, data.status, data.kelas FROM users ";
+                  $query = "SELECT users.id, users.username, data.nama_lengkap, data.foto, data.jenis_kelamin, data.status, siswa.kelas, siswa.nisn FROM users ";
                   $query .= "LEFT JOIN data ON data.id_user = users.id ";
-                  $query .= "WHERE admin='admin' ";
+                  $query .= "LEFT JOIN siswa ON siswa.id_user = users.id ";
+                  $query .= "WHERE 1 ";
                   if(isset($_POST['btn-cari'])) {
                     $cari = $_POST['cari'];
                     $query .= "AND (users.username LIKE '%$cari%' OR data.nama_lengkap LIKE '%$cari%') ";
@@ -76,8 +77,9 @@
                             <thead>
                                 <tr class="text-center">
                                     <th>No</th>
+                                    <th>NISN</th>
                                     <th>Foto</th>
-                                    <th>NIM</th>
+                                    <th>Nickname</th>
                                     <th>Nama Lengkap</th>
                                     <th>Jenis Kelamin</th>
                                     <th>Kelas</th>
@@ -95,6 +97,7 @@
                             ?>                                
                                 <tr>
                                     <td class="text-center"><?= $i + 1 ?></td>
+                                    <td class="text-center"><?= $siswa[$i]['nisn'] ?></td>
                                     <td class="text-center"><img src="<?= $siswa[$i]['foto'] ?>" class='object-cover object-center' alt="" width="80px" height="80px"></td>
                                     <td class="text-center"><?= $siswa[$i]['username'] ?></td>
                                     <td class="text-center"><?= $siswa[$i]['nama_lengkap'] ?></td>

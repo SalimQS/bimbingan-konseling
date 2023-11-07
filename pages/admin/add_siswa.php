@@ -6,7 +6,7 @@
 <?php
   $error = false;
   $errorText = "";
-    
+
   if(isset($_POST['simpan'])) {
     $error = true;
     $nick = $_POST['nick'];
@@ -19,6 +19,7 @@
     $alamat = $_POST['alamat'];
     $no_telepon = $_POST['no_telepon'];
     $kelas = $_POST['kelas'];
+    $nisn = $_POST['nisn'];
     $password = md5($nick);
 
     if($nick == '') {
@@ -41,6 +42,8 @@
       $errorText = "No telepon tidak boleh kosong";
     } else if($kelas == '') {
       $errorText = "Kelas tidak boleh kosong";
+    } else if($nisn == '') {
+      $errorText = "NISN tidak boleh kosong";
     } else {
       $error = false;
       $foto = $_FILES['foto'];
@@ -60,7 +63,7 @@
             $fileName = "uploads/" . basename($_FILES['foto']['name']);
             $ext = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
             $file = "uploads/" . time() . "." . $ext;
-            $maxSize = 2097152;
+            $maxSize = 2097152;//2 mb
             $imgSize = getimagesize($_FILES['foto']['tmp_name']);
             if(($_FILES['foto']['size'] >= $maxSize)) {
               $error = true;
@@ -68,22 +71,24 @@
             } else {
               $error = false;
             }
+          } else {
+            $file = "assets/img/default.jpg";
           }
 
           if(!$error) {
             $query = "INSERT INTO users (admin, username, password) ";
-            $query .= "VALUES(user, '$nick', '$password')";
+            $query .= "VALUES('user', '$nick', '$password')";
             $result = $connect->query($query);
             if($result === TRUE) {
               $id_user = $connect->insert_id;
 
-              $query = "INSERT INTO siswa (id_user, id_dosen, id_prodi, semester) ";
-              $query .= "VALUES('$id_user', '$dosen', '$prodi', 1)";
+              $query = "INSERT INTO siswa (id_user, kelas, nisn) ";
+              $query .= "VALUES('$id_user', '$kelas', '$nisn')";
               $result = $connect->query($query);
               if($result) {
                 if($hasFoto) {
                   $query = "INSERT INTO data (id_user, nama_lengkap, foto, jenis_kelamin, tempat_lahir, tanggal_lahir, golongan_darah, agama, alamat, no_telepon, status) ";
-                  $query .= "VALUES('$id_user', '$nama_lengkap', '$file', '$jenis_kelamin', '$tempat_lahir', '$tanggal_lahir', '$golongan_darah', '$agama', '$alamat', '$no_telepon', 1)";
+                  $query .= "VALUES('$id_user', '$nama_lengkap', '$file', '$jenis_kelamin', '$tempat_lahir', '$tanggal_lahir', '$golongan_darah', '$agama', '$alamat', '$no_telepon', '1')";
                   $result = $connect->query($query);
                   if($result) {
                     if(move_uploaded_file($_FILES['foto']['tmp_name'], $file)) {
@@ -94,7 +99,7 @@
                       <script type="text/javascript">
                         Swal.fire({
                           title: "Sukses!",
-                          text: "Berhasil menambahsiswa",
+                          text: "Berhasil menambahkan siswa",
                           icon: 'success'
                         }).then(() => {    
                         window.location = "index.php?page=siswa";
@@ -112,8 +117,8 @@
                       $connect->rollback();
                   }
                 } else {
-                  $query = "INSERT INTO biodata (id_user, nama_lengkap, jenis_kelamin, tempat_lahir, tanggal_lahir, golongan_darah, agama, alamat, no_telepon, status) ";
-                  $query .= "VALUES('$id_user', '$nama_lengkap', '$jenis_kelamin', '$tempat_lahir', '$tanggal_lahir', '$golongan_darah', '$agama', '$alamat', '$no_telepon', 1)";
+                  $query = "INSERT INTO data (id_user, nama_lengkap, jenis_kelamin, tempat_lahir, tanggal_lahir, golongan_darah, agama, alamat, no_telepon, status) ";
+                  $query .= "VALUES('$id_user', '$nama_lengkap', '$jenis_kelamin', '$tempat_lahir', '$tanggal_lahir', '$golongan_darah', '$agama', '$alamat', '$no_telepon', '1')";
                   $result = $connect->query($query);
                   if($result) {
                     $error = false;
@@ -123,7 +128,7 @@
                     <script type="text/javascript">
                       Swal.fire({
                         title: "Sukses!",
-                        text: "Berhasil menambahsiswa",
+                        text: "Berhasil menambahkan siswa",
                         icon: 'success'
                       }).then(() => {
                         window.location = "index.php?page=siswa";
@@ -132,13 +137,13 @@
                     <?php
                   } else {                 
                       $error = true;
-                      $errorText = "Gagal menambahsiswa : $connect->error";
+                      $errorText = "Gagal menambahkan siswa : $connect->error";
                       $connect->rollback();
                   }
                 }
               } else {
                 $error = true;
-                $errorText = "Gagal menambah Siswa : " . $connect->error;
+                $errorText = "Gagal menambahkan siswa : " . $connect->error;
               }
             }
           }
@@ -224,10 +229,14 @@
                     <option value="6" <?php if(@$_POST['agama'] == 6) echo 'selected'; ?>>Protestan</option>
                 </select>
                 </div>
-                <div class="col-md-12 mb-4">
+                <div class="col-md-12 mb-2">
                   <label class="labels">Kelas</label>
                   <input type="text" list="kelas-list" class="form-control" placeholder="Kelas" name="kelas" value="<?= @$_POST['kelas'] ?>">
                   <datalist id="kelas-list"></datalist>
+                </div>
+                <div class="col-md-12 mb-2">
+                  <label class="labels">NISN</label>
+                  <input type="text" list="kelas-list" class="form-control" placeholder="NISN" name="nisn" value="<?= @$_POST['nisn'] ?>">
                 </div>
                 <div class="col-md-12 mb-2">
                   <label class="labels">Alamat</label>

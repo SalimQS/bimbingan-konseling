@@ -25,6 +25,19 @@ else {
         //---
         $id_user = $user['id']; 
         $role = $user['admin'];
+        $posisi = "none";
+        //---
+        $query = "SELECT `id` FROM `guru` WHERE id_user = '$id_user'";
+        $result = $connect->query($query);
+        if($result->num_rows > 0) {
+          $posisi = "guru";
+        }
+        //---
+        $query = "SELECT `id` FROM `siswa` WHERE id_user = '$id_user'";
+        $result = $connect->query($query);
+        if($result->num_rows > 0) {
+          $posisi = "siswa";
+        }
         //---
         $query = "SELECT nama_lengkap, status FROM data WHERE id_user = '$id_user'";
         $result = $connect->query($query);
@@ -34,6 +47,7 @@ else {
             $_SESSION['id_user'] = $id_user;
             $_SESSION['nama_lengkap'] = $biodata['nama_lengkap'];
             $_SESSION['role'] = $role;
+            $_SESSION['posisi'] = $posisi;
             header("location: index.php");
           } 
           else {
@@ -59,7 +73,7 @@ else {
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
   <!-- Bootstrap CSS -->
-  <link href="./vendors/bootstrap-5.0.0-beta3-dist/css/bootstrap-login.css" rel="stylesheet">
+  <link href="./vendors/bootstrap-5.0.0-beta3-dist/css/bootstrap.min.css" rel="stylesheet">
   <!-- Style CSS -->
   <link rel="stylesheet" href="./assets/css/style.css">
 
@@ -73,49 +87,47 @@ else {
   <script defer src="./assets/js/script.js"></script>
 </head>
 <body style="background-color: #182869;">
-	<section class="ftco-section">
-		<div class="container">
-			<div class="row justify-content-center">
-				<div class="col-md-12 col-lg-10">
-					<div class="wrap d-md-flex">
-						<div class="img" style="background-image: url('assets/img/bg.jpg');">
-			        </div>
-						<div class="login-wrap p-4 p-md-5">
-			      	<div class="d-flex">
-			      		<div class="w-100">
-			      			<h3 class="mb-4">Sign In</h3>
-			      		</div>
-			      	</div>
-              <form method="post" class="signin-form">
-                <div class="form-group mb-3">
-                  <label class="label" for="name">Username</label>
-                  <input type="text" name="username" class="form-control" placeholder="Username" required>
-                </div>
-                <div class="form-group mb-3">
-                    <label class="label" for="password">Password</label>
-                    <input type="password" name="password" class="form-control" placeholder="Password" required>
-                </div>
-                <div class="form-group">
-                  <input type="submit" name="submit" class="form-control btn rounded submit px-3 submit-btn" value="Sign In">
-                </div>
-                <?php
-                  if($error) {
-                ?>
-                  <div class="form-group d-md-flex">
-                    <div class="w-50 text-md-left">
-                        <small><p>Gagal! <?= $errorText ?></p></small>
-                    </div>
-                  </div>
-                <?php 
-                  }
-                ?>
-              </form>
+  <div class="container">
+    <div class="row justify-content-center">
+        <div class="wrap d-md-flex">
+          <!--kiri-->
+          <div class="img login-left"></div>
+          <!--kanan-->
+          <div class="login-wrap login-right">
+            <div class="d-flex">
+              <div class="w-100">
+                <h3 class="mb-4"><b>Sign In</b></h3>
+              </div>
             </div>
+            <form method="post" class="signin-form">
+              <div class="form-group mb-3">
+                <label class="label" for="name">Username</label>
+                <input type="text" name="username" class="form-control" placeholder="Username" required>
+              </div>
+              <div class="form-group mb-3">
+                  <label class="label" for="password">Password</label>
+                  <input type="password" name="password" class="form-control" placeholder="Password" required>
+              </div>
+              <div class="form-group">
+                <input type="submit" name="submit" class="form-control btn rounded submit submit-btn" value="Sign In">
+              </div>
+              <?php
+                if($error) {
+              ?>
+                <div class="form-group d-md-flex">
+                  <div class="w-50 text-md-left">
+                      <small><p>Gagal! <?= $errorText ?></p></small>
+                  </div>
+                </div>
+              <?php 
+                }
+              ?>
+            </form>
           </div>
-          </div>
-      </div>
-		</div>
-	</section>
+
+        </div>
+    </div>
+  </div>
 </body>
 </html>
 

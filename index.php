@@ -38,11 +38,34 @@ include_once('./config/db.php');
       if(isset($page)) {
         // ROUTE ADMIN
         if($_SESSION['role'] == 'admin') {
-          if($page === '') {
+          if($page === '') { //dashboard
             $file = 'admin/dashboard.php';
             $title = 'Dashboard - ';
           } 
-          else if($page === 'siswa') {
+          else if($page === 'guru') { //guru
+            $script = '<script src="vendors/sweetalert/sweetalert.min.js"></script>';
+            if ($action === '') {
+              $file = 'admin/guru.php';
+              $title = 'Data Guru - ';
+              $script .= '<script src="assets/js/guru.js"></script>';
+            }
+            else if ($action === 'add') {
+              $file = 'admin/add_guru.php';
+              $title = 'Tambah Data Guru - ';
+              $script .= '<script src="assets/js/add_guru.js"></script>';
+            } 
+            else if ($action === 'edit') {
+              $file = 'admin/edit_guru.php';
+              $title = 'Ubah Data Guru - ';
+              $script .= '<script src="assets/js/edit_guru.js"></script>';
+            } 
+            else {
+              $file = 'admin/guru.php';
+              $title = 'Data Guru - ';
+              $script .= '<script src="assets/js/guru.js"></script>';
+            }
+          }
+          else if($page === 'siswa') { //siswa
             $script = '<script src="vendors/sweetalert/sweetalert.min.js"></script>';
             if ($action === '') {
               $file = 'admin/siswa.php';
@@ -65,19 +88,45 @@ include_once('./config/db.php');
               $script .= '<script src="assets/js/siswa.js"></script>';
             }
           } 
-          else if($page === 'pelanggaran') {
+          else if($page === 'pelanggaran') { //pelanggaran
             $script = '<script src="vendors/sweetalert/sweetalert.min.js"></script>';
             $file = 'admin/pelanggaran.php';
             $title = 'Data Pelanggaran - ';
             $script .= '<script src="assets/js/pelanggaran.js"></script>';
           }
+          else if($page === 'profile') { //profile
+            $script = '<script src="vendors/sweetalert/sweetalert.min.js"></script>';
+            $file = 'profile.php';
+            $title = 'Profile - ';
+            $script .= '<script src="assets/js/profile.js"></script>';
+          }
         }
 
-        // ROUTE siswa
-        if($_SESSION['role'] == 'siswa') {
-          if($page === '') {
-            $file = 'dashboard.php';
-            $title = 'Dashboard - ';
+        // ROUTE user
+        if($_SESSION['role'] == 'user') {
+          if($_SESSION['posisi'] == 'siswa') {
+            if($page === '') {
+              $file = 'dashboard.php';
+              $title = 'Dashboard - ';
+            }
+            else if($page === 'profile') { //profile
+              $script = '<script src="vendors/sweetalert/sweetalert.min.js"></script>';
+              $file = 'profile.php';
+              $title = 'Profile - ';
+              $script .= '<script src="assets/js/profile.js"></script>';
+            }
+          }
+          else if($_SESSION['posisi'] == 'guru') {
+            if($page === '') {
+              $file = 'dashboard.php';
+              $title = 'Dashboard - ';
+            }
+            else if($page === 'profile') { //profile
+              $script = '<script src="vendors/sweetalert/sweetalert.min.js"></script>';
+              $file = 'profile.php';
+              $title = 'Profile - ';
+              $script .= '<script src="assets/js/profile.js"></script>';
+            }
           }
         }
       } else {
@@ -100,12 +149,12 @@ include_once('./config/db.php');
         <!-- Navbar -->
         <?php include('./components/navbar.php'); ?>
         <!-- Userinfo -->
-        <div class='py-3 px-4 bg-warning text-light fs-5'>Selamat datang <b><?= $_SESSION['nama_lengkap'] ?></b>
+        <div class='py-3 px-4 bg-success text-light fs-5'>Selamat datang <b><?= $_SESSION['nama_lengkap'] ?></b>
         </div>
         <!-- Content -->
         <div id="content">
         <?php
-          include('./pages/' . $file);
+          include('pages/' . $file);
         ?>
         <!-- End div content -->
         </div>

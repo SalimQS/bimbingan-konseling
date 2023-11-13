@@ -1,6 +1,6 @@
 <div class="row">
   <div class="col-12 col-md-6">
-      <a class="btn btn-primary" href="?page=siswa"><i class="fa fa-arrow-left"></i> Kembali</a>
+      <a class="btn btn-primary" href="?page=guru"><i class="fa fa-arrow-left"></i> Kembali</a>
   </div>
 </div>
 
@@ -24,9 +24,9 @@
       $query .= "WHERE id_user='" . $_GET['id'] . "'";
       $result = $connect->query($query);
       if($result) {
-          $query = "UPDATE siswa SET ";
-          $query .= "nisn='" .$_POST['nisn'] . "', ";
-          $query .= "kelas='" .$_POST['kelas'] . "' ";
+          $query = "UPDATE guru SET ";
+          $query .= "nip='" .$_POST['nip'] . "', ";
+          $query .= "nuptk='" .$_POST['nuptk'] . "' ";
           $query .= "WHERE id_user='" . $_GET['id'] . "'";
           $result = $connect->query($query);
           if($result) {
@@ -105,10 +105,10 @@
     }
   }
 
-  $query = "SELECT data.*, users.username, siswa.nisn, siswa.kelas ";
+  $query = "SELECT data.*, users.username, guru.nip, guru.nuptk ";
   $query .= "FROM users ";
   $query .= "LEFT JOIN data ON data.id_user = users.id ";
-  $query .= "LEFT JOIN siswa ON siswa.id_user = users.id ";
+  $query .= "LEFT JOIN guru ON guru.id_user = users.id ";
   $query .= "WHERE users.id='" . $_GET['id'] . "'";
   $result = $connect->query($query);
   if($result->num_rows > 0) {
@@ -175,18 +175,8 @@
         <form method="POST">
             <div class="row mt-2">
                 <div class="col-md-12 mb-2">
-                <label class="labels">
-                <?php 
-                    if($_SESSION['role'] == 'admin') {
-                        echo "Username";
-                    } else if($_SESSION['role'] == 'siswa'){
-                        echo "NIM";
-                    } else {
-                        echo "NIP";
-                    }
-                ?>
-                </label>
-                <input type="text" class="form-control" placeholder="Nomor Induk Siswa" value="<?= $user['username'] ?>" readonly>
+                <label class="labels">Username</label>
+                <input type="text" class="form-control" placeholder="Username" value="<?= $user['username'] ?>" readonly>
                 </div>
                 <div class="col-md-12 mb-2">
                 <label class="labels">Nama Lengkap</label>
@@ -231,13 +221,12 @@
                 </select>
                 </div>
                 <div class="col-md-12 mb-2">
-                  <label class="labels">NISN</label>
-                  <input type="text" class="form-control" placeholder="NISN" name="nisn" value="<?= $user['nisn'] ?>">
+                  <label class="labels">NIP</label>
+                  <input type="text" class="form-control" placeholder="NIP" name="nip" value="<?= $user['nip'] ?>">
                 </div>
                 <div class="col-md-12 mb-2">
-                  <label class="labels">Kelas</label>
-                  <input type="text" list="kelas-list" class="form-control" placeholder="Kelas" name="kelas" value="<?= $user['kelas'] ?>">
-                  <datalist id="kelas-list"></datalist>
+                  <label class="labels">NUPTK</label>
+                  <input type="text" class="form-control" placeholder="NUPTK" name="nuptk" value="<?= $user['nuptk'] ?>">
                 </div>
                 <div class="col-md-12 mb-2">
                   <label class="labels">Alamat</label>

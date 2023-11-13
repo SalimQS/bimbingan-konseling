@@ -38,27 +38,27 @@
                 <?php if($successStatus) { ?>
                 <div class="alert alert-success d-flex align-items-center" role="alert">
                     <i class="fas fa-check bi flex-shrink-0 me-2" width="24" height="24"></i>
-                    <div><strong>Sukses!</strong> Siswa Berhasil <?= $successText ?></div>
+                    <div><strong>Sukses!</strong> Guru Berhasil <?= $successText ?></div>
                 </div>
                 <?php } ?>
                 <?php if($errorStatus) { ?>
                 <div class="alert alert-danger d-flex align-items-center" role="alert">
                     <i class="fas fa-exclamation-triangle bi flex-shrink-0 me-2" width="24" height="24"></i>
-                    <div><strong>Gagal!</strong> Siswa gagal <?= $errorText ?></div>
+                    <div><strong>Gagal!</strong> Guru gagal <?= $errorText ?></div>
                 </div>
                 <?php } ?>
                 <?php
-                  $query = "SELECT users.id, users.username, data.nama_lengkap, data.foto, data.jenis_kelamin, data.status, siswa.kelas, siswa.nisn FROM users ";
+                  $query = "SELECT users.id, users.username, data.nama_lengkap, data.foto, data.jenis_kelamin, data.status, guru.nip, guru.nuptk FROM users ";
                   $query .= "LEFT JOIN data ON data.id_user = users.id ";
-                  $query .= "LEFT JOIN siswa ON siswa.id_user = users.id ";
-                  $query .= "WHERE siswa.id IS NOT NULL ";
+                  $query .= "LEFT JOIN guru ON guru.id_user = users.id ";
+                  $query .= "WHERE guru.id IS NOT NULL ";
                   if(isset($_POST['btn-cari'])) {
                     $cari = $_POST['cari'];
                     $query .= "AND (users.username LIKE '%$cari%' OR data.nama_lengkap LIKE '%$cari%') ";
                   }
                   $query .= "ORDER BY data.nama_lengkap";
                 ?>
-                <div class="row">     
+                <div class="row">
                     <div class="col-12 col-md-4 ">
                         <form method="post">
                             <div class="input-group mb-3">
@@ -68,7 +68,7 @@
                         </form>
                     </div>           
                     <div class="col-12 col-md-8 text-right">
-                        <a href="?page=siswa&action=add" class="btn btn-primary"  title='Tambah Siswa'>Tambah Siswa</a>
+                        <a href="?page=guru&action=add" class="btn btn-primary"  title='Tambah Guru'>Tambah Guru</a>
                     </div>
                 </div>
                 <div>
@@ -77,12 +77,12 @@
                             <thead>
                                 <tr class="text-center">
                                     <th>No</th>
-                                    <th>NISN</th>
+                                    <th>NIP</th>
+                                    <th>NUPTK</th>
                                     <th>Foto</th>
                                     <th>Nickname</th>
                                     <th>Nama Lengkap</th>
                                     <th>Jenis Kelamin</th>
-                                    <th>Kelas</th>
                                     <th>Status</th>
                                     <th>Aksi</th>
                                 </tr>
@@ -91,42 +91,42 @@
                             <?php
                             $result = $connect->query($query);
                             if($result->num_rows > 0) {
-                                $siswa = $result->fetch_all(MYSQLI_ASSOC);
-                                for ($i = 0; $i < count($siswa); $i++) {
-                                    $nama = $siswa[$i]['nama_lengkap'];
+                                $guru = $result->fetch_all(MYSQLI_ASSOC);
+                                for ($i = 0; $i < count($guru); $i++) {
+                                    $nama = $guru[$i]['nama_lengkap'];
                             ?>                                
                                 <tr>
                                     <td class="text-center"><?= $i + 1 ?></td>
-                                    <td class="text-center"><?= $siswa[$i]['nisn'] ?></td>
-                                    <td class="text-center"><img src="<?= $siswa[$i]['foto'] ?>" class='object-cover object-center' alt="" width="80px" height="80px"></td>
-                                    <td class="text-center"><?= $siswa[$i]['username'] ?></td>
-                                    <td class="text-center"><?= $siswa[$i]['nama_lengkap'] ?></td>
-                                    <td class="text-center"><span class='<?= $siswa[$i]['jenis_kelamin'] ? 'bg-danger' : 'bg-primary' ?> rounded-pill px-2 text-white'><?= $siswa[$i]['jenis_kelamin'] ? 'Perempuan' : 'Laki-Laki' ?></span></td>
-                                    <td class="text-center"><?= $siswa[$i]['kelas'] ?></td>
-                                    <td class="text-center"><?= $siswa[$i]['status'] ? 'Aktif' : 'Tidak Aktif' ?></td>
+                                    <td class="text-center"><?= $guru[$i]['nip'] ? ($guru[$i]['nip']) : ('Empty') ?></td>
+                                    <td class="text-center"><?= $guru[$i]['nuptk'] ? ($guru[$i]['nuptk']) : ('Empty') ?></td>
+                                    <td class="text-center"><img src="<?= $guru[$i]['foto'] ?>" class='object-cover object-center' alt="" width="80px" height="80px"></td>
+                                    <td class="text-center"><?= $guru[$i]['username'] ?></td>
+                                    <td class="text-center"><?= $guru[$i]['nama_lengkap'] ?></td>
+                                    <td class="text-center"><span class='<?= $guru[$i]['jenis_kelamin'] ? 'bg-danger' : 'bg-primary' ?> rounded-pill px-2 text-white'><?= $guru[$i]['jenis_kelamin'] ? 'Perempuan' : 'Laki-Laki' ?></span></td>
+                                    <td class="text-center"><?= $guru[$i]['status'] ? 'Aktif' : 'Tidak Aktif' ?></td>
                                     <td class="text-center" style="min-width:10px">
                                         <div class="row">
-                                            <form method="post" class="col-12 col-md-8 formChangeStatus" nama-siswa="<?= $nama?>" status="<?= $siswa[$i]['status'] ?>">
+                                            <form method="post" class="col-12 col-md-8 formChangeStatus" nama-guru="<?= $nama?>" status="<?= $guru[$i]['status'] ?>">
                                                 <div class="row">
-                                                    <input type="hidden" name="id" value="<?= $siswa[$i]['id'] ?>"/>
-                                                    <input type="hidden" name="status" value="<?= $siswa[$i]['status'] ?>"/>
+                                                    <input type="hidden" name="id" value="<?= $guru[$i]['id'] ?>"/>
+                                                    <input type="hidden" name="status" value="<?= $guru[$i]['status'] ?>"/>
                                                     <input type="hidden" name='change-status'/>
                                                     <div class="col-12 col-md-6">
-                                                        <a href="?page=siswa&action=edit&id=<?= $siswa[$i]['id'] ?>"name='delete' class='btn btn-sm btn-primary' title='Ubah Data Siswa'>
+                                                        <a href="?page=guru&action=edit&id=<?= $guru[$i]['id'] ?>"name='delete' class='btn btn-sm btn-primary' title='Ubah Data Guru'>
                                                             <i class="fa fa-pencil-alt"></i> Ubah
                                                         </a>
                                                     </div>
                                                     <div class="col-12 col-md-6">
                                                         <?php
-                                                            if($siswa[$i]['status']) {
+                                                            if($guru[$i]['status']) {
                                                         ?>
-                                                        <button class='btn btn-sm btn-warning text-white' title='Nonaktifkan Siswa'>
+                                                        <button class='btn btn-sm btn-warning text-white' title='Nonaktifkan Guru'>
                                                             <i class="fa fa-times"></i> Non-aktif
                                                         </button>
                                                         <?php
                                                             } else {
                                                         ?>
-                                                        <button class='btn btn-sm btn-success text-white' title='Aktifkan Siswa'>
+                                                        <button class='btn btn-sm btn-success text-white' title='Aktifkan Guru'>
                                                             <i class="fa fa-check"></i> Aktifkan
                                                         </button>
                                                         <?php
@@ -135,10 +135,10 @@
                                                     </div>
                                                 </div>
                                             </form>
-                                            <form method="post" class="col-12 col-md-4 formDelete" nama-siswa="<?= $nama?>">
-                                                <input type="hidden" name="id" value="<?= $siswa[$i]['id'] ?>"/>
+                                            <form method="post" class="col-12 col-md-4 formDelete" nama-guru="<?= $nama?>">
+                                                <input type="hidden" name="id" value="<?= $guru[$i]['id'] ?>"/>
                                                 <input type="hidden" name='delete'/>
-                                                <button class='btn btn-sm btn-danger' title='Hapus Datasiswa'>
+                                                <button class='btn btn-sm btn-danger' title='Hapus Data Guru'>
                                                     <i class="fa fa-trash"></i> Hapus
                                                 </button>
                                             </form>
@@ -151,7 +151,7 @@
                             else {
                                 ?>                                
                                 <tr>
-                                    <td colspan="9" class='text-center'>Tidak ada siswa</td>
+                                    <td colspan="9" class='text-center'>Tidak ada data Guru</td>
                                 </tr>
                                 <?php
                             }

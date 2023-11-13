@@ -21,7 +21,7 @@
       $errorFotoText = "Ukuran foto maksimal 2MB";
     } else {
       $connect->begin_transaction();
-      $query = "UPDATE biodata SET foto='$file' WHERE id_user = '". $_SESSION['id_user'] ."'";
+      $query = "UPDATE data SET foto='$file' WHERE id_user = '". $_SESSION['id_user'] ."'";
       $result = $connect->query($query);
       if($result) {
         if(move_uploaded_file($_FILES['foto']['tmp_name'], $file)) {
@@ -40,14 +40,14 @@
     }
   }
   if(isset($_POST['simpan'])) {
-    $query = "UPDATE biodata SET ";
-    $query .= "nama_lengkap='". $_POST['nama_lengkap'] ."', ";
+    $query = "UPDATE data SET ";
+    /*$query .= "nama_lengkap='". $_POST['nama_lengkap'] ."', ";
     $query .= "jenis_kelamin='". $_POST['jenis_kelamin'] ."', ";
     $query .= "tempat_lahir='". $_POST['tempat_lahir'] ."', ";
     $query .= "tanggal_lahir='". $_POST['tanggal_lahir'] ."', ";
     $query .= "golongan_darah='". $_POST['golongan_darah'] ."', ";
     $query .= "agama='". $_POST['agama'] ."', ";
-    $query .= "alamat='". $_POST['alamat'] ."', ";
+    $query .= "alamat='". $_POST['alamat'] ."', ";*/
     $query .= "no_telepon='". $_POST['no_telepon'] ."'";
     $query .= "WHERE id_user='" . $_SESSION['id_user'] . "'";
     $result = $connect->query($query);
@@ -59,17 +59,21 @@
     }
   }
 
-  $query = "SELECT biodata.*, users.username ";
+  $query = "SELECT data.*, users.username ";
 
-  if($_SESSION['role'] == 'siswa') {
-    $query .= ", prodi.nama_prodi, fakultas.nama_fakultas ";
+  if($_SESSION['posisi'] == 'siswa') {
+    $query .= ", siswa.nisn, siswa.kelas ";
+  }
+  else if($_SESSION['posisi'] == 'guru') {
+    $query .= ", guru.nip, guru.nuptk ";
   }
   $query .= "FROM users ";
-  $query .= "LEFT JOIN biodata ON biodata.id_user = users.id ";
-  if($_SESSION['role'] == 'siswa') {
-    $query .= "LEFT JOINsiswa ONsiswa.id_user = users.id ";
-    $query .= "LEFT JOIN prodi ONsiswa.id_prodi = prodi.id ";
-    $query .= "LEFT JOIN fakultas ON prodi.id_fakultas = fakultas.id ";
+  $query .= "LEFT JOIN data ON data.id_user = users.id ";
+  if($_SESSION['posisi'] == 'siswa') {
+    $query .= "LEFT JOIN siswa ON siswa.id_user = users.id ";
+  }
+  else if($_SESSION['posisi'] == 'guru') {
+    $query .= "LEFT JOIN guru ON guru.id_user = users.id ";
   }
   $query .= "WHERE users.id='" . $_SESSION['id_user'] . "'";
   $result = $connect->query($query);
@@ -94,11 +98,11 @@
         </div>
         <?php } ?>
         <form method="post" class="d-flex flex-column align-items-center text-center p-3" enctype="multipart/form-data">
-        <img class="rounded-circle mt-5 object-cover" width="150px" height="150px" src="<?= $user['foto'] ?>" id='previewFoto'>
-        <input type="file" name="foto" id="foto" class="hidden" accept='image/png,image/jpg,image/jpeg' onchange="handlePreview(this)">
-        <button class="btn btn-primary btn-sm hidden mt-2" id='btn-simpan' name='changeFoto'>Simpan</button>
-        <button class="btn btn-danger btn-sm hidden mt-2" id='btn-batal' onclick='handleCancel("<?= $foto ?>")'>Batal</button>
-        <label class="btn btn-primary btn-sm mt-2" type="button" for="foto" id='btn-ubah'> Ubah Foto</label>
+          <img class="rounded-circle mt-5 object-cover" width="150px" height="150px" src="<?= $user['foto'] ?>" id='previewFoto'>
+          <input type="file" name="foto" id="foto" class="hidden" accept='image/png,image/jpg,image/jpeg' onchange="handlePreview(this)">
+          <button class="btn btn-primary btn-sm hidden mt-2" id='btn-simpan' name='changeFoto'>Simpan</button>
+          <button class="btn btn-danger btn-sm hidden mt-2" id='btn-batal' onclick='handleCancel("<?= $foto ?>")'>Batal</button>
+          <label class="btn btn-primary btn-sm mt-2" type="button" for="foto" id='btn-ubah'> Ubah Foto</label>
         </form>
    </div>
    <div class="col-md-5 border-right">
@@ -109,41 +113,31 @@
          <?php if($success) {?>
         <div class="alert alert-success d-flex align-items-center" role="alert">
             <i class="fas fa-check bi flex-shrink-0 me-2" width="24" height="24"></i>
-            <div><strong>Berhasil!</strong> Biodata berhasil diperbarui</div>
+            <div><strong>Berhasil!</strong> Data berhasil diperbarui</div>
         </div>
         <?php } ?>
          <?php if($error) {?>
         <div class="alert alert-danger d-flex align-items-center" role="alert">
             <i class="fas fa-exclamation-triangle bi flex-shrink-0 me-2" width="24" height="24"></i>
-            <div><strong>Gagal!</strong> Biodata gagal diperbarui</div>
+            <div><strong>Gagal!</strong> Data gagal diperbarui</div>
         </div>
         <?php } ?>
          <div class="d-flex justify-content-between align-items-center">
-            <h6 class="text-right">Biodata Diri</h6>
+            <h6 class="text-right">Data Diri</h6>
          </div>
          <form method="POST">
             <div class="row mt-2">
                 <div class="col-md-12 mb-2">
-                <label class="labels">
-                <?php 
-                    if($_SESSION['role'] == 'admin') {
-                        echo "Username";
-                    } else if($_SESSION['role'] == 'siswa'){
-                        echo "NIM";
-                    } else {
-                        echo "NIP";
-                    }
-                ?>
-                </label>
-                <input type="text" class="form-control" placeholder="Nomor Induk Siswa" value="<?= $user['username'] ?>" readonly>
+                <label class="labels">Username</label>
+                <input type="text" class="form-control" placeholder="Nomor Induk Siswa" value="<?= $user['username'] ?>" disabled>
                 </div>
                 <div class="col-md-12 mb-2">
                 <label class="labels">Nama Lengkap</label>
-                <input type="text" class="form-control" placeholder="Nama Lengkap" name='nama_lengkap' value="<?= $user['nama_lengkap'] ?>">
+                <input type="text" class="form-control" placeholder="Nama Lengkap" value="<?= $user['nama_lengkap'] ?>" disabled>
                 </div>
                 <div class="col-md-12 mb-2">
                 <label class="labels">Jenis Kelamin</label>
-                <select class="form-select" aria-label="Jenis Kelamin" name='jenis_kelamin'>
+                <select class="form-select" aria-label="Jenis Kelamin" disabled>
                     <option>Pilih Jenis Kelamin</option>
                     <option value="0" <?php if($user['jenis_kelamin'] == 0) echo 'selected'; ?>>Laki-laki</option>
                     <option value="1" <?php if($user['jenis_kelamin'] == 1) echo 'selected'; ?>>Perempuan</option>
@@ -151,15 +145,15 @@
                 </div>
                 <div class="col-md-6 mb-2">
                 <label class="labels">Tempat Lahir</label>
-                <input type="text" class="form-control" placeholder="Tempat lahir" name='tempat_lahir' value="<?= $user['tempat_lahir'] ?>">
+                <input type="text" class="form-control" placeholder="Tempat lahir" value="<?= $user['tempat_lahir'] ?>" disabled>
                 </div>
                 <div class="col-md-6 mb-2">
                 <label class="labels">Tanggal Lahir</label>
-                <input type="date" class="form-control" placeholder="Tanggal Lahir" name='tanggal_lahir' value="<?= $user['tanggal_lahir'] ?>">
+                <input type="date" class="form-control" placeholder="Tanggal Lahir" value="<?= $user['tanggal_lahir'] ?>" disabled>
                 </div>
                 <div class="col-md-6 mb-2">
                 <label class="labels">Golongan Darah</label>
-                <select class="form-select" aria-label="Golongan Darah" name='golongan_darah'>
+                <select class="form-select" aria-label="Golongan Darah" disabled>
                     <option selected>Pilih Golongan Darah</option>
                     <option value="0" <?php if($user['golongan_darah'] == 0) echo 'selected'; ?>>A</option>
                     <option value="1" <?php if($user['golongan_darah'] == 1) echo 'selected'; ?>>B</option>
@@ -169,7 +163,7 @@
                 </div>
                 <div class="col-md-6 mb-2">
                 <label class="labels">Agama</label>
-                <select class="form-select" aria-label="Agama" name='agama'>
+                <select class="form-select" aria-label="Agama" disabled>
                     <option selected>Pilih Agama</option>
                     <option value="0" <?php if($user['agama'] == 0) echo 'selected'; ?>>Islam</option>
                     <option value="1" <?php if($user['agama'] == 1) echo 'selected'; ?>>Kristen</option>
@@ -182,7 +176,7 @@
                 </div>
                 <div class="col-md-12 mb-2">
                 <label class="labels">Alamat</label>
-                <textarea class="form-control" id="alamat" rows="3" name='alamat'><?= $user['alamat'] ?></textarea>
+                <textarea class="form-control" id="alamat" rows="3" disabled><?= $user['alamat'] ?></textarea>
                 </div>
                 <div class="col-md-12 mb-4">
                 <label class="labels">No Telepon</label>
@@ -190,23 +184,36 @@
                 </div>
             </div>
             <?php
-                if($_SESSION['role'] == 'siswa') {
+                if($_SESSION['posisi'] == 'siswa') {
             ?>
             <div class="d-flex justify-content-between align-items-center">
                 <h6 class="text-right">Informasi Akademik</h6>
             </div>
             <div class="row mt-2">
                 <div class="col-md-12 mb-2">
-                <label class="labels">Fakultas</label>
-                <input type="text" class="form-control" placeholder="Fakultas" value="<?= $user['nama_fakultas'] ?>" readonly>
+                  <label class="labels">NISN</label>
+                  <input type="text" class="form-control" placeholder="NISN" value="<?= $user['nisn'] ?>" disabled>
                 </div>
                 <div class="col-md-12 mb-2">
-                <label class="labels">Program Studi</label>
-                <input type="text" class="form-control" placeholder="Prodi" value="<?= $user['nama_prodi'] ?>" readonly>
+                  <label class="labels">Kelas</label>
+                  <input type="text" class="form-control" placeholder="Kelas" value="<?= $user['kelas'] ?>" disabled>
                 </div>
-                <div class="col-md-12 mb-3">
-                <label class="labels">Status Siswa</label>
-                <input type="text" class="form-control" placeholder="Status Siswa" value="<?= ($user['status'] == 1) ? "Aktif" : "Tidak Aktif" ?>" readonly>
+            </div>
+            <?php
+                }
+                else if($_SESSION['posisi'] == 'guru') {
+            ?>
+            <div class="d-flex justify-content-between align-items-center">
+                <h6 class="text-right">Informasi Pekerjaan</h6>
+            </div>
+            <div class="row mt-2">
+                <div class="col-md-12 mb-2">
+                  <label class="labels">NIP</label>
+                  <input type="text" class="form-control" placeholder="NIP" value="<?= $user['nip'] ?>" disabled>
+                </div>
+                <div class="col-md-12 mb-2">
+                  <label class="labels">NUPTK</label>
+                  <input type="text" class="form-control" placeholder="NUPTK" value="<?= $user['nuptk'] ?>" disabled>
                 </div>
             </div>
             <?php

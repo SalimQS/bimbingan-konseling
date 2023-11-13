@@ -1,6 +1,6 @@
 <div class="row">
   <div class="col-12 col-md-6">
-      <a class="btn btn-primary" href="?page=siswa"><i class="fa fa-arrow-left"></i> Kembali</a>
+      <a class="btn btn-primary" href="?page=guru"><i class="fa fa-arrow-left"></i> Kembali</a>
   </div>
 </div>
 <?php
@@ -18,8 +18,8 @@
     $agama = $_POST['agama'];
     $alamat = $_POST['alamat'];
     $no_telepon = $_POST['no_telepon'];
-    $kelas = $_POST['kelas'];
-    $nisn = $_POST['nisn'];
+    $nip = $_POST['nip'];
+    $nuptk = $_POST['nuptk'];
     $password = md5($nick);
 
     if($nick == '') {
@@ -40,10 +40,8 @@
       $errorText = "Alamat tidak boleh kosong";
     } else if($no_telepon == '') {
       $errorText = "No telepon tidak boleh kosong";
-    } else if($kelas == '') {
-      $errorText = "Kelas tidak boleh kosong";
-    } else if($nisn == '') {
-      $errorText = "NISN tidak boleh kosong";
+    } else if($nip == '' && $nuptk == '') {
+      $errorText = "NIP atau NUPTK harus diisi salah satunya";
     } else {
       $error = false;
       $foto = $_FILES['foto'];
@@ -82,8 +80,8 @@
             if($result === TRUE) {
               $id_user = $connect->insert_id;
 
-              $query = "INSERT INTO siswa (id_user, kelas, nisn) ";
-              $query .= "VALUES('$id_user', '$kelas', '$nisn')";
+              $query = "INSERT INTO guru (id_user, nip, nuptk) ";
+              $query .= "VALUES('$id_user', '$nip', '$nuptk')";
               $result = $connect->query($query);
               if($result) {
                 if($hasFoto) {
@@ -99,10 +97,10 @@
                       <script type="text/javascript">
                         Swal.fire({
                           title: "Sukses!",
-                          text: "Berhasil menambahkan siswa",
+                          text: "Berhasil menambahkan guru",
                           icon: 'success'
                         }).then(() => {    
-                        window.location = "index.php?page=siswa";
+                        window.location = "index.php?page=guru";
                         });
                       </script>
                       <?php
@@ -113,7 +111,7 @@
                     }
                   } else {
                       $error = true;
-                      $errorText = "Gagal menambah siswa";
+                      $errorText = "Gagal menambah guru";
                       $connect->rollback();
                   }
                 } else {
@@ -128,22 +126,22 @@
                     <script type="text/javascript">
                       Swal.fire({
                         title: "Sukses!",
-                        text: "Berhasil menambahkan siswa",
+                        text: "Berhasil menambahkan guru",
                         icon: 'success'
                       }).then(() => {
-                        window.location = "index.php?page=siswa";
+                        window.location = "index.php?page=guru";
                       });
                     </script>
                     <?php
                   } else {                 
                       $error = true;
-                      $errorText = "Gagal menambahkan siswa : $connect->error";
+                      $errorText = "Gagal menambahkan guru : $connect->error";
                       $connect->rollback();
                   }
                 }
               } else {
                 $error = true;
-                $errorText = "Gagal menambahkan siswa : " . $connect->error;
+                $errorText = "Gagal menambahkan guru : " . $connect->error;
               }
             }
           }
@@ -170,7 +168,7 @@
     <div class="col-md-5 border-right">
       <div class="p-3">
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <h4 class="text-right">Data Siswa</h4>
+            <h4 class="text-right">Data Guru</h4>
         </div>
         <?php if($error) {?>
         <div class="alert alert-danger d-flex align-items-center" role="alert">
@@ -184,7 +182,7 @@
             <div class="row mt-2">
                 <div class="col-md-12 mb-2">
                 <label class="labels">Nickname</label>
-                <input type="text" class="form-control" placeholder="Nama Unik Siswa" name='nick' value="<?= @$_POST['nick'] ?>">
+                <input type="text" class="form-control" placeholder="Nama Unik Guru" name='nick' value="<?= @$_POST['nick'] ?>">
                 </div>
                 <div class="col-md-12 mb-2">
                 <label class="labels">Nama Lengkap</label>
@@ -230,13 +228,12 @@
                 </select>
                 </div>
                 <div class="col-md-12 mb-2">
-                  <label class="labels">NISN</label>
-                  <input type="text" class="form-control" placeholder="NISN" name="nisn" value="<?= @$_POST['nisn'] ?>">
+                  <label class="labels">NIP</label>
+                  <input type="text" class="form-control" placeholder="NIP" name="nip" value="<?= @$_POST['nip'] ?>">
                 </div>
                 <div class="col-md-12 mb-2">
-                  <label class="labels">Kelas</label>
-                  <input type="text" list="kelas-list" class="form-control" placeholder="Kelas" name="kelas" value="<?= @$_POST['kelas'] ?>">
-                  <datalist id="kelas-list"></datalist>
+                  <label class="labels">NUPTK</label>
+                  <input type="text" class="form-control" placeholder="NUPTK" name="nuptk" value="<?= @$_POST['nuptk'] ?>">
                 </div>
                 <div class="col-md-12 mb-2">
                   <label class="labels">Alamat</label>

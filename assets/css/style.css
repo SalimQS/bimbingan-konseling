@@ -369,4 +369,38 @@ label {
 .submit-btn{
   background-color: #182869;
   color: white;
+  margin-top: 20px;
+}
+
+.submit-btn:hover{
+  color: rgb(214, 214, 214);
+}
+
+.justify-content-center{
+  position: absolute;
+  left: 50%;
+  top: 45%;
+  transform: translate(-50%, -50%);
+}
+
+.login-right{
+  background-color: white;
+  padding: 40px;
+
+  min-width: 20vw;
+  min-height: 20vw;
+  
+  border-bottom-right-radius: 5px;
+  border-top-right-radius: 5px;
+}
+
+.login-left{
+  background-image: url("../img/bg.jpg");
+  background-size: cover;
+
+  min-width: 20vw;
+  min-height: 20vw;
+
+  border-bottom-left-radius: 5px;
+  border-top-left-radius: 5px;
 }

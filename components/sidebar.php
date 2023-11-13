@@ -24,6 +24,11 @@
                     "href" => "siswa",
                 ],
                 [
+                    "label" => "Data Guru",
+                    "icon" => "fa-chalkboard-teacher",
+                    "href" => "guru",
+                ],
+                [
                     "label" => "Log Pelanggaran",
                     "icon" => "fa-exclamation-circle",
                     "href" => "pelanggaran",
@@ -52,7 +57,7 @@
                     "href" => "matkul",
                 ],
             ];
-            if($_SESSION['role'] == 'siswa') {
+            if($_SESSION['role'] == 'user') {
                 foreach ($menuSiswa as $menu) {
         ?>
         <li class="<?= $page === $menu['href'] ? 'active' : '' ?>">

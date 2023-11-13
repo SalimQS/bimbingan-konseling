@@ -1,11 +1,14 @@
 <?php
-$query = "SELECT semester FROM siswa WHERE id_user = '". $_SESSION['id_user'] ."'";
+/*$query = "SELECT semester FROM siswa WHERE id_user = '". $_SESSION['id_user'] ."'";
 $result = $connect->query($query);
 $semester = $result->fetch_assoc();
 
 $query = "SELECT id FROM jadwal_siswa WHERE id_user = '". $_SESSION['id_user'] ."'";
 $result = $connect->query($query);
-$jadwal_kuliah = $result->num_rows;
+$jadwal_kuliah = $result->num_rows;*/
+
+$semester = 1;
+$jadwal_kuliah = 1;
 
 ?>
 
@@ -23,7 +26,7 @@ $jadwal_kuliah = $result->num_rows;
   <div class="col">
     <div class="small-box bg-warning">
       <div class="inner">
-          <h3> <?= $semester['semester'] ?> </h3>
+          <h3> <?= $semester ?> </h3>
           <p class='text-light'> Semester </p>
       </div>
       <i class="icon fas fa-bookmark"></i>

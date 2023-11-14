@@ -88,6 +88,21 @@ include_once('./config/db.php');
               $script .= '<script src="assets/js/siswa.js"></script>';
             }
           } 
+          else if($page === 'list') { //list
+            $script = '<script src="vendors/sweetalert/sweetalert.min.js"></script>';
+            if ($action === '') {
+              $file = 'admin/list.php';
+              $title = 'List Pelanggaran - ';
+            }
+            else if ($action === 'add') {
+              $file = 'admin/add_list.php';
+              $title = 'Tambah List Pelanggaran - ';
+            }
+            else {
+              $file = 'admin/list.php';
+              $title = 'List Pelanggaran - ';
+            }
+          }
           else if($page === 'pelanggaran') { //pelanggaran
             $script = '<script src="vendors/sweetalert/sweetalert.min.js"></script>';
             $file = 'admin/pelanggaran.php';

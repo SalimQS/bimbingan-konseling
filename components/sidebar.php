@@ -29,6 +29,11 @@
                     "href" => "guru",
                 ],
                 [
+                    "label" => "List Pelanggaran",
+                    "icon" => "fa-list-ul",
+                    "href" => "list",
+                ],
+                [
                     "label" => "Log Pelanggaran",
                     "icon" => "fa-exclamation-circle",
                     "href" => "pelanggaran",

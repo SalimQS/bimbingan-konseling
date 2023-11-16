@@ -93,20 +93,26 @@ include_once('./config/db.php');
             if ($action === '') {
               $file = 'admin/list.php';
               $title = 'List Pelanggaran - ';
+              $script .= '<script src="assets/js/list.js"></script>';
             }
             else if ($action === 'add') {
               $file = 'admin/add_list.php';
               $title = 'Tambah List Pelanggaran - ';
             }
+            else if ($action === 'edit') {
+              $file = 'admin/edit_list.php';
+              $title = 'Ubah List Pelanggaran - ';
+            }
             else {
               $file = 'admin/list.php';
               $title = 'List Pelanggaran - ';
+              $script .= '<script src="assets/js/list.js"></script>';
             }
           }
-          else if($page === 'pelanggaran') { //pelanggaran
+          else if($page === 'pelanggar') { //pelanggaran
             $script = '<script src="vendors/sweetalert/sweetalert.min.js"></script>';
             $file = 'admin/pelanggaran.php';
-            $title = 'Data Pelanggaran - ';
+            $title = 'Data Pelanggar - ';
             $script .= '<script src="assets/js/pelanggaran.js"></script>';
           }
           else if($page === 'profile') { //profile

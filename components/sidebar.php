@@ -34,9 +34,9 @@
                     "href" => "list",
                 ],
                 [
-                    "label" => "Log Pelanggaran",
+                    "label" => "Log Pelanggar",
                     "icon" => "fa-exclamation-circle",
-                    "href" => "pelanggaran",
+                    "href" => "pelanggar",
                 ]
             ];
             if($_SESSION['role'] == 'admin') {

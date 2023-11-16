@@ -21,7 +21,7 @@
       $connect->begin_transaction();
       
       try {
-        $query = "INSERT INTO pelanggaran (jenis, poin) VALUES ('$jenis', '$sanksi')";
+        $query = "UPDATE `pelanggaran` SET `jenis`='$jenis',`poin`='$sanksi' WHERE `id`='" . $_GET['id'] . "'";//$_GET['id']
         $result = $connect->query($query);
         if($result) {
           $error = false;
@@ -31,7 +31,7 @@
           <script type="text/javascript">
             Swal.fire({
               title: "Sukses!",
-              text: "Berhasil menambahkan list",
+              text: "Berhasil mengubah list",
               icon: 'success'
             }).then(() => {    
             window.location = "index.php?page=list";
@@ -41,7 +41,7 @@
         } 
         else {
           $error = true;
-          $errorText = "Gagal menambahkan list : " . $connect->error;
+          $errorText = "Gagal mengubah list : " . $connect->error;
         }
       } catch (exception $e) {
         print_r($e);
@@ -51,13 +51,21 @@
       }
     }
   }
+
+  $query = "SELECT * FROM `pelanggaran` WHERE `id`='" . $_GET['id'] . "'";
+  $result = $connect->query($query);
+  if($result->num_rows > 0) {
+    $user = $result->fetch_assoc();
+  } else {
+    header("location: login.php");
+  }
 ?>
 <form method="POST" enctype="multipart/form-data">
   <div class="row justify-content-md-center">
     <div class="col-md-5 border-right">
       <div class="p-3">
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <h4 class="text-right">TambahList Pelanggaran</h4>
+            <h4 class="text-right">Ubah List Pelanggaran</h4>
         </div>
         <?php if($error) {?>
         <div class="alert alert-danger d-flex align-items-center" role="alert">
@@ -68,11 +76,11 @@
         <div class="row mt-2">
             <div class="col-md-12 mb-2">
                 <label class="labels">Jenis Pelanggaran</label>
-                <textarea class="form-control" id="jenis" rows="3" name='jenis' placeholder="Jenis Pelanggaran"><?= @$_POST['jenis'] ?></textarea>
+                <textarea class="form-control" id="jenis" rows="3" name='jenis' placeholder="Jenis Pelanggaran"><?= $user['jenis'] ?></textarea>
             </div>
             <div class="col-md-12 mb-2">
                 <label class="labels">Sanksi Pelanggaran</label>
-                <input type="number" class="form-control" placeholder="Sanksi Pelanggaran (1-100)" name='sanksi' value="<?= @$_POST['sanksi'] ?>" min="1" max="100">
+                <input type="number" class="form-control" placeholder="Sanksi Pelanggaran (1-100)" name='sanksi' value="<?= $user['poin'] ?>" min="1" max="100">
             </div>
         </div>
         <div class="row mt-4">

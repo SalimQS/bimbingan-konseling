@@ -57,7 +57,7 @@
     <div class="col-md-5 border-right">
       <div class="p-3">
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <h4 class="text-right">TambahList Pelanggaran</h4>
+            <h4 class="text-right">Tambah List Pelanggaran</h4>
         </div>
         <?php if($error) {?>
         <div class="alert alert-danger d-flex align-items-center" role="alert">

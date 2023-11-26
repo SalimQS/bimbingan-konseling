@@ -110,16 +110,40 @@ include_once('./config/db.php');
             }
           }
           else if($page === 'pelanggar') { //pelanggaran
+            if ($action === '') {
+              $script = '<script src="vendors/sweetalert/sweetalert.min.js"></script>';
+              $file = 'admin/pelanggaran.php';
+              $title = 'Data Pelanggar - ';
+              $script .= '<script src="assets/js/pelanggaran.js"></script>';
+            }
+            else if ($action === 'edit') {
+              $script = '<script src="vendors/sweetalert/sweetalert.min.js"></script>';
+              $file = 'admin/edit_pelanggaran.php';
+              $title = 'Ubah Pelanggar - ';
+              $script .= '<script src="assets/js/edit_pelanggaran.js"></script>';
+            }
+            else {
+              $script = '<script src="vendors/sweetalert/sweetalert.min.js"></script>';
+              $file = 'admin/pelanggaran.php';
+              $title = 'Data Pelanggar - ';
+              $script .= '<script src="assets/js/pelanggaran.js"></script>';
+            }
+          }
+          else if($page === 'peringatan') { //peringatan
             $script = '<script src="vendors/sweetalert/sweetalert.min.js"></script>';
-            $file = 'admin/pelanggaran.php';
-            $title = 'Data Pelanggar - ';
-            $script .= '<script src="assets/js/pelanggaran.js"></script>';
+            $file = 'admin/peringatan.php';
+            $title = 'Peringatan - ';
+            $script .= '<script src="assets/js/peringatan.js"></script>';
           }
           else if($page === 'profile') { //profile
             $script = '<script src="vendors/sweetalert/sweetalert.min.js"></script>';
             $file = 'profile.php';
             $title = 'Profile - ';
             $script .= '<script src="assets/js/profile.js"></script>';
+          }
+          else {
+            $file = 'admin/dashboard.php';
+            $title = 'Dashboard - ';
           }
         }
 
@@ -147,6 +171,74 @@ include_once('./config/db.php');
               $file = 'profile.php';
               $title = 'Profile - ';
               $script .= '<script src="assets/js/profile.js"></script>';
+            }
+            else if($page === 'siswa') { //siswa
+              $script = '<script src="vendors/sweetalert/sweetalert.min.js"></script>';
+              if ($action === '') {
+                $file = 'admin/siswa.php';
+                $title = 'Data Siswa - ';
+                $script .= '<script src="assets/js/siswa.js"></script>';
+              } 
+              else if ($action === 'edit') {
+                $file = 'admin/edit_siswa.php';
+                $title = 'Ubah Data Siswa - ';
+                $script .= '<script src="assets/js/edit_siswa.js"></script>';
+              } 
+              else if ($action === 'add') {
+                $file = 'admin/add_siswa.php';
+                $title = 'Tambah Data Siswa - ';
+                $script .= '<script src="assets/js/add_siswa.js"></script>';
+              } 
+              else {
+                $file = 'admin/siswa.php';
+                $title = 'Data Siswa - ';
+                $script .= '<script src="assets/js/siswa.js"></script>';
+              }
+            } 
+            else if($page === 'list') { //list
+              $script = '<script src="vendors/sweetalert/sweetalert.min.js"></script>';
+              if ($action === '') {
+                $file = 'admin/list.php';
+                $title = 'List Pelanggaran - ';
+                $script .= '<script src="assets/js/list.js"></script>';
+              }
+              else if ($action === 'add') {
+                $file = 'admin/add_list.php';
+                $title = 'Tambah List Pelanggaran - ';
+              }
+              else if ($action === 'edit') {
+                $file = 'admin/edit_list.php';
+                $title = 'Ubah List Pelanggaran - ';
+              }
+              else {
+                $file = 'admin/list.php';
+                $title = 'List Pelanggaran - ';
+                $script .= '<script src="assets/js/list.js"></script>';
+              }
+            }
+            else if($page === 'pelanggar') { //pelanggaran
+              if ($action === '') {
+                $script = '<script src="vendors/sweetalert/sweetalert.min.js"></script>';
+                $file = 'admin/pelanggaran.php';
+                $title = 'Data Pelanggar - ';
+                $script .= '<script src="assets/js/pelanggaran.js"></script>';
+              }
+              else if ($action === 'edit') {
+                $script = '<script src="vendors/sweetalert/sweetalert.min.js"></script>';
+                $file = 'admin/edit_pelanggaran.php';
+                $title = 'Ubah Pelanggar - ';
+                $script .= '<script src="assets/js/edit_pelanggaran.js"></script>';
+              }
+              else {
+                $script = '<script src="vendors/sweetalert/sweetalert.min.js"></script>';
+                $file = 'admin/pelanggaran.php';
+                $title = 'Data Pelanggar - ';
+                $script .= '<script src="assets/js/pelanggaran.js"></script>';
+              }
+            }
+            else {
+              $file = 'dashboard.php';
+              $title = 'Dashboard - ';
             }
           }
         }

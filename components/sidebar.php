@@ -37,10 +37,48 @@
                     "label" => "Log Pelanggar",
                     "icon" => "fa-exclamation-circle",
                     "href" => "pelanggar",
-                ]
+                ],
+                [
+                    "label" => "List Peringatan",
+                    "icon" => "fa-exclamation-circle",
+                    "href" => "peringatan",
+                ],
             ];
             if($_SESSION['role'] == 'admin') {
                 foreach ($menuAdmin as $menu) {
+        ?>
+        <li class="<?= $page === $menu['href'] ? 'active' : '' ?>">
+            <a href="index.php?page=<?=$menu['href']?>">
+                <div class="row">
+                    <div class='col-12 col-md-2 sidebar-item-icon' >
+                        <i class="fas <?=$menu['icon']?>"></i>
+                    </div>
+                    <span class="col-10"><?=$menu['label']?></span>
+                </div>
+            </a>
+        </li>
+        <?php
+                }
+            }
+            $menuGuru = [
+                [
+                    "label" => "Data Siswa",
+                    "icon" => "fa-users",
+                    "href" => "siswa",
+                ],
+                [
+                    "label" => "List Pelanggaran",
+                    "icon" => "fa-list-ul",
+                    "href" => "list",
+                ],
+                [
+                    "label" => "Log Pelanggar",
+                    "icon" => "fa-exclamation-circle",
+                    "href" => "pelanggar",
+                ]
+            ];
+            if($_SESSION['role'] == 'user' && $_SESSION['posisi'] == 'guru') {
+                foreach ($menuGuru as $menu) {
         ?>
         <li class="<?= $page === $menu['href'] ? 'active' : '' ?>">
             <a href="index.php?page=<?=$menu['href']?>">
@@ -62,7 +100,7 @@
                     "href" => "matkul",
                 ],
             ];
-            if($_SESSION['role'] == 'user') {
+            if($_SESSION['role'] == 'user' && $_SESSION['posisi'] == 'murid') {
                 foreach ($menuSiswa as $menu) {
         ?>
         <li class="<?= $page === $menu['href'] ? 'active' : '' ?>">

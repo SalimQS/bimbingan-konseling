@@ -122,12 +122,101 @@
             <div><strong>Gagal!</strong> Data gagal diperbarui</div>
         </div>
         <?php } ?>
-         <div class="d-flex justify-content-between align-items-center">
-            <h6 class="text-right">Data Diri</h6>
-         </div>
          <form method="POST">
             <div class="row mt-2">
-                <div class="col-md-12 mb-2">
+                <table class="table profileTable">
+                  <tr>
+                    <td>Username</td>
+                    <td><?= $user['username'] ?></td>
+                  </tr>
+                  <tr>
+                    <td>Nama Lengkap</td>
+                    <td><?= $user['nama_lengkap'] ?></td>
+                  </tr>
+                  <?php
+                      if($_SESSION['posisi'] == 'siswa') {
+                  ?>
+                    <tr>
+                      <td>NISN</td>
+                      <td><?= $user['nisn'] ?></td>
+                    </tr>
+                    <tr>
+                      <td>Kelas</td>
+                      <td><?= $user['kelas'] ?></td>
+                    </tr>
+                  <?php
+                      }
+                      else if($_SESSION['posisi'] == 'guru') {
+                  ?>
+                  <tr>
+                    <td>NIP</td>
+                      <td><?= $user['nip'] ?></td>
+                    </tr>
+                    <tr>
+                      <td>NUPTK</td>
+                      <td><?= $user['nuptk'] ?></td>
+                    </tr>
+                  <?php
+                      }
+                  ?>
+                  <tr>
+                    <td>Jenis Kelamin</td>
+                    <td><?php if($user['jenis_kelamin'] == 0) { echo 'Laki-Laki'; } else { echo "Perempuan"; } ?></td>
+                  </tr>
+                  <tr>
+                    <td>Golongan Darah</td>
+                    <td>
+                      <?php 
+                        switch($user['golongan_darah']) {
+                          case 0:
+                            echo 'A'; 
+                            break;
+                          case 1:
+                            echo 'B'; 
+                            break;
+                          case 2:
+                            echo 'AB'; 
+                            break;
+                          default:
+                            echo 'O';
+                            break;
+                        }
+                      ?>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Agama</td>
+                    <td>
+                      <?php 
+                        switch($user['agama']) {
+                          case 0:
+                            echo('Islam'); 
+                            break;
+                          case 1:
+                            echo('Protestan'); 
+                            break;
+                          case 2:
+                            echo('Katolik'); 
+                            break;
+                          case 3:
+                            echo('Hindu'); 
+                            break;
+                          case 4:
+                            echo('Buddha'); 
+                            break;
+                          default:
+                            echo('Konghucu');
+                            break;
+                        }
+                      ?>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Alamat</td>
+                    <td><?= $user['alamat'] ?></td>
+                  </tr>
+                </table>
+                <!--<div class="col-md-12 mb-2">
                 <label class="labels">Username</label>
                 <input type="text" class="form-control" placeholder="Nomor Induk Siswa" value="<?= $user['username'] ?>" disabled>
                 </div>
@@ -166,61 +255,17 @@
                 <select class="form-select" aria-label="Agama" disabled>
                     <option selected>Pilih Agama</option>
                     <option value="0" <?php if($user['agama'] == 0) echo 'selected'; ?>>Islam</option>
-                    <option value="1" <?php if($user['agama'] == 1) echo 'selected'; ?>>Kristen</option>
+                    <option value="1" <?php if($user['agama'] == 1) echo 'selected'; ?>>Protestan</option>
                     <option value="2" <?php if($user['agama'] == 2) echo 'selected'; ?>>Katholik</option>
                     <option value="3" <?php if($user['agama'] == 3) echo 'selected'; ?>>Hindu</option>
                     <option value="4" <?php if($user['agama'] == 4) echo 'selected'; ?>>Budha</option>
                     <option value="5" <?php if($user['agama'] == 5) echo 'selected'; ?>>Konghucu</option>
-                    <option value="6" <?php if($user['agama'] == 6) echo 'selected'; ?>>Protestan</option>
                 </select>
                 </div>
                 <div class="col-md-12 mb-2">
                 <label class="labels">Alamat</label>
                 <textarea class="form-control" id="alamat" rows="3" disabled><?= $user['alamat'] ?></textarea>
-                </div>
-                <div class="col-md-12 mb-4">
-                <label class="labels">No Telepon</label>
-                <input type="text" class="form-control" placeholder="Nomor Telepon" name="no_telepon" value="<?= $user['no_telepon'] ?>">
-                </div>
-            </div>
-            <?php
-                if($_SESSION['posisi'] == 'siswa') {
-            ?>
-            <div class="d-flex justify-content-between align-items-center">
-                <h6 class="text-right">Informasi Akademik</h6>
-            </div>
-            <div class="row mt-2">
-                <div class="col-md-12 mb-2">
-                  <label class="labels">NISN</label>
-                  <input type="text" class="form-control" placeholder="NISN" value="<?= $user['nisn'] ?>" disabled>
-                </div>
-                <div class="col-md-12 mb-2">
-                  <label class="labels">Kelas</label>
-                  <input type="text" class="form-control" placeholder="Kelas" value="<?= $user['kelas'] ?>" disabled>
-                </div>
-            </div>
-            <?php
-                }
-                else if($_SESSION['posisi'] == 'guru') {
-            ?>
-            <div class="d-flex justify-content-between align-items-center">
-                <h6 class="text-right">Informasi Pekerjaan</h6>
-            </div>
-            <div class="row mt-2">
-                <div class="col-md-12 mb-2">
-                  <label class="labels">NIP</label>
-                  <input type="text" class="form-control" placeholder="NIP" value="<?= $user['nip'] ?>" disabled>
-                </div>
-                <div class="col-md-12 mb-2">
-                  <label class="labels">NUPTK</label>
-                  <input type="text" class="form-control" placeholder="NUPTK" value="<?= $user['nuptk'] ?>" disabled>
-                </div>
-            </div>
-            <?php
-                }
-            ?>
-            <div class="text-right">
-                <button class="btn btn-primary profile-button" type="submit" name='simpan'>Simpan Perubahan</button>
+                </div>-->
             </div>
          </form>
       </div>
@@ -296,6 +341,18 @@
                 <button class="btn btn-primary profile-button" name='updatePassword' type="submit">Update Password</button>
             </div>
         </form>
+      </div>
+      <div class="p-3">
+        <div class="d-flex justify-content-between align-items-center fw-bold mb-3">
+           <span>Ubah No Telepon</span>
+         </div>
+        <div class="col-md-12 mb-4">
+          <label class="labels">No Telepon</label>
+          <input type="text" class="form-control" placeholder="Nomor Telepon" name="no_telepon" value="<?= $user['no_telepon'] ?>">
+        </div>
+        <div class="text-right">
+                <button class="btn btn-primary profile-button" type="submit" name='simpan'>Simpan Perubahan</button>
+        </div>
       </div>
    </div>
 </div>

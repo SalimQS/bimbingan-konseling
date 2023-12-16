@@ -89,7 +89,7 @@
                     <textarea  class="form-control" rows='4' placeholder="Isi pengumuman" name='isi_berita'><?= $pengumuman['berita'] ?></textarea>
                   </div>
                   <div class="col-12 text-right">
-                      <a href="?page=matkul" class="btn btn-danger" title='Batal Ubah'>Batal</a>
+                      <a href="?page=pengumuman" class="btn btn-danger" title='Batal Ubah'>Batal</a>
                       <button class="btn btn-primary" name='update' title='Tambah Siswa'>Simpan Perubahan</button>
                   </div>
               </form>              
@@ -178,7 +178,7 @@
                 <div>
                     <div class="table-responsive">
                         <table class="table table-bordered table-striped dataTable">
-                            <thead>
+                            <thead class="bg-success text-white">
                                 <tr class="text-center">
                                     <th>No</th>
                                     <th>Judul</th>
@@ -202,24 +202,16 @@
                                     <td class="text-center"><?= date_format(date_create($berita[$i]['created_at']), "d-M-Y") ?></td>
                                     <td class="text-center"><?= date_format(date_create($berita[$i]['updated_at']), "d-M-Y") ?></td>
                                     <td class="text-center" style="min-width:10px">
-                                        <div class="row justify-content-center">
+                                        <div class="row">
                                             <div class="col-12 col-md-4">
-                                              <a 
-                                                  href="?page=pengumuman&action=edit&id=<?= $berita[$i]['id'] ?>"
-                                                  name='delete' 
-                                                  class='btn btn-sm btn-primary' 
-                                                  title='Ubah Data pengumuman'
-                                              >
+                                              <a href="?page=pengumuman&action=edit&id=<?= $berita[$i]['id'] ?>" name='delete' class='btn btn-sm btn-primary' title='Ubah Data pengumuman'>
                                                   <i class="fa fa-pencil-alt"></i> Ubah
                                               </a>
                                             </div>
                                             <form method="post" class="col-12 col-md-4 formDelete" nama-pengumuman="<?= $berita[$i]['judul'] ?>">
                                                 <input type="hidden" name="id" value="<?= $berita[$i]['id'] ?>"/>
                                                 <input type="hidden" name='delete'/>
-                                                <button 
-                                                    class='btn btn-sm btn-danger' 
-                                                    title='Hapus Data pengumuman'
-                                                >
+                                                <button class='btn btn-sm btn-danger' title='Hapus Data pengumuman'>
                                                     <i class="fa fa-trash"></i> Hapus
                                                 </button>
                                             </form>

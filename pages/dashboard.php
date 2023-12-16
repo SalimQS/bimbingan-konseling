@@ -49,7 +49,7 @@ $jadwal_kuliah = 1;
         ?>                     
         
         <div class='border-bottom mb-4'>
-          <h5><?=$berita[$i]['judul']?></h5>
+          <h5><?=$berita[$i]['judul']?> <small style="color: #cecece;"><?=$berita[$i]['created_at']?></small></h5>
           <p><?=$berita[$i]['berita']?></p>
         </div>
 

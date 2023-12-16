@@ -172,7 +172,7 @@
                 <div>
                     <div class="table-responsive">
                         <table class="table table-bordered table-striped dataTable">
-                            <thead>
+                            <thead class="bg-success text-white">
                                 <tr class="text-center">
                                     <th>No</th>
                                     <th>NISN</th>

@@ -23,7 +23,7 @@
                 }
 
                 if(isset($_POST['delete'])) {
-                    $query = "DELETE FROM pelanggaran WHERE id = '". $_POST['id'] ."'";
+                    $query = "DELETE FROM users WHERE id = '". $_POST['id'] ."'";
                     $result = $connect->query($query);
                     if($result) {
                         $successStatus = true;
@@ -47,26 +47,26 @@
                     <div><strong>Gagal!</strong> Siswa gagal <?= $errorText ?></div>
                 </div>
                 <?php } ?>
-
                 <?php
-                  $query = "SELECT * FROM pelanggaran WHERE 1 ";
+                  $query = "SELECT users.id, users.username, data.nama_lengkap, data.foto, data.jenis_kelamin, data.status, siswa.kelas, siswa.nisn FROM users ";
+                  $query .= "LEFT JOIN data ON data.id_user = users.id ";
+                  $query .= "LEFT JOIN siswa ON siswa.id_user = users.id ";
+                  $query .= "WHERE siswa.id IS NOT NULL ";
                   if(isset($_POST['btn-cari'])) {
                     $cari = $_POST['cari'];
-                    $query .= "AND (jenis LIKE '%$cari%') ";
+                    $query .= "AND (users.username LIKE '%$cari%' OR data.nama_lengkap LIKE '%$cari%') ";
                   }
+                  $query .= "ORDER BY data.nama_lengkap";
                 ?>
                 <div class="row">     
                     <div class="col-12 col-md-4 ">
                         <form method="post">
                             <div class="input-group mb-3">
-                                <input type="text" class="form-control" name='cari' placeholder="Cari Pelanggaran" aria-label="Cari berdasarkan nama pelanggaran" aria-describedby="btn-cari" value="<?= @$_POST['cari'] ?>">
+                                <input type="text" class="form-control" name='cari' placeholder="Cari Nama" aria-label="Cari berdasarkan nama" aria-describedby="btn-cari" value="<?= @$_POST['cari'] ?>">
                                 <button class="btn btn-primary" type="submit" name='btn-cari' id="btn-cari" title='Cari'><i class="fa fa-search"></i></button>
                             </div>
                         </form>
-                    </div>           
-                    <div class="col-12 col-md-8 text-right">
-                        <a href="?page=list&action=add" class="btn btn-primary"  title='Tambah Pelanggaran'>Tambah Pelanggaran</a>
-                    </div>
+                    </div>          
                 </div>
                 <div>
                     <div class="table-responsive">
@@ -74,46 +74,32 @@
                             <thead class="bg-success text-white">
                                 <tr class="text-center">
                                     <th>No</th>
-                                    <th>Nama Pelanggaran</th>
-                                    <th>Sanksi</th>
-                                    <th>Created</th>
-                                    <th>Updated</th>
-                                    <th>Action</th>
+                                    <th>NISN</th>
+                                    <th>Foto</th>
+                                    <th>Nickname</th>
+                                    <th>Nama Lengkap</th>
+                                    <th>Jenis Kelamin</th>
+                                    <th>Kelas</th>
+                                    <th>Status</th>
                                 </tr>
                             </thead>
                             <tbody>
                             <?php
                             $result = $connect->query($query);
                             if($result->num_rows > 0) {
-                                $list = $result->fetch_all(MYSQLI_ASSOC);
-                                for ($i = 0; $i < count($list); $i++) {
+                                $siswa = $result->fetch_all(MYSQLI_ASSOC);
+                                for ($i = 0; $i < count($siswa); $i++) {
+                                    $nama = $siswa[$i]['nama_lengkap'];
                             ?>                                
                                 <tr>
                                     <td class="text-center"><?= $i + 1 ?></td>
-                                    <td class="text-center"><?= $list[$i]['jenis'] ?></td>
-                                    <td class="text-center"><?= $list[$i]['poin'] ?> Poin</td>
-                                    <td class="text-center"><?= $list[$i]['created'] ?></td>
-                                    <td class="text-center"><?= $list[$i]['updated'] ?></td>
-                                    <td class="text-center" style="min-width:10px">
-                                        <div class="row">
-                                            <form method="post" class="col-md-5 formChangeStatus">
-                                                <div>
-                                                    <input type="hidden" name="id" value="<?= $list[$i]['id'] ?>"/>
-                                                    <input type="hidden" name='change-status'/>
-                                                    <a href="?page=list&action=edit&id=<?= $list[$i]['id'] ?>" name='delete' class='btn btn-sm btn-primary' title='Ubah Data Siswa'>
-                                                        <i class="fa fa-pencil-alt"></i> Ubah
-                                                    </a>
-                                                </div>
-                                            </form>
-                                            <form method="post" class="col-md-6 formDelete">
-                                                <input type="hidden" name="id" value="<?= $list[$i]['id'] ?>"/>
-                                                <input type="hidden" name='delete'/>
-                                                <button class='btn btn-sm btn-danger' title='Hapus Data list'>
-                                                    <i class="fa fa-trash"></i> Hapus
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </td>
+                                    <td class="text-center"><?= $siswa[$i]['nisn'] ?></td>
+                                    <td class="text-center"><img src="<?= $siswa[$i]['foto'] ?>" class='object-cover object-center' alt="" width="80px" height="80px"></td>
+                                    <td class="text-center"><?= $siswa[$i]['username'] ?></td>
+                                    <td class="text-center"><?= $siswa[$i]['nama_lengkap'] ?></td>
+                                    <td class="text-center"><span class='<?= $siswa[$i]['jenis_kelamin'] ? 'bg-danger' : 'bg-primary' ?> rounded-pill px-2 text-white'><?= $siswa[$i]['jenis_kelamin'] ? 'Perempuan' : 'Laki-Laki' ?></span></td>
+                                    <td class="text-center"><?= $siswa[$i]['kelas'] ?></td>
+                                    <td class="text-center"><?= $siswa[$i]['status'] ? 'Aktif' : 'Tidak Aktif' ?></td>
                                 </tr>
                             <?php
                                 }
@@ -121,7 +107,7 @@
                             else {
                                 ?>                                
                                 <tr>
-                                    <td colspan="9" class='text-center'>Tidak ada list</td>
+                                    <td colspan="9" class='text-center'>Tidak ada siswa</td>
                                 </tr>
                                 <?php
                             }

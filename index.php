@@ -141,6 +141,12 @@ include_once('./config/db.php');
             $title = 'Profile - ';
             $script .= '<script src="assets/js/profile.js"></script>';
           }
+          else if($page === 'pengumuman') { //pengumuman
+            $script = '<script src="vendors/sweetalert/sweetalert.min.js"></script>';
+            $file = 'admin/pengumuman.php';
+            $title = 'Pengumuman - ';
+            $script .= '<script src="assets/js/pengumuman.js"></script>';
+          }
           else {
             $file = 'admin/dashboard.php';
             $title = 'Dashboard - ';
@@ -151,7 +157,7 @@ include_once('./config/db.php');
         if($_SESSION['role'] == 'user') {
           if($_SESSION['posisi'] == 'siswa') {
             if($page === '') {
-              $file = 'dashboard.php';
+              $file = 'siswa/dashboard.php';
               $title = 'Dashboard - ';
             }
             else if($page === 'profile') { //profile
@@ -160,11 +166,33 @@ include_once('./config/db.php');
               $title = 'Profile - ';
               $script .= '<script src="assets/js/profile.js"></script>';
             }
-          }
-          else if($_SESSION['posisi'] == 'guru') {
-            if($page === '') {
-              $file = 'dashboard.php';
+            else if($page === 'peringatan') { //peringatan
+              $script = '<script src="vendors/sweetalert/sweetalert.min.js"></script>';
+              $file = 'admin/peringatan.php';
+              $title = 'Peringatan - ';
+              $script .= '<script src="assets/js/peringatan.js"></script>';
+            }
+            else if($page === 'poin') { //poin
+              $script = '<script src="vendors/sweetalert/sweetalert.min.js"></script>';
+              $file = 'siswa/poin.php';
+              $title = 'Poin - ';
+              $script .= '<script src="assets/js/poin.js"></script>';
+            }
+            else {
+              $file = 'siswa/dashboard.php';
               $title = 'Dashboard - ';
+            }
+          }
+          else if($_SESSION['posisi'] == 'guru') {//guru  asd
+            if($page === '') {
+              $file = 'admin/dashboard.php';
+              $title = 'Dashboard - ';
+            }
+            else if($page === 'pengumuman') { //pengumuman
+              $script = '<script src="vendors/sweetalert/sweetalert.min.js"></script>';
+              $file = 'admin/pengumuman.php';
+              $title = 'Pengumuman - ';
+              $script .= '<script src="assets/js/pengumuman.js"></script>';
             }
             else if($page === 'profile') { //profile
               $script = '<script src="vendors/sweetalert/sweetalert.min.js"></script>';
@@ -174,48 +202,9 @@ include_once('./config/db.php');
             }
             else if($page === 'siswa') { //siswa
               $script = '<script src="vendors/sweetalert/sweetalert.min.js"></script>';
-              if ($action === '') {
-                $file = 'admin/siswa.php';
-                $title = 'Data Siswa - ';
-                $script .= '<script src="assets/js/siswa.js"></script>';
-              } 
-              else if ($action === 'edit') {
-                $file = 'admin/edit_siswa.php';
-                $title = 'Ubah Data Siswa - ';
-                $script .= '<script src="assets/js/edit_siswa.js"></script>';
-              } 
-              else if ($action === 'add') {
-                $file = 'admin/add_siswa.php';
-                $title = 'Tambah Data Siswa - ';
-                $script .= '<script src="assets/js/add_siswa.js"></script>';
-              } 
-              else {
-                $file = 'admin/siswa.php';
-                $title = 'Data Siswa - ';
-                $script .= '<script src="assets/js/siswa.js"></script>';
-              }
+              $file = 'guru/siswa.php';
+              $title = 'Data Siswa - ';
             } 
-            else if($page === 'list') { //list
-              $script = '<script src="vendors/sweetalert/sweetalert.min.js"></script>';
-              if ($action === '') {
-                $file = 'admin/list.php';
-                $title = 'List Pelanggaran - ';
-                $script .= '<script src="assets/js/list.js"></script>';
-              }
-              else if ($action === 'add') {
-                $file = 'admin/add_list.php';
-                $title = 'Tambah List Pelanggaran - ';
-              }
-              else if ($action === 'edit') {
-                $file = 'admin/edit_list.php';
-                $title = 'Ubah List Pelanggaran - ';
-              }
-              else {
-                $file = 'admin/list.php';
-                $title = 'List Pelanggaran - ';
-                $script .= '<script src="assets/js/list.js"></script>';
-              }
-            }
             else if($page === 'pelanggar') { //pelanggaran
               if ($action === '') {
                 $script = '<script src="vendors/sweetalert/sweetalert.min.js"></script>';
@@ -236,8 +225,14 @@ include_once('./config/db.php');
                 $script .= '<script src="assets/js/pelanggaran.js"></script>';
               }
             }
+            else if($page === 'peringatan') { //peringatan
+              $script = '<script src="vendors/sweetalert/sweetalert.min.js"></script>';
+              $file = 'admin/peringatan.php';
+              $title = 'Peringatan - ';
+              $script .= '<script src="assets/js/peringatan.js"></script>';
+            }
             else {
-              $file = 'dashboard.php';
+              $file = 'admin/dashboard.php';
               $title = 'Dashboard - ';
             }
           }
@@ -246,7 +241,12 @@ include_once('./config/db.php');
         if($_SESSION['role'] == 'admin') {
           $file = 'admin/dashboard.php';
         } else {
-          $file = 'dashboard.php';
+          if($_SESSION['posisi'] == 'siswa') {
+            $file = 'siswa/dashboard.php';
+          }
+          else {
+            $file = 'admin/dashboard.php';
+          }
         }
         $title = 'Dashboard - ';
       }

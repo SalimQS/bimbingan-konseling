@@ -34,13 +34,13 @@
                     "href" => "list",
                 ],
                 [
-                    "label" => "Log Pelanggar",
+                    "label" => "Log Pelanggaran",
                     "icon" => "fa-exclamation-circle",
                     "href" => "pelanggar",
                 ],
                 [
                     "label" => "List Peringatan",
-                    "icon" => "fa-exclamation-circle",
+                    "icon" => "fa-exclamation-triangle",
                     "href" => "peringatan",
                 ],
             ];
@@ -67,15 +67,15 @@
                     "href" => "siswa",
                 ],
                 [
-                    "label" => "List Pelanggaran",
-                    "icon" => "fa-list-ul",
-                    "href" => "list",
-                ],
-                [
                     "label" => "Log Pelanggar",
                     "icon" => "fa-exclamation-circle",
                     "href" => "pelanggar",
-                ]
+                ],
+                [
+                    "label" => "List Peringatan",
+                    "icon" => "fa-exclamation-triangle",
+                    "href" => "peringatan",
+                ],
             ];
             if($_SESSION['role'] == 'user' && $_SESSION['posisi'] == 'guru') {
                 foreach ($menuGuru as $menu) {
@@ -95,21 +95,26 @@
             }
             $menuSiswa = [
                 [
-                    "label" => "Data Mata Kuliah",
-                    "icon" => "fa-clipboard-list",
-                    "href" => "matkul",
+                    "label" => "Poin Anda",
+                    "icon" => "fa-coins",
+                    "href" => "poin",
+                ],
+                [
+                    "label" => "List Peringatan",
+                    "icon" => "fa-exclamation-triangle",
+                    "href" => "peringatan",
                 ],
             ];
-            if($_SESSION['role'] == 'user' && $_SESSION['posisi'] == 'murid') {
-                foreach ($menuSiswa as $menu) {
+            if($_SESSION['role'] == 'user' && $_SESSION['posisi'] == 'siswa') {
+                foreach ($menuSiswa as $menus) {
         ?>
-        <li class="<?= $page === $menu['href'] ? 'active' : '' ?>">
-            <a href="index.php?page=<?=$menu['href']?>">
+        <li class="<?= $page === $menus['href'] ? 'active' : '' ?>">
+            <a href="index.php?page=<?=$menus['href']?>">
                 <div class="row">
                     <div class='col-12 col-md-2 sidebar-item-icon' >
-                        <i class="fas <?=$menu['icon']?>"></i>
+                        <i class="fas <?=$menus['icon']?>"></i>
                     </div>
-                    <span class="col-10"><?=$menu['label']?></span>
+                    <span class="col-10"><?=$menus['label']?></span>
                 </div>
             </a>
         </li>

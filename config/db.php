@@ -4,7 +4,7 @@
   $dbUser = 'root'; // USERNAME DATABASE
   $dbPass = ''; // PASSWORD DATABASE
   
-  // Create Connection
+  // Create Connection  
   $connect = new mysqli($dbHost, $dbUser, $dbPass, $dbName);
 
   // Check Connection

@@ -404,3 +404,23 @@ label {
   border-bottom-left-radius: 5px;
   border-top-left-radius: 5px;
 }
+
+.profileTable tr td:nth-child(1){
+  text-align: right;
+}
+.profileTable tr td:nth-child(2){
+  text-align: left;
+}
+
+.profileTable tr:nth-child(even) td:nth-child(1){
+  background-color: rgba(0, 0, 0, 0.115);
+}
+.profileTable tr:nth-child(even) td:nth-child(2){
+  background-color: rgba(0, 0, 0, 0.215);
+}
+.profileTable tr:nth-child(odd) td:nth-child(1){
+  background-color: rgba(0, 0, 0, 0.055);
+}
+.profileTable tr:nth-child(odd) td:nth-child(2){
+  background-color: rgba(0, 0, 0, 0.095);
+}

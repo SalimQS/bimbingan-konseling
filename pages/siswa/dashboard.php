@@ -11,12 +11,12 @@ $query .= "WHERE guru.id IS NOT NULL ";
 $result = $connect->query($query);
 $guru = $result->num_rows;
 
-$query = "SELECT * FROM sanksi WHERE id_user = '" . $_SESSION['id_user'] . "'";
+$query = "SELECT * FROM pelanggaran WHERE id_user = '" . $_SESSION['id_user'] . "'";
 $result = $connect->query($query);
 $pelanggaran = $result->num_rows;
 
-$query = "SELECT pelanggaran.poin FROM `sanksi` ";
-$query .= "LEFT JOIN pelanggaran ON pelanggaran.id = sanksi.id_pelanggaran ";
+$query = "SELECT aturan.poin FROM `pelanggaran` ";
+$query .= "LEFT JOIN aturan ON aturan.id = pelanggaran.id_pelanggaran ";
 $query .= "WHERE `id_user`='" . $_SESSION['id_user'] . "'";
 $result = $connect->query($query);
 $poin = 0;

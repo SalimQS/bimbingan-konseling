@@ -42,3 +42,28 @@ deleteForm.forEach((form) => {
     });
   });
 });
+
+/*var dataTable = document.querySelectorAll('.dataTable tr:not(thead tr)');
+
+dataTable.forEach((row) => {
+  row.addEventListener("click", function (e) {
+    var id = this.getAttribute("id-data");
+    //document.getElementById("id-selector").value = id;
+    document.querySelectorAll('.dataTable tr:not(thead tr)').forEach((doc) => {
+      doc.style.backgroundColor = '#fff';
+    })
+    alert(e.target.parentElement.parentElement.parentElement.querySelector('span').style.innerHTML)
+    //e.target.parentElement.style.backgroundColor = 'rgba(37, 52, 163, 0.219)';
+  });
+});*/
+
+var kelasFilter = document.querySelector('#kelasFilter');
+
+kelasFilter.addEventListener("change", (val) => {
+  if(val.target.value != '-1') {
+    window.location.href = "index.php?page=siswa&kelas=" + val.target.value;
+  }
+  else {
+    window.location.href = "index.php?page=siswa";
+  }
+});

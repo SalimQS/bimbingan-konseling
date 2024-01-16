@@ -9,21 +9,9 @@
                 $successText = "";
                 $errorStatus = false;
                 $errorText = "";
-                if(isset($_POST['change-status'])) {
-                    $status = $_POST['status'] ? 0 : 1;
-                    $query = "UPDATE data SET status = '$status'  WHERE id_user = '". $_POST['id'] ."'";
-                    $result = $connect->query($query);
-                    if($result) {
-                        $successStatus = true;
-                        $successText = $_POST['status'] ? "dinonaktifkan" : "diaktifkan";
-                    } else {
-                        $errorStatus = true;
-                        $errorText = $_POST['status'] ? "dinonaktifkan" : "diaktifkan";
-                    }
-                }
 
                 if(isset($_POST['delete'])) {
-                    $query = "DELETE FROM users WHERE id = '". $_POST['id'] ."'";
+                    $query = "DELETE FROM siswa WHERE id = '". $_POST['id'] ."'";
                     $result = $connect->query($query);
                     if($result) {
                         $successStatus = true;
@@ -48,27 +36,52 @@
                 </div>
                 <?php } ?>
                 <?php
-                  $query = "SELECT users.id, users.username, data.nama_lengkap, data.foto, data.jenis_kelamin, data.status, siswa.kelas, siswa.nisn FROM users ";
-                  $query .= "LEFT JOIN data ON data.id_user = users.id ";
-                  $query .= "LEFT JOIN siswa ON siswa.id_user = users.id ";
-                  $query .= "WHERE siswa.id IS NOT NULL ";
-                  if(isset($_POST['btn-cari'])) {
-                    $cari = $_POST['cari'];
-                    $query .= "AND (users.username LIKE '%$cari%' OR data.nama_lengkap LIKE '%$cari%') ";
-                  }
-                  $query .= "ORDER BY data.nama_lengkap";
+                    $query = "SELECT siswa.*, data.nama_lengkap, data.foto, data.jenis_kelamin, kelas.kelas FROM siswa ";
+                    $query .= "LEFT JOIN data ON data.id_siswa = siswa.id ";
+                    $query .= "LEFT JOIN kelas ON kelas.id = siswa.id_kelas ";
+                    $query .= "WHERE 1 ";
+                    if(isset($_GET['kelas'])) {
+                        $kelas = $_GET['kelas'];
+                        $query .= "AND kelas.id='$kelas' ";
+                    }
+                    if(isset($_POST['btn-cari'])) {
+                        $cari = $_POST['cari'];
+                        $query .= "AND (siswa.nisn LIKE '%$cari%' OR data.nama_lengkap LIKE '%$cari%') ";
+                    }
+                    $query .= "ORDER BY data.nama_lengkap";
                 ?>
-                <div class="row">     
-                    <div class="col-12 col-md-4 ">
+                <div class="row mb-3">
+                    <div class="col-12 col-md-4">
                         <form method="post">
-                            <div class="input-group mb-3">
-                                <input type="text" class="form-control" name='cari' placeholder="Cari Nama" aria-label="Cari berdasarkan nama" aria-describedby="btn-cari" value="<?= @$_POST['cari'] ?>">
+                            <div class="input-group">
+                                <input type="text" class="form-control" name='cari' placeholder="Cari Nama (NISN atau Nama Siswa)" aria-label="Cari berdasarkan nama" aria-describedby="btn-cari" value="<?= @$_POST['cari'] ?>">
                                 <button class="btn btn-primary" type="submit" name='btn-cari' id="btn-cari" title='Cari'><i class="fa fa-search"></i></button>
                             </div>
                         </form>
-                    </div>           
-                    <div class="col-12 col-md-8 text-right">
-                        <a href="?page=siswa&action=add" class="btn btn-primary"  title='Tambah Siswa'>Tambah Siswa</a>
+                    </div>
+                    <div class="col-12 col-md-3 text-left">
+                        <select class="form-select" name="kelas" id="kelasFilter">
+                            <?php
+                            $query2 = "SELECT kelas.*, guru.nama_lengkap FROM kelas LEFT JOIN guru ON guru.id = kelas.id_wali_kelas WHERE 1";
+                            $result2 = $connect->query($query2);
+                            if($result2->num_rows > 0) {
+                                echo('<option value="-1">Semua Kelas</option>');
+                                while($kelas = $result2->fetch_assoc()) {
+                                    if(isset($_GET['kelas'])) {
+                                        if($_GET['kelas'] == $kelas['id']) {
+                                            echo('<option value="'.$kelas['id'].'" selected>'.$kelas['kelas'].' (Wali Kelas: '.$kelas['nama_lengkap'].')</option>');
+                                        }
+                                        else echo('<option value="'.$kelas['id'].'">'.$kelas['kelas'].' (Wali Kelas: '.$kelas['nama_lengkap'].')</option>');
+                                    }
+                                    else echo('<option value="'.$kelas['id'].'">'.$kelas['kelas'].' (Wali Kelas: '.$kelas['nama_lengkap'].')</option>');
+                                }
+                            }
+                            else echo('<option value="-1">Kelas Kosong</option>');
+                            ?>
+                        </select>
+                    </div> 
+                    <div class="col-12 col-md-5 text-right">
+                        <a href="?page=siswa&action=add" class="btn btn-success"  title='Tambah Siswa'><i class="fas fa-plus"></i> Tambah</a>
                     </div>
                 </div>
                 <div>
@@ -79,11 +92,9 @@
                                     <th>No</th>
                                     <th>NISN</th>
                                     <th>Foto</th>
-                                    <th>Nickname</th>
                                     <th>Nama Lengkap</th>
                                     <th>Jenis Kelamin</th>
                                     <th>Kelas</th>
-                                    <th>Status</th>
                                     <th>Aksi</th>
                                 </tr>
                             </thead>
@@ -95,52 +106,30 @@
                                 for ($i = 0; $i < count($siswa); $i++) {
                                     $nama = $siswa[$i]['nama_lengkap'];
                             ?>                                
-                                <tr>
+                                <tr id-data="<?= $siswa[$i]['id'] ?>">
                                     <td class="text-center"><?= $i + 1 ?></td>
                                     <td class="text-center"><?= $siswa[$i]['nisn'] ?></td>
-                                    <td class="text-center"><img src="<?= $siswa[$i]['foto'] ?>" class='object-cover object-center' alt="" width="80px" height="80px"></td>
-                                    <td class="text-center"><?= $siswa[$i]['username'] ?></td>
+                                    <td class="text-center"><img src="<?= $siswa[$i]['foto'] ?>" class='object-cover object-center border border-dark' alt="" width="80px" height="80px"></td>
                                     <td class="text-center"><?= $siswa[$i]['nama_lengkap'] ?></td>
                                     <td class="text-center"><span class='<?= $siswa[$i]['jenis_kelamin'] ? 'bg-danger' : 'bg-primary' ?> rounded-pill px-2 text-white'><?= $siswa[$i]['jenis_kelamin'] ? 'Perempuan' : 'Laki-Laki' ?></span></td>
                                     <td class="text-center"><?= $siswa[$i]['kelas'] ?></td>
-                                    <td class="text-center"><?= $siswa[$i]['status'] ? 'Aktif' : 'Tidak Aktif' ?></td>
                                     <td class="text-center" style="min-width:10px">
-                                        <div class="row">
-                                            <form method="post" class="col-12 col-md-8 formChangeStatus" nama-siswa="<?= $nama?>" status="<?= $siswa[$i]['status'] ?>">
-                                                <div class="row">
-                                                    <input type="hidden" name="id" value="<?= $siswa[$i]['id'] ?>"/>
-                                                    <input type="hidden" name="status" value="<?= $siswa[$i]['status'] ?>"/>
-                                                    <input type="hidden" name='change-status'/>
-                                                    <div class="col-12 col-md-6">
-                                                        <a href="?page=siswa&action=edit&id=<?= $siswa[$i]['id'] ?>"name='delete' class='btn btn-sm btn-primary' title='Ubah Data Siswa'>
-                                                            <i class="fa fa-pencil-alt"></i> Ubah
-                                                        </a>
-                                                    </div>
-                                                    <div class="col-12 col-md-6">
-                                                        <?php
-                                                            if($siswa[$i]['status']) {
-                                                        ?>
-                                                        <button class='btn btn-sm btn-warning text-white' title='Nonaktifkan Siswa'>
-                                                            <i class="fa fa-times"></i> Non-aktif
-                                                        </button>
-                                                        <?php
-                                                            } else {
-                                                        ?>
-                                                        <button class='btn btn-sm btn-success text-white' title='Aktifkan Siswa'>
-                                                            <i class="fa fa-check"></i> Aktifkan
-                                                        </button>
-                                                        <?php
-                                                            }
-                                                        ?>
-                                                    </div>
-                                                </div>
-                                            </form>
-                                            <form method="post" class="col-12 col-md-4 formDelete" nama-siswa="<?= $nama?>">
+                                        <div>
+                                            <div style="display: inline-block;">
+                                                <a href="?page=siswa&action=lihat&id=<?= $siswa[$i]['id'] ?>" name='delete' class='btn btn-sm btn-success btn-data-form' title='Lihat Data Siswa'>Lihat</a>
+                                            </div>
+                                            <div style="display: inline-block;">
+                                                <a href="?page=siswa&action=pelanggaran&id=<?= $siswa[$i]['id'] ?>" name='delete' class='btn btn-sm btn-warning btn-data-form' title='Tambah Pelanggaran Siswa'>Tambah</a>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div style="display: inline-block;">
+                                                <a href="?page=siswa&action=edit&id=<?= $siswa[$i]['id'] ?>" name='delete' class='btn btn-sm btn-primary btn-data-form' title='Ubah Data Siswa'>Ubah</a>
+                                            </div>
+                                            <form style="display: inline-block;" method="post" class="mt-2 formDelete" nama-siswa="<?= $nama?>">
                                                 <input type="hidden" name="id" value="<?= $siswa[$i]['id'] ?>"/>
                                                 <input type="hidden" name='delete'/>
-                                                <button class='btn btn-sm btn-danger' title='Hapus Datasiswa'>
-                                                    <i class="fa fa-trash"></i> Hapus
-                                                </button>
+                                                <button class='btn btn-sm btn-danger btn-data-form' title='Hapus Data siswa'>Hapus</button>
                                             </form>
                                         </div>
                                     </td>

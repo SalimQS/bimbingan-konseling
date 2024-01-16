@@ -21,7 +21,7 @@
       $connect->begin_transaction();
       
       try {
-        $query = "UPDATE `sanksi` SET `id_user`='$nama',`id_pelanggaran`='$jenis' WHERE `id`='" . $_GET['id'] . "'";
+        $query = "UPDATE `pelanggaran` SET `id_user`='$nama',`id_pelanggaran`='$jenis' WHERE `id`='" . $_GET['id'] . "'";
         $result = $connect->query($query);
         if($result) {
           $error = false;
@@ -52,7 +52,7 @@
     }
   }
   //---
-  $query = "SELECT `id_user`, `id_pelanggaran` FROM `sanksi` WHERE `id`='" . $_GET['id'] . "'";
+  $query = "SELECT `id_user`, `id_pelanggaran` FROM `pelanggaran` WHERE `id`='" . $_GET['id'] . "'";
   $result = $connect->query($query);
   if($result->num_rows > 0) {
     $user = $result->fetch_assoc();
@@ -102,7 +102,7 @@
                 <select class="form-control" name="jenis">
                     <option value="0" selected>Pilih Jenis Pelanggaran</option>
                     <?php
-                        $query = "SELECT * FROM pelanggaran WHERE 1";
+                        $query = "SELECT * FROM aturan WHERE 1";
                         //---
                         $result = $connect->query($query);
                         if($result->num_rows > 0) {

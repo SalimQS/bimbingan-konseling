@@ -21,7 +21,7 @@
                         $connect->begin_transaction();
                         
                         try {
-                            $query = "INSERT INTO sanksi (id_user, id_pelanggaran) VALUES ('$nama', '$jenis')";
+                            $query = "INSERT INTO pelanggaran (id_user, id_pelanggaran) VALUES ('$nama', '$jenis')";
                             $result = $connect->query($query);
                             if($result) {
                             $errorAdd = false;
@@ -91,7 +91,7 @@
                         <select class="form-control" name="jenis">
                             <option value="0" selected>Pilih Jenis Pelanggaran</option>
                             <?php
-                                $query = "SELECT * FROM pelanggaran WHERE 1";
+                                $query = "SELECT * FROM aturan WHERE 1";
                                 //---
                                 $result = $connect->query($query);
                                 if($result->num_rows > 0) {
@@ -123,7 +123,7 @@
                 $errorText = "";
 
                 if(isset($_POST['delete'])) {
-                    $query = "DELETE FROM sanksi WHERE id = '". $_POST['id'] ."'";
+                    $query = "DELETE FROM pelanggaran WHERE id = '". $_POST['id'] ."'";
                     $result = $connect->query($query);
                     if($result) {
                         $successStatus = true;
@@ -138,25 +138,25 @@
                 <?php if($successStatus) { ?>
                 <div class="alert alert-success d-flex align-items-center" role="alert">
                     <i class="fas fa-check bi flex-shrink-0 me-2" width="24" height="24"></i>
-                    <div><strong>Sukses!</strong> Pelanggar Berhasil <?= $successText ?></div>
+                    <div><strong>Sukses!</strong> Pelanggaran Berhasil <?= $successText ?></div>
                 </div>
                 <?php } ?>
                 <?php if($errorStatus) { ?>
                 <div class="alert alert-danger d-flex align-items-center" role="alert">
                     <i class="fas fa-exclamation-triangle bi flex-shrink-0 me-2" width="24" height="24"></i>
-                    <div><strong>Gagal!</strong> Pelanggar gagal <?= $errorText ?></div>
+                    <div><strong>Gagal!</strong> Pelanggaran gagal <?= $errorText ?></div>
                 </div>
                 <?php } ?>
 
                 <?php
-                    $query = "SELECT pelanggaran.jenis, pelanggaran.poin, data.nama_lengkap, data.foto, siswa.kelas, siswa.nisn, sanksi.created, sanksi.updated, sanksi.id FROM sanksi ";
-                    $query .= "LEFT JOIN data ON data.id_user = sanksi.id_user ";
-                    $query .= "LEFT JOIN siswa ON siswa.id_user = sanksi.id_user ";
-                    $query .= "LEFT JOIN pelanggaran ON pelanggaran.id = sanksi.id_pelanggaran ";
+                    $query = "SELECT aturan.jenis, aturan.poin, siswa.nama_lengkap, data.foto, siswa.kelas, siswa.nisn, pelanggaran.created, pelanggaran.updated, pelanggaran.id FROM pelanggaran ";
+                    $query .= "LEFT JOIN data ON data.id_user = pelanggaran.id_user ";
+                    $query .= "LEFT JOIN siswa ON siswa.id_user = pelanggaran.id_user ";
+                    $query .= "LEFT JOIN aturan ON aturan.id = pelanggaran.id_pelanggaran ";
                     $query .= "WHERE siswa.id IS NOT NULL ";
                     if(isset($_POST['btn-cari'])) {
                         $cari = $_POST['cari'];
-                        $query .= "AND (pelanggaran.jenis LIKE '%$cari%' OR data.nama_lengkap LIKE '%$cari%') ";
+                        $query .= "AND (aturan.jenis LIKE '%$cari%' OR siswa.nama_lengkap LIKE '%$cari%') ";
                     }
                 ?>
                 <div class="row">     

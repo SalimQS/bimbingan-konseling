@@ -3,6 +3,7 @@
   --sidebar: #0b2559;
   --sidebar-active: #0c2e6e;
   --sidebar-text: #a4acb7;
+  --border-radius-login: 5px;
 }
 
 body {
@@ -92,7 +93,7 @@ span {
   text-align: center;
 }
 
-#sidebar.active .sidebar-header h3,
+#sidebar.active .sidebar-header h1,
 #sidebar.active .CTAs {
   display: none;
 }
@@ -145,6 +146,7 @@ span {
 }
 
 #sidebar .sidebar-header {
+  margin-top: 20px;
   padding: 1rem;
 }
 
@@ -376,33 +378,57 @@ label {
   color: rgb(214, 214, 214);
 }
 
-.justify-content-center{
+.justify-content-center {
   position: absolute;
   left: 50%;
   top: 45%;
   transform: translate(-50%, -50%);
 }
 
-.login-right{
+.login-right {
   background-color: white;
   padding: 40px;
 
   min-width: 20vw;
   min-height: 20vw;
   
-  border-bottom-right-radius: 5px;
-  border-top-right-radius: 5px;
+  border-bottom-right-radius: var(--border-radius-login);
+  border-top-right-radius: var(--border-radius-login);
 }
 
-.login-left{
+.login-left {
   background-image: url("../img/bg.jpg");
   background-size: cover;
 
   min-width: 20vw;
   min-height: 20vw;
 
-  border-bottom-left-radius: 5px;
-  border-top-left-radius: 5px;
+  border-bottom-left-radius: var(--border-radius-login);
+  border-top-left-radius: var(--border-radius-login);
+}
+
+.login-bg {
+  background-image: url('../img/bgouter.jpg');
+  background-repeat: repeat;
+  background-size: 20%;
+}
+
+.login-bg .main-container {
+  border-radius: var(--border-radius-login);
+  box-shadow: 0px 0px 20px black;
+  width: fit-content;
+}
+
+.card-login {
+  border-top: none;
+}
+
+.login-bg .main-container .wrap {
+  padding: 0;
+}
+
+.btn-admin{
+  margin-top: 10px;
 }
 
 .profileTable tr td:nth-child(1){
@@ -423,4 +449,13 @@ label {
 }
 .profileTable tr:nth-child(odd) td:nth-child(2){
   background-color: rgba(0, 0, 0, 0.095);
+}
+
+/*.dataTable tr:not(thead tr):hover {
+  background-color: rgba(37, 52, 163, 0.219);
+  cursor: pointer;
+}*/
+
+.btn-data-form {
+  min-width: 90px;
 }

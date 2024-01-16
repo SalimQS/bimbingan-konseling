@@ -1,6 +1,6 @@
 <div class="row">
   <div class="col-12 col-md-6">
-      <a class="btn btn-primary" href="?page=list"><i class="fa fa-arrow-left"></i> Kembali</a>
+      <a class="btn btn-primary" href="?page=peraturan"><i class="fa fa-arrow-left"></i> Kembali</a>
   </div>
 </div>
 <?php
@@ -13,7 +13,7 @@
     $sanksi = $_POST['sanksi'];
 
     if($jenis == '') {
-      $errorText = "Jenis pelanggaran tidak boleh kosong";
+      $errorText = "Jenis Peraturan tidak boleh kosong";
     } else if($sanksi == '' || $sanksi > 100 || $sanksi < 1) {
       $errorText = "Sanksi harus valid";
     } else {
@@ -21,7 +21,7 @@
       $connect->begin_transaction();
       
       try {
-        $query = "UPDATE `pelanggaran` SET `jenis`='$jenis',`poin`='$sanksi' WHERE `id`='" . $_GET['id'] . "'";//$_GET['id']
+        $query = "INSERT INTO aturan (jenis, poin) VALUES ('$jenis', '$sanksi')";
         $result = $connect->query($query);
         if($result) {
           $error = false;
@@ -31,17 +31,17 @@
           <script type="text/javascript">
             Swal.fire({
               title: "Sukses!",
-              text: "Berhasil mengubah list",
+              text: "Berhasil menambahkan Peraturan",
               icon: 'success'
             }).then(() => {    
-            window.location = "index.php?page=list";
+            window.location = "index.php?page=peraturan";
             });
           </script>
           <?php
         } 
         else {
           $error = true;
-          $errorText = "Gagal mengubah list : " . $connect->error;
+          $errorText = "Gagal menambahkan Peraturan : " . $connect->error;
         }
       } catch (exception $e) {
         print_r($e);
@@ -51,21 +51,13 @@
       }
     }
   }
-
-  $query = "SELECT * FROM `pelanggaran` WHERE `id`='" . $_GET['id'] . "'";
-  $result = $connect->query($query);
-  if($result->num_rows > 0) {
-    $user = $result->fetch_assoc();
-  } else {
-    header("location: login.php");
-  }
 ?>
 <form method="POST" enctype="multipart/form-data">
   <div class="row justify-content-md-center">
     <div class="col-md-5 border-right">
       <div class="p-3">
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <h4 class="text-right">Ubah List Pelanggaran</h4>
+            <h4 class="text-right">Tambah List Peraturan</h4>
         </div>
         <?php if($error) {?>
         <div class="alert alert-danger d-flex align-items-center" role="alert">
@@ -75,12 +67,12 @@
         <?php } ?>
         <div class="row mt-2">
             <div class="col-md-12 mb-2">
-                <label class="labels">Jenis Pelanggaran</label>
-                <textarea class="form-control" id="jenis" rows="3" name='jenis' placeholder="Jenis Pelanggaran"><?= $user['jenis'] ?></textarea>
+                <label class="labels">Jenis Peraturan</label>
+                <textarea class="form-control" id="jenis" rows="3" name='jenis' placeholder="Jenis Peraturan"><?= @$_POST['jenis'] ?></textarea>
             </div>
             <div class="col-md-12 mb-2">
-                <label class="labels">Sanksi Pelanggaran</label>
-                <input type="number" class="form-control" placeholder="Sanksi Pelanggaran (1-100)" name='sanksi' value="<?= $user['poin'] ?>" min="1" max="100">
+                <label class="labels">Sanksi Peraturan</label>
+                <input type="number" class="form-control" placeholder="Sanksi Peraturan (1-100)" name='sanksi' value="<?= @$_POST['sanksi'] ?>" min="1" max="100">
             </div>
         </div>
         <div class="row mt-4">

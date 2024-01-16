@@ -9,7 +9,8 @@
                 $successText = "";
                 $errorStatus = false;
                 $errorText = "";
-                if(isset($_POST['change-status'])) {
+
+                /*if(isset($_POST['change-status'])) {
                     $status = $_POST['status'] ? 0 : 1;
                     $query = "UPDATE data SET status = '$status'  WHERE id_user = '". $_POST['id'] ."'";
                     $result = $connect->query($query);
@@ -20,7 +21,7 @@
                         $errorStatus = true;
                         $errorText = $_POST['status'] ? "dinonaktifkan" : "diaktifkan";
                     }
-                }
+                }*/
 
                 if(isset($_POST['delete'])) {
                     $query = "DELETE FROM users WHERE id = '". $_POST['id'] ."'";
@@ -80,7 +81,7 @@
                                     <th>Nama Lengkap</th>
                                     <th>Jenis Kelamin</th>
                                     <th>Kelas</th>
-                                    <th>Status</th>
+                                    <!--<th>Status</th>-->
                                 </tr>
                             </thead>
                             <tbody>
@@ -99,7 +100,7 @@
                                     <td class="text-center"><?= $siswa[$i]['nama_lengkap'] ?></td>
                                     <td class="text-center"><span class='<?= $siswa[$i]['jenis_kelamin'] ? 'bg-danger' : 'bg-primary' ?> rounded-pill px-2 text-white'><?= $siswa[$i]['jenis_kelamin'] ? 'Perempuan' : 'Laki-Laki' ?></span></td>
                                     <td class="text-center"><?= $siswa[$i]['kelas'] ?></td>
-                                    <td class="text-center"><?= $siswa[$i]['status'] ? 'Aktif' : 'Tidak Aktif' ?></td>
+                                    <!--<td class="text-center"><?= $siswa[$i]['status'] ? 'Aktif' : 'Tidak Aktif' ?></td>-->
                                 </tr>
                             <?php
                                 }

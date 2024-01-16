@@ -11,8 +11,8 @@
             <?= $_SESSION['nama_lengkap'] ?> <i class="fas fa-caret-down"></i>
           </a>
           <ul class="dropdown-menu dropdown-menu-end position-absolute" aria-labelledby="navbarDropdown">
-            <li><a class="dropdown-item" href="index.php?page=profile"><i class="fas fa-user"></i> Profil</a></li>
-            <li><hr class="dropdown-divider"></li>
+            <!--<li><a class="dropdown-item" href="index.php?page=profile"><i class="fas fa-user"></i> Profil</a></li>
+            <li><hr class="dropdown-divider"></li>-->
             <li><a class="dropdown-item" href="logout.php"><i class="fas fa-sign-out-alt"></i> keluar</a></li>
           </ul>
         </li>

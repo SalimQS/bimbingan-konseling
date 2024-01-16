@@ -9,22 +9,17 @@
 
   if(isset($_POST['simpan'])) {
     $error = true;
-    $nick = $_POST['nick'];
     $nama_lengkap = $_POST['nama_lengkap'];
     $jenis_kelamin = $_POST['jenis_kelamin'];
     $tempat_lahir = $_POST['tempat_lahir'];
     $tanggal_lahir = $_POST['tanggal_lahir'];
-    $golongan_darah = $_POST['golongan_darah'];
     $agama = $_POST['agama'];
     $alamat = $_POST['alamat'];
     $no_telepon = $_POST['no_telepon'];
     $kelas = $_POST['kelas'];
     $nisn = $_POST['nisn'];
-    $password = md5($nick);
 
-    if($nick == '') {
-      $errorText = "NIckname tidak boleh kosong";
-    } else if($nama_lengkap == '') {
+    if($nama_lengkap == '') {
       $errorText = "Nama lengkap tidak boleh kosong";
     } else if($jenis_kelamin == '-1') {
       $errorText = "Jenis kelamin tidak boleh kosong";
@@ -32,15 +27,13 @@
       $errorText = "Tempat lahir tidak boleh kosong";
     } else if($tanggal_lahir == '') {
       $errorText = "Tanggal lahir tidak boleh kosong";
-    } else if($golongan_darah == '-1') {
-      $errorText = "Golongan darah tidak boleh kosong";
     } else if($agama == '-1') {
       $errorText = "Agama tidak boleh kosong";
     } else if($alamat == '') {
       $errorText = "Alamat tidak boleh kosong";
     } else if($no_telepon == '') {
       $errorText = "No telepon tidak boleh kosong";
-    } else if($kelas == '') {
+    } else if($kelas == '-1') {
       $errorText = "Kelas tidak boleh kosong";
     } else if($nisn == '') {
       $errorText = "NISN tidak boleh kosong";
@@ -52,100 +45,88 @@
       $connect->begin_transaction();
       
       try {
-        $query = "SELECT id FROM users WHERE username ='$nick'";
-        $result = $connect->query($query);
-        if($result->num_rows > 0) {
-          $error = true;
-          $errorText = "Nickname sudah terdaftar";
-        } else {
-          $error = false;
-          if($hasFoto) {
-            $fileName = "uploads/" . basename($_FILES['foto']['name']);
-            $ext = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
-            $file = "uploads/" . time() . "." . $ext;
-            $maxSize = 2097152;//2 mb
-            $imgSize = getimagesize($_FILES['foto']['tmp_name']);
-            if(($_FILES['foto']['size'] >= $maxSize)) {
-              $error = true;
-              $errorText = "Ukuran foto maksimal 2MB";
-            } else {
-              $error = false;
-            }
+        $error = false;
+        if($hasFoto) {
+          $fileName = "uploads/" . basename($_FILES['foto']['name']);
+          $ext = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+          $file = "uploads/" . time() . "." . $ext;
+          $maxSize = 2097152;//2 mb
+          $imgSize = getimagesize($_FILES['foto']['tmp_name']);
+          if(($_FILES['foto']['size'] >= $maxSize)) {
+            $error = true;
+            $errorText = "Ukuran foto maksimal 2MB";
           } else {
-            $file = "assets/img/default.jpg";
+            $error = false;
           }
+        } else {
+          $file = "assets/img/default.jpg";
+        }
 
-          if(!$error) {
-            $query = "INSERT INTO users (admin, username, password) ";
-            $query .= "VALUES('user', '$nick', '$password')";
-            $result = $connect->query($query);
-            if($result === TRUE) {
-              $id_user = $connect->insert_id;
-
-              $query = "INSERT INTO siswa (id_user, kelas, nisn) ";
-              $query .= "VALUES('$id_user', '$kelas', '$nisn')";
+        if(!$error) {
+          $query = "INSERT INTO siswa (id_kelas, nisn) ";
+          $query .= "VALUES('$kelas', '$nisn')";
+          $result = $connect->query($query);
+          if($result) {
+            $id_siswa = $connect->insert_id;
+            //---
+            if($hasFoto) {
+              $query = "INSERT INTO data (id_siswa, nama_lengkap, foto, jenis_kelamin, tempat_lahir, tanggal_lahir, agama, alamat, no_telepon) ";
+              $query .= "VALUES('$id_siswa', '$nama_lengkap', '$file', '$jenis_kelamin', '$tempat_lahir', '$tanggal_lahir', '$agama', '$alamat', '$no_telepon')";
               $result = $connect->query($query);
               if($result) {
-                if($hasFoto) {
-                  $query = "INSERT INTO data (id_user, nama_lengkap, foto, jenis_kelamin, tempat_lahir, tanggal_lahir, golongan_darah, agama, alamat, no_telepon, status) ";
-                  $query .= "VALUES('$id_user', '$nama_lengkap', '$file', '$jenis_kelamin', '$tempat_lahir', '$tanggal_lahir', '$golongan_darah', '$agama', '$alamat', '$no_telepon', '1')";
-                  $result = $connect->query($query);
-                  if($result) {
-                    if(move_uploaded_file($_FILES['foto']['tmp_name'], $file)) {
-                      $error = false;
-                      $connect->commit();
-                      ?>
-                      <script src="vendors/sweetalert/sweetalert.min.js"></script>
-                      <script type="text/javascript">
-                        Swal.fire({
-                          title: "Sukses!",
-                          text: "Berhasil menambahkan siswa",
-                          icon: 'success'
-                        }).then(() => {    
-                        window.location = "index.php?page=siswa";
-                        });
-                      </script>
-                      <?php
-                    } else {
-                      $error = true;
-                      $errorText = "Foto gagal diupload";
-                      $connect->rollback();
-                    }
-                  } else {
-                      $error = true;
-                      $errorText = "Gagal menambah siswa";
-                      $connect->rollback();
-                  }
+                if(move_uploaded_file($_FILES['foto']['tmp_name'], $file)) {
+                  $error = false;
+                  $connect->commit();
+                  ?>
+                  <script src="vendors/sweetalert/sweetalert.min.js"></script>
+                  <script type="text/javascript">
+                    Swal.fire({
+                      title: "Sukses!",
+                      text: "Berhasil menambahkan siswa",
+                      icon: 'success'
+                    }).then(() => {
+                    window.location = "index.php?page=siswa";
+                    });
+                  </script>
+                  <?php
                 } else {
-                  $query = "INSERT INTO data (id_user, nama_lengkap, jenis_kelamin, tempat_lahir, tanggal_lahir, golongan_darah, agama, alamat, no_telepon, status) ";
-                  $query .= "VALUES('$id_user', '$nama_lengkap', '$jenis_kelamin', '$tempat_lahir', '$tanggal_lahir', '$golongan_darah', '$agama', '$alamat', '$no_telepon', '1')";
-                  $result = $connect->query($query);
-                  if($result) {
-                    $error = false;
-                    $connect->commit();
-                    ?>
-                    <script src="vendors/sweetalert/sweetalert.min.js"></script>
-                    <script type="text/javascript">
-                      Swal.fire({
-                        title: "Sukses!",
-                        text: "Berhasil menambahkan siswa",
-                        icon: 'success'
-                      }).then(() => {
-                        window.location = "index.php?page=siswa";
-                      });
-                    </script>
-                    <?php
-                  } else {                 
-                      $error = true;
-                      $errorText = "Gagal menambahkan siswa : $connect->error";
-                      $connect->rollback();
-                  }
+                  $error = true;
+                  $errorText = "Foto gagal diupload";
+                  $connect->rollback();
                 }
               } else {
-                $error = true;
-                $errorText = "Gagal menambahkan siswa : " . $connect->error;
+                  $error = true;
+                  $errorText = "Gagal menambah siswa";
+                  $connect->rollback();
+              }
+            } else {
+              $query = "INSERT INTO data (id_siswa, nama_lengkap, jenis_kelamin, tempat_lahir, tanggal_lahir, agama, alamat, no_telepon) ";
+              $query .= "VALUES('$id_siswa', '$nama_lengkap', '$jenis_kelamin', '$tempat_lahir', '$tanggal_lahir', '$agama', '$alamat', '$no_telepon')";
+              $result = $connect->query($query);
+              if($result) {
+                $error = false;
+                $connect->commit();
+                ?>
+                <script src="vendors/sweetalert/sweetalert.min.js"></script>
+                <script type="text/javascript">
+                  Swal.fire({
+                    title: "Sukses!",
+                    text: "Berhasil menambahkan siswa",
+                    icon: 'success'
+                  }).then(() => {
+                    window.location = "index.php?page=siswa";
+                  });
+                </script>
+                <?php
+              } else {                 
+                  $error = true;
+                  $errorText = "Gagal menambahkan siswa : $connect->error";
+                  $connect->rollback();
               }
             }
+          } else {
+            $error = true;
+            $errorText = "Gagal menambahkan siswa : " . $connect->error;
           }
         }
       } catch (exception $e) {
@@ -178,55 +159,37 @@
             <div><strong>Gagal!</strong> <?= $errorText ?></div>
         </div>
         <?php } ?>
-        <div class="d-flex justify-content-between align-items-center">
-            <h6 class="text-right">Biodata Diri</h6>
-        </div>
             <div class="row mt-2">
                 <div class="col-md-12 mb-2">
-                <label class="labels">Nickname</label>
-                <input type="text" class="form-control" placeholder="Nama Unik Siswa" name='nick' value="<?= @$_POST['nick'] ?>">
+                  <label class="labels">Nama Lengkap</label>
+                  <input type="text" class="form-control" placeholder="Nama Lengkap" name='nama_lengkap' value="<?= @$_POST['nama_lengkap'] ?>">
                 </div>
                 <div class="col-md-12 mb-2">
-                <label class="labels">Nama Lengkap</label>
-                <input type="text" class="form-control" placeholder="Nama Lengkap" name='nama_lengkap' value="<?= @$_POST['nama_lengkap'] ?>">
+                  <label class="labels">Jenis Kelamin</label>
+                  <select class="form-select" aria-label="Jenis Kelamin" name='jenis_kelamin'>
+                      <option value='-1'>Pilih Jenis Kelamin</option>
+                      <option value="0">Laki-laki</option>
+                      <option value="1">Perempuan</option>
+                  </select>
+                </div>
+                <div class="col-md-6 mb-2">
+                  <label class="labels">Tempat Lahir</label>
+                  <input type="text" class="form-control" placeholder="Tempat lahir" name='tempat_lahir' value="<?= @$_POST['tempat_lahir'] ?>">
+                </div>
+                <div class="col-md-6 mb-2">
+                  <label class="labels">Tanggal Lahir</label>
+                  <input type="date" class="form-control" placeholder="Tanggal Lahir" name='tanggal_lahir' value="<?= @$_POST['tanggal_lahir'] ?>">
                 </div>
                 <div class="col-md-12 mb-2">
-                <label class="labels">Jenis Kelamin</label>
-                <select class="form-select" aria-label="Jenis Kelamin" name='jenis_kelamin'>
-                    <option value='-1'>Pilih Jenis Kelamin</option>
-                    <option value="0" <?php if(@$_POST['jenis_kelamin'] == 0) echo 'selected'; ?>>Laki-laki</option>
-                    <option value="1" <?php if(@$_POST['jenis_kelamin'] == 1) echo 'selected'; ?>>Perempuan</option>
-                </select>
-                </div>
-                <div class="col-md-6 mb-2">
-                <label class="labels">Tempat Lahir</label>
-                <input type="text" class="form-control" placeholder="Tempat lahir" name='tempat_lahir' value="<?= @$_POST['tempat_lahir'] ?>">
-                </div>
-                <div class="col-md-6 mb-2">
-                <label class="labels">Tanggal Lahir</label>
-                <input type="date" class="form-control" placeholder="Tanggal Lahir" name='tanggal_lahir' value="<?= @$_POST['tanggal_lahir'] ?>">
-                </div>
-                <div class="col-md-6 mb-2">
-                <label class="labels">Golongan Darah</label>
-                <select class="form-select" aria-label="Golongan Darah" name='golongan_darah'>
-                    <option value='-1' selected>Pilih Golongan Darah</option>
-                    <option value="0" <?php if(@$_POST['golongan_darah'] == 0) echo 'selected'; ?>>A</option>
-                    <option value="1" <?php if(@$_POST['golongan_darah'] == 1) echo 'selected'; ?>>B</option>
-                    <option value="2" <?php if(@$_POST['golongan_darah'] == 2) echo 'selected'; ?>>AB</option>
-                    <option value="3" <?php if(@$_POST['golongan_darah'] == 3) echo 'selected'; ?>>O</option>
-                </select>
-                </div>
-                <div class="col-md-6 mb-2">
                 <label class="labels">Agama</label>
                 <select class="form-select" aria-label="Agama" name='agama'>
                     <option value='-1' selected>Pilih Agama</option>
-                    <option value="0" <?php if(@$_POST['agama'] == 0) echo 'selected'; ?>>Islam</option>
-                    <option value="1" <?php if(@$_POST['agama'] == 1) echo 'selected'; ?>>Kristen</option>
-                    <option value="2" <?php if(@$_POST['agama'] == 2) echo 'selected'; ?>>Katholik</option>
-                    <option value="3" <?php if(@$_POST['agama'] == 3) echo 'selected'; ?>>Hindu</option>
-                    <option value="4" <?php if(@$_POST['agama'] == 4) echo 'selected'; ?>>Budha</option>
-                    <option value="5" <?php if(@$_POST['agama'] == 5) echo 'selected'; ?>>Konghucu</option>
-                    <option value="6" <?php if(@$_POST['agama'] == 6) echo 'selected'; ?>>Protestan</option>
+                    <option value="0">Islam</option>
+                    <option value="1">Kristen Protestan</option>
+                    <option value="2">Kristen Katholik</option>
+                    <option value="3">Hindu</option>
+                    <option value="4">Budha</option>
+                    <option value="5">Konghucu</option>
                 </select>
                 </div>
                 <div class="col-md-12 mb-2">
@@ -235,8 +198,19 @@
                 </div>
                 <div class="col-md-12 mb-2">
                   <label class="labels">Kelas</label>
-                  <input type="text" list="kelas-list" class="form-control" placeholder="Kelas" name="kelas" value="<?= @$_POST['kelas'] ?>">
-                  <datalist id="kelas-list"></datalist>
+                  <select class="form-select" name="kelas">
+                    <?php
+                    $query2 = "SELECT * FROM kelas WHERE 1";
+                    $result2 = $connect->query($query2);
+                    if($result2->num_rows > 0) {
+                        echo('<option value="-1">Pilih Kelas</option>');
+                        while($kelas = $result2->fetch_assoc()) {
+                          echo('<option value="'.$kelas['id'].'">'.$kelas['kelas'].'</option>');
+                        }
+                    }
+                    else echo('<option value="-1">Kelas Kosong</option>');
+                    ?>
+                  </select>
                 </div>
                 <div class="col-md-12 mb-2">
                   <label class="labels">Alamat</label>
@@ -247,17 +221,13 @@
                   <input type="text" class="form-control" placeholder="Nomor Telepon" name="no_telepon" value="<?= @$_POST['no_telepon'] ?>">
                 </div>
             </div>
-            <div class="d-flex justify-content-between align-items-center">
-                <h6 class="text-right">Informasi Akademik</h6>
-            </div>
-            
             <div class="row">
-            <div class="col-12 col-md-6">
-                <button class="btn btn-warning" type="submit" name='resetPassword' onClick="javascript: return confirm('Yakin ingin mereset password?');">Reset Password</button>
-            </div>
-            <div class="col-12 col-md-6 text-right">
-                <button class="btn btn-primary profile-button" type="submit" name='simpan'>Simpan</button>
-            </div>
+              <div class="col-12 col-md-6">
+                  <button class="btn btn-warning" type="submit" name='resetPassword' onClick="javascript: return confirm('Yakin ingin mereset password?');">Reset Password</button>
+              </div>
+              <div class="col-12 col-md-6 text-right">
+                  <button class="btn btn-primary profile-button" type="submit" name='simpan'>Simpan</button>
+              </div>
             </div>
       </div>
     </div>

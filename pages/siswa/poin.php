@@ -20,8 +20,8 @@
                                 </div>
                                 <div class="card-footer text-body-secondary">
                                     <?php
-                                        $query = "SELECT pelanggaran.poin FROM `sanksi` ";
-                                        $query .= "LEFT JOIN pelanggaran ON pelanggaran.id = sanksi.id_pelanggaran ";
+                                        $query = "SELECT pelanggaran.poin FROM `pelanggaran` ";
+                                        $query .= "LEFT JOIN aturan ON aturan.id = pelanggaran.id_pelanggaran ";
                                         $query .= "WHERE `id_user`='" . $_SESSION['id_user'] . "'";
 
                                         $result = $connect->query($query);
@@ -46,8 +46,8 @@
                                     </tr>
                                 </thead>
                                 <?php
-                                    $query = "SELECT pelanggaran.jenis, pelanggaran.poin, sanksi.created FROM `sanksi` ";
-                                    $query .= "LEFT JOIN pelanggaran ON pelanggaran.id = sanksi.id_pelanggaran ";
+                                    $query = "SELECT aturan.jenis, aturan.poin, pelanggaran.created FROM `pelanggaran` ";
+                                    $query .= "LEFT JOIN aturan ON aturan.id = pelanggaran.id_pelanggaran ";
                                     $query .= "WHERE `id_user`='" . $_SESSION['id_user'] . "'";
                                     
                                     $result = $connect->query($query);

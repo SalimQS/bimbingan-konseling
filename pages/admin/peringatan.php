@@ -6,14 +6,14 @@
                     <h4 class="text-right"><b>List Peringatan Awal</b> (Poin Diatas 50)</h4>
                 </div>
                 <?php
-                    $query = "SELECT siswa.nisn, siswa.kelas, data.nama_lengkap, users.id, data.foto, data.status FROM users ";
-                    $query .= "LEFT JOIN data ON data.id_user = users.id ";
-                    $query .= "LEFT JOIN siswa ON siswa.id_user = users.id ";
-                    $query .= "WHERE siswa.id IS NOT NULL";
+                    $query = "SELECT siswa.nisn, kelas.kelas, data.nama_lengkap, data.foto, siswa.id FROM siswa ";
+                    $query .= "LEFT JOIN data ON data.id_siswa = siswa.id ";
+                    $query .= "LEFT JOIN kelas ON kelas.id = siswa.id_kelas ";
+                    $query .= "WHERE 1";
                 ?>
                 <div>
                     <div class="table-responsive">
-                        <table class="table table-bordered table-striped dataTable">
+                        <table class="table table-bordered table-striped">
                             <thead class="bg-success text-white">
                                 <tr class="text-center">
                                     <th>No</th>
@@ -31,7 +31,7 @@
                             if($result->num_rows > 0) {
                                 $list = $result->fetch_all(MYSQLI_ASSOC);
                                 for ($i = 0; $i < count($list); $i++) {
-                                    $query = "SELECT pelanggaran.poin FROM `sanksi` LEFT JOIN pelanggaran ON pelanggaran.id = sanksi.id_pelanggaran WHERE `id_user`='" . $list[$i]['id'] . "'";
+                                    $query = "SELECT aturan.poin FROM `pelanggaran` LEFT JOIN aturan ON aturan.id = pelanggaran.id_pelanggaran WHERE `id_siswa`='" . $list[$i]['id'] . "'";
                                     $result = $connect->query($query);
                                     $poincount = 0;
                                     while(($poin = $result->fetch_assoc())) {
@@ -78,14 +78,14 @@
                     <h4 class="text-right"><b>List Peringatan Akhir</b> (Poin Diatas 100)</h4>
                 </div>
                 <?php
-                    $query = "SELECT siswa.nisn, siswa.kelas, data.nama_lengkap, users.id, data.foto, data.status FROM users ";
-                    $query .= "LEFT JOIN data ON data.id_user = users.id ";
-                    $query .= "LEFT JOIN siswa ON siswa.id_user = users.id ";
-                    $query .= "WHERE siswa.id IS NOT NULL";
+                    $query = "SELECT siswa.nisn, kelas.kelas, data.nama_lengkap, data.foto, siswa.id FROM siswa ";
+                    $query .= "LEFT JOIN data ON data.id_siswa = siswa.id ";
+                    $query .= "LEFT JOIN kelas ON kelas.id = siswa.id_kelas ";
+                    $query .= "WHERE 1";
                 ?>
                 <div>
                     <div class="table-responsive">
-                        <table class="table table-bordered table-striped dataTable">
+                        <table class="table table-bordered table-striped">
                             <thead class="bg-success text-white">
                                 <tr class="text-center">
                                     <th>No</th>
@@ -103,7 +103,7 @@
                             if($result->num_rows > 0) {
                                 $list = $result->fetch_all(MYSQLI_ASSOC);
                                 for ($i = 0; $i < count($list); $i++) {
-                                    $query = "SELECT pelanggaran.poin FROM `sanksi` LEFT JOIN pelanggaran ON pelanggaran.id = sanksi.id_pelanggaran WHERE `id_user`='" . $list[$i]['id'] . "'";
+                                    $query = "SELECT aturan.poin FROM `pelanggaran` LEFT JOIN aturan ON aturan.id = pelanggaran.id_pelanggaran WHERE `id_siswa`='" . $list[$i]['id'] . "'";
                                     $result = $connect->query($query);
                                     $poincount = 0;
                                     while(($poin = $result->fetch_assoc())) {

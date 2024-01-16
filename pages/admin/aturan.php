@@ -23,7 +23,7 @@
                 }
 
                 if(isset($_POST['delete'])) {
-                    $query = "DELETE FROM pelanggaran WHERE id = '". $_POST['id'] ."'";
+                    $query = "DELETE FROM aturan WHERE id = '". $_POST['id'] ."'";
                     $result = $connect->query($query);
                     if($result) {
                         $successStatus = true;
@@ -49,7 +49,7 @@
                 <?php } ?>
 
                 <?php
-                  $query = "SELECT * FROM pelanggaran WHERE 1 ";
+                  $query = "SELECT * FROM aturan WHERE 1 ";
                   if(isset($_POST['btn-cari'])) {
                     $cari = $_POST['cari'];
                     $query .= "AND (jenis LIKE '%$cari%') ";
@@ -65,7 +65,7 @@
                         </form>
                     </div>           
                     <div class="col-12 col-md-8 text-right">
-                        <a href="?page=list&action=add" class="btn btn-primary"  title='Tambah Pelanggaran'>Tambah Pelanggaran</a>
+                        <a href="?page=peraturan&action=add" class="btn btn-primary"  title='Tambah Peraturan'>Tambah Peraturan</a>
                     </div>
                 </div>
                 <div>
@@ -94,23 +94,15 @@
                                     <td class="text-center"><?= $list[$i]['poin'] ?> Poin</td>
                                     <td class="text-center"><?= $list[$i]['created'] ?></td>
                                     <td class="text-center"><?= $list[$i]['updated'] ?></td>
-                                    <td class="text-center" style="min-width:10px">
-                                        <div class="row">
-                                            <form method="post" class="col-md-5 formChangeStatus">
-                                                <div>
-                                                    <input type="hidden" name="id" value="<?= $list[$i]['id'] ?>"/>
-                                                    <input type="hidden" name='change-status'/>
-                                                    <a href="?page=list&action=edit&id=<?= $list[$i]['id'] ?>" name='delete' class='btn btn-sm btn-primary' title='Ubah Data Siswa'>
-                                                        <i class="fa fa-pencil-alt"></i> Ubah
-                                                    </a>
-                                                </div>
-                                            </form>
-                                            <form method="post" class="col-md-6 formDelete">
+                                    <td class="text-center">
+                                        <div class="row d-inline">
+                                            <div style="display: inline-block; width: fit-content;">
+                                                <a href="?page=peraturan&action=edit&id=<?= $list[$i]['id'] ?>" name='delete' class='btn btn-sm btn-primary btn-data-form' title='Ubah Data Siswa'>Ubah</a>
+                                            </div>
+                                            <form method="post" class="formDelete" style="display: inline-block; width: fit-content;">
                                                 <input type="hidden" name="id" value="<?= $list[$i]['id'] ?>"/>
                                                 <input type="hidden" name='delete'/>
-                                                <button class='btn btn-sm btn-danger' title='Hapus Data list'>
-                                                    <i class="fa fa-trash"></i> Hapus
-                                                </button>
+                                                <button class='btn btn-sm btn-danger btn-data-form' title='Hapus Data list'>Hapus</button>
                                             </form>
                                         </div>
                                     </td>

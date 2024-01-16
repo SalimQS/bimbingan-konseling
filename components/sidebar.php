@@ -1,8 +1,8 @@
 <nav id="sidebar">
     <div class="sidebar-header">
         <a href="index.php">
-            <h3><span class='text-white fw-bold'>Bimbingan</span> Konseling</h3>
-            <strong><span class='text-white'>B</span>K</strong>
+            <h1><span class='text-white fw-bold'>MY</span>Point</h1>
+            <strong><span class='text-white'>M</span>P</strong>
         </a>
     </div>
     <ul class="list-unstyled components">
@@ -19,32 +19,32 @@
         <?php
             $menuAdmin = [
                 [
-                    "label" => "Data Siswa",
-                    "icon" => "fa-users",
+                    "label" => "Siswa",
+                    "icon" => "fa-graduation-cap",
                     "href" => "siswa",
                 ],
                 [
-                    "label" => "Data Guru",
-                    "icon" => "fa-chalkboard-teacher",
+                    "label" => "Guru",
+                    "icon" => "fa-graduation-cap",
                     "href" => "guru",
                 ],
                 [
-                    "label" => "List Pelanggaran",
+                    "label" => "Kelas",
+                    "icon" => "fa-graduation-cap",
+                    "href" => "kelas",
+                ],
+                [
+                    "label" => "Peraturan",
                     "icon" => "fa-list-ul",
-                    "href" => "list",
+                    "href" => "peraturan",
                 ],
                 [
-                    "label" => "Log Pelanggaran",
+                    "label" => "Peringatan",
                     "icon" => "fa-exclamation-circle",
-                    "href" => "pelanggar",
-                ],
-                [
-                    "label" => "List Peringatan",
-                    "icon" => "fa-exclamation-triangle",
                     "href" => "peringatan",
                 ],
             ];
-            if($_SESSION['role'] == 'admin') {
+            if($_SESSION['role'] == 'kesiswaan') {
                 foreach ($menuAdmin as $menu) {
         ?>
         <li class="<?= $page === $menu['href'] ? 'active' : '' ?>">
@@ -57,67 +57,7 @@
                 </div>
             </a>
         </li>
-        <?php
-                }
-            }
-            $menuGuru = [
-                [
-                    "label" => "Data Siswa",
-                    "icon" => "fa-users",
-                    "href" => "siswa",
-                ],
-                [
-                    "label" => "Log Pelanggar",
-                    "icon" => "fa-exclamation-circle",
-                    "href" => "pelanggar",
-                ],
-                [
-                    "label" => "List Peringatan",
-                    "icon" => "fa-exclamation-triangle",
-                    "href" => "peringatan",
-                ],
-            ];
-            if($_SESSION['role'] == 'user' && $_SESSION['posisi'] == 'guru') {
-                foreach ($menuGuru as $menu) {
-        ?>
-        <li class="<?= $page === $menu['href'] ? 'active' : '' ?>">
-            <a href="index.php?page=<?=$menu['href']?>">
-                <div class="row">
-                    <div class='col-12 col-md-2 sidebar-item-icon' >
-                        <i class="fas <?=$menu['icon']?>"></i>
-                    </div>
-                    <span class="col-10"><?=$menu['label']?></span>
-                </div>
-            </a>
-        </li>
-        <?php
-                }
-            }
-            $menuSiswa = [
-                [
-                    "label" => "Poin Anda",
-                    "icon" => "fa-coins",
-                    "href" => "poin",
-                ],
-                [
-                    "label" => "List Peringatan",
-                    "icon" => "fa-exclamation-triangle",
-                    "href" => "peringatan",
-                ],
-            ];
-            if($_SESSION['role'] == 'user' && $_SESSION['posisi'] == 'siswa') {
-                foreach ($menuSiswa as $menus) {
-        ?>
-        <li class="<?= $page === $menus['href'] ? 'active' : '' ?>">
-            <a href="index.php?page=<?=$menus['href']?>">
-                <div class="row">
-                    <div class='col-12 col-md-2 sidebar-item-icon' >
-                        <i class="fas <?=$menus['icon']?>"></i>
-                    </div>
-                    <span class="col-10"><?=$menus['label']?></span>
-                </div>
-            </a>
-        </li>
+        
         <?php
                 }
             }

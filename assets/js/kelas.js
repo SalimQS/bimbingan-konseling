@@ -1,3 +1,4 @@
+window.onload = () => {
 var deleteForm = document.querySelectorAll('.formDelete');
 
 deleteForm.forEach((form) => {
@@ -19,3 +20,4 @@ deleteForm.forEach((form) => {
     });
   });
 });
+}

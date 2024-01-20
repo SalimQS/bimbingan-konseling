@@ -1,40 +1,91 @@
 <?php
 session_start();
 $error = false;
+$errorText = "";
 if(isset($_SESSION['id_user'])) {
   header("location: index.php");
 } 
 else {
-  $submit = @$_POST['submit'];
-  $username = @$_POST['username'];
-  $password = @$_POST['password'];
-  $encodedPassword = md5($password);
-  //---
   include_once('./config/db.php');
   //---
-  $query = "SELECT jabatan FROM users WHERE jabatan='kesiswaan'";
-  $result = $connect->query($query);
-  $admins = $result->num_rows;
-  //---
+  $submit = @$_POST['submit'];
   if(isset($submit)) {
-    if($username == '' || $password == '') {
-      $error = true;
-      $errorText = "Masukkan nama dan password";
-    } 
-    else {
-      $query = "SELECT * FROM users WHERE username='$username' AND password='$encodedPassword'";
-      $result = $connect->query($query);
-      if($result->num_rows > 0) {
-        $user = $result->fetch_assoc();
-        //---
-        $_SESSION['id_user'] = $user['id'];
-        $_SESSION['nama_lengkap'] = $user['fullname'];
-        $_SESSION['role'] = $user['jabatan'];
-        header("location: index.php");
+    $username = @$_POST['username'];
+    $password = @$_POST['password'];
+    $login_as = @$_POST['login_as'];
+    //---
+    if($login_as == 0) {//guru login
+      if($username == '' || $password == '') {
+        $error = true;
+        $errorText = "Masukkan nama dan password";
       } 
       else {
+        $query = "SELECT * FROM guru WHERE username_guru='$username' LIMIT 1";
+        $result = $connect->query($query);
+        if($result->num_rows > 0) {
+          $user = $result->fetch_assoc();
+          if($user['password_guru'] == $password) {
+            //---
+            $query = "SELECT * FROM kelas WHERE id_wali_kelas='".$user['id_guru']."' LIMIT 1";
+            $result = $connect->query($query);
+            if($result->num_rows > 0) {
+              $kelas = $result->fetch_assoc();
+              $_SESSION['id_user'] = $user['id_guru'];
+              $_SESSION['username'] = $user['username_guru'];
+              $_SESSION['nama_lengkap'] = $user['nama_guru'];
+              $_SESSION['role'] = "guru";
+              $_SESSION['level'] = "walikelas";
+              $_SESSION['kelas'] = $kelas['nama_kelas'];
+              header("location: index.php");
+            }
+            else {
+              $_SESSION['id_user'] = $user['id_guru'];
+              $_SESSION['username'] = $user['username_guru'];
+              $_SESSION['nama_lengkap'] = $user['nama_guru'];
+              $_SESSION['role'] = "guru";
+              $_SESSION['level'] = "guru";
+              header("location: index.php");
+            }
+          }
+          else {
+            $error = true;
+            $errorText = "Password salah!";
+          }
+        } 
+        else {
+          $error = true;
+          $errorText = "Akun ini tidak terdaftar sebagai Guru!";
+        }
+      }
+    }
+    else {//admin login
+      if($username == '' || $password == '') {
         $error = true;
-        $errorText = "Nama atau Password salah";
+        $errorText = "Masukkan nama dan password";
+      } 
+      else {
+        $query = "SELECT * FROM admin WHERE username_admin='$username' LIMIT 1";
+        $result = $connect->query($query);
+        if($result->num_rows > 0) {
+          $user = $result->fetch_assoc();
+          if($user['password_admin'] == $password) {
+            //---
+            $_SESSION['id_user'] = $user['id_admin'];
+            $_SESSION['username'] = $user['username_admin'];
+            $_SESSION['nama_lengkap'] = $user['nama_admin'];
+            $_SESSION['role'] = "admin";
+            $_SESSION['level'] = $user['level_admin'];
+            header("location: index.php");
+          }
+          else {
+            $error = true;
+            $errorText = "Password salah!";
+          }
+        } 
+        else {
+          $error = true;
+          $errorText = "Akun ini tidak terdaftar sebagai Admin!";
+        }
       }
     }
   }
@@ -72,18 +123,18 @@ else {
 </head>
 <body class="login-bg">
   <div class="m-3">
-    <a class="btn btn-primary shadow-lg" href="main.php">Cek Data Dengan NISN</a>
+    <a class="btn btn-primary shadow-lg" href="nisn_check.php">Cek Data Dengan NISN</a>
   </div>
   <div class="container">
     <div class="row justify-content-center main-container">
         <div class="wrap d-md-flex">
           <!--kiri-->
-          <div class="img login-left"></div>
+          <div class="login-left"></div>
           <!--kanan-->
           <div class="login-wrap login-right">
             <div class="d-flex">
               <div class="w-100">
-                <h3 class="mb-4"><b>Sign In</b></h3>
+                <h3 class="mb-4"><b>Login</b></h3>
               </div>
             </div>
             <form method="post" class="signin-form">
@@ -95,32 +146,23 @@ else {
                   <label class="label" for="password">Password</label>
                   <input type="password" name="password" class="form-control" placeholder="Password" required>
               </div>
+              <div class="form-group mb-3">
+                  <label class="label" for="login_as">Login Sebagai</label><br>
+                  <select class="form-select" name="login_as" id="login_as">
+                    <option value="0" selected>Guru</option>
+                    <option value="1">Admin</option>
+                  </select>
+              </div>
               <div class="form-group">
                 <input type="submit" name="submit" class="form-control btn rounded submit submit-btn" value="Sign In">
               </div>
-              <?php if($admins < 2) { ?>
-                <a class="btn form-control btn-primary btn-admin" type="btn" href="admin_reg.php">Daftar Menjadi Admin</a>
-              <?php } if($error) { ?>
+              <?php if($error) { ?>
                 <script type="text/javascript">
-                  //window.onload = () => {
                     Swal.fire({
                       title: "Gagal Login!",
                       text: "<?= $errorText ?>",
                       icon: 'error'
                     });
-                  //}
-                </script>
-              <?php } if(isset($_GET['crg'])) { ?>
-                <script type="text/javascript">
-                  //window.onload = () => {
-                    Swal.fire({
-                      title: "Sukses!",
-                      text: "Anda berhasil mendaftar, silahkan login",
-                      icon: 'success'
-                    }).then(() => {
-                      window.location = "login.php";
-                    });
-                  //}
                 </script>
               <?php } ?>
             </form>

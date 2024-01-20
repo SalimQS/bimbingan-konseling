@@ -88,7 +88,7 @@ if(isset($_SESSION['id_user'])) {
       }
     </style>
 
-    <title>Masuk - Sistem Informasi Siswa</title>
+    <title>Masuk - Poin Siswa</title>
   </head>
   <body>
     <div class="container-fluid">

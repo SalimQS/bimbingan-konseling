@@ -31,7 +31,7 @@ if(isset($_SESSION['nim'])) {
     <script defer src="./vendors/fontawesome-free-5.15.3-web/js/all.min.js"></script>
     <!-- Script JS -->
     <script defer src="./assets/js/script.js"></script>
-    <title>Daftar - Sistem Informasi Siswa</title>
+    <title>Daftar - Poin Siswa</title>
     <style>
       html, body {
         height: 100%;

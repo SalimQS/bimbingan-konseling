@@ -1,3 +1,4 @@
+window.onload = () => {
 var changeStatusForm = document.querySelectorAll(".formChangeStatus");
 
 changeStatusForm.forEach((form) => {
@@ -42,3 +43,4 @@ deleteForm.forEach((form) => {
     });
   });
 });
+}

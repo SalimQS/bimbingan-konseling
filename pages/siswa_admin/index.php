@@ -2,7 +2,7 @@
 
 $studentListConfig = [
     'title' => 'Data Siswa',
-    'description' => 'Lihat roster siswa aktif, buka detail siswa, lengkapi data pendukung, dan catat pelanggaran tanpa mengubah sumber roster utama.',
+    'description' => 'Lihat data siswa aktif, buka detail, lengkapi data pendukung, dan perbarui biodata melalui upload Excel dari halaman ini.',
     'show_class_filter' => true,
     'allow_pelanggaran' => true,
     'allow_manage' => true,

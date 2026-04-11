@@ -2,7 +2,7 @@
 
 $studentListConfig = [
     'title' => 'Data Siswa Kelas',
-    'description' => 'Roster kelas wali dipusatkan pada file sumber, sehingga daftar siswa tetap konsisten dengan data terbaru.',
+    'description' => 'Daftar siswa kelas wali mengikuti hasil upload data siswa terbaru yang dilakukan admin.',
     'restrict_class_name' => $_SESSION['kelas'] ?? '',
     'show_class_filter' => false,
     'allow_pelanggaran' => false,

@@ -2,7 +2,7 @@
 
 $config = array_merge([
     'title' => 'Data Siswa',
-    'description' => 'Roster siswa aktif diambil dari file sumber dan siap dipakai untuk pencarian, detail, dan pencatatan pelanggaran.',
+    'description' => 'Data siswa aktif mengikuti hasil upload Excel terbaru dan siap dipakai untuk pencarian, detail, dan pencatatan pelanggaran.',
     'restrict_class_name' => null,
     'show_class_filter' => true,
     'allow_pelanggaran' => false,
@@ -43,7 +43,7 @@ $classOptions = $config['show_class_filter']
 
 $actionHtml = '';
 if (!empty($config['source_action_url'])) {
-    $actionHtml = '<a class="btn btn-outline-primary" href="' . app_h($config['source_action_url']) . '"><i class="fas fa-file-excel"></i> Lihat Sumber Data</a>';
+    $actionHtml = '<a class="btn btn-outline-primary" href="' . app_h($config['source_action_url']) . '"><i class="fas fa-file-excel"></i> Upload Data Siswa</a>';
 }
 
 echo app_render_page_intro($config['title'], $config['description'], app_source_meta_chips(), $actionHtml);
@@ -52,8 +52,8 @@ echo app_render_page_intro($config['title'], $config['description'], app_source_
 <section class="panel-card panel-spaced">
     <div class="source-note">
         <div>
-            <strong>Roster siswa dikelola dari file sumber.</strong>
-            <p>Perubahan identitas siswa mengikuti file Excel aktif. Data pendukung seperti foto dan nama ibu dapat dilengkapi pada halaman kelola.</p>
+            <strong>Data siswa dikelola melalui upload Excel.</strong>
+            <p>Upload terbaru akan memperbarui identitas siswa dan pembagian kelas. Data pendukung seperti foto dan nama ibu tetap dapat dilengkapi pada halaman kelola.</p>
         </div>
         <code><?= app_h(app_student_source_summary()['source_file']) ?></code>
     </div>

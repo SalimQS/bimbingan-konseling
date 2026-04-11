@@ -72,7 +72,7 @@ $actions .= '</div>';
 
 echo app_render_page_intro(
     'Kelola Data Pendukung Siswa',
-    'Identitas inti siswa mengikuti file sumber. Halaman ini dipakai untuk melengkapi data pendukung yang tidak berasal dari file impor.',
+    'Identitas inti siswa mengikuti hasil upload Excel terbaru. Halaman ini dipakai untuk melengkapi data pendukung yang tidak berasal dari file upload.',
     app_source_meta_chips(),
     $actions
 );
@@ -125,9 +125,9 @@ echo app_render_page_intro(
                 <div class="section-head">
                     <div>
                         <span class="section-kicker">Data Pendukung</span>
-                        <h2>Lengkapi informasi yang tidak ada di file sumber</h2>
+                        <h2>Lengkapi informasi yang tidak ada di file upload</h2>
                     </div>
-                    <span class="status-pill badge-source">Source managed</span>
+                    <span class="status-pill badge-source">Upload managed</span>
                 </div>
 
                 <form method="post" class="stack-form">

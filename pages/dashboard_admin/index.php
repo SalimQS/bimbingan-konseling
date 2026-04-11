@@ -42,7 +42,7 @@ $classOptions = app_fetch_class_filter_options($connect);
 
 <div class="row g-3 mt-1">
   <div class="col-12 col-md-6 col-xl-3">
-    <?= app_render_stat_card('Jumlah siswa aktif', $studentCount, 'fa-user-graduate', 'teal', 'Data dari roster sinkron') ?>
+    <?= app_render_stat_card('Jumlah siswa aktif', $studentCount, 'fa-user-graduate', 'teal', 'Data dari upload terakhir') ?>
   </div>
   <div class="col-12 col-md-6 col-xl-3">
     <?= app_render_stat_card('Jumlah guru', $teacherCount, 'fa-chalkboard-user', 'blue', 'Akun pendidik aktif') ?>

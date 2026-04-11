@@ -1,67 +1,113 @@
 <?php
 
-function app_student_source_path(): string
+function app_student_upload_directory(): string
 {
-    return dirname(__DIR__) . '/storage/student-source/daftar-siswa-2526.xlsx';
+    return dirname(__DIR__) . '/storage/student-uploads';
 }
 
 function app_student_sync_snapshot_path(): string
 {
-    return dirname(__DIR__) . '/storage/cache/student-sync.json';
+    return dirname(__DIR__) . '/storage/cache/student-import.json';
 }
 
-function app_sync_students_from_source(mysqli $connect): void
+function app_legacy_student_sync_snapshot_path(): string
 {
-    static $hasSynced = false;
-
-    if ($hasSynced) {
-        return;
-    }
-
-    $hasSynced = true;
-
-    $sourcePath = app_student_source_path();
-    if (!is_file($sourcePath) || !class_exists('ZipArchive')) {
-        return;
-    }
-
-    $sourceHash = hash_file('sha256', $sourcePath) ?: '';
-    $snapshot = app_read_student_sync_snapshot();
-    if (($snapshot['source_hash'] ?? '') === $sourceHash && $sourceHash !== '') {
-        return;
-    }
-
-    if (!app_table_exists($connect, 'siswa') || !app_table_exists($connect, 'kelas')) {
-        return;
-    }
-
-    try {
-        $students = app_parse_student_source($sourcePath);
-        if ($students === []) {
-            return;
-        }
-
-        app_apply_student_sync($connect, $students);
-        app_write_student_sync_snapshot($sourcePath, $students, $sourceHash);
-    } catch (Throwable $exception) {
-        error_log('Student sync failed: ' . $exception->getMessage());
-    }
+    return dirname(__DIR__) . '/storage/cache/student-sync.json';
 }
 
 function app_read_student_sync_snapshot(): array
 {
-    $snapshotPath = app_student_sync_snapshot_path();
-    if (!is_file($snapshotPath)) {
-        return [];
+    $snapshotPaths = [
+        app_student_sync_snapshot_path(),
+        app_legacy_student_sync_snapshot_path(),
+    ];
+
+    foreach ($snapshotPaths as $snapshotPath) {
+        if (!is_file($snapshotPath)) {
+            continue;
+        }
+
+        $raw = file_get_contents($snapshotPath);
+        if ($raw === false || $raw === '') {
+            continue;
+        }
+
+        $decoded = json_decode($raw, true);
+        if (is_array($decoded)) {
+            return $decoded;
+        }
     }
 
-    $raw = file_get_contents($snapshotPath);
-    if ($raw === false || $raw === '') {
-        return [];
+    return [];
+}
+
+function app_store_uploaded_student_workbook(array $uploadedFile): array
+{
+    if (!isset($uploadedFile['error']) || (int) $uploadedFile['error'] !== UPLOAD_ERR_OK) {
+        throw new RuntimeException('Upload file siswa gagal. Pilih ulang file Excel yang valid.');
     }
 
-    $decoded = json_decode($raw, true);
-    return is_array($decoded) ? $decoded : [];
+    $originalName = trim((string) ($uploadedFile['name'] ?? ''));
+    if ($originalName === '') {
+        throw new RuntimeException('Nama file upload tidak valid.');
+    }
+
+    $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+    if ($extension !== 'xlsx') {
+        throw new RuntimeException('File siswa harus berformat .xlsx.');
+    }
+
+    $tmpName = (string) ($uploadedFile['tmp_name'] ?? '');
+    if ($tmpName === '' || !is_uploaded_file($tmpName)) {
+        throw new RuntimeException('Berkas upload tidak dikenali oleh server.');
+    }
+
+    $uploadDir = app_student_upload_directory();
+    if (!is_dir($uploadDir) && !mkdir($uploadDir, 0777, true) && !is_dir($uploadDir)) {
+        throw new RuntimeException('Folder upload siswa tidak dapat dibuat.');
+    }
+
+    $baseName = pathinfo($originalName, PATHINFO_FILENAME);
+    $safeBaseName = preg_replace('/[^a-zA-Z0-9_-]+/', '-', $baseName);
+    $safeBaseName = trim((string) $safeBaseName, '-');
+    if ($safeBaseName === '') {
+        $safeBaseName = 'data-siswa';
+    }
+
+    $targetPath = $uploadDir . '/' . date('Ymd-His') . '-' . $safeBaseName . '.xlsx';
+    if (!move_uploaded_file($tmpName, $targetPath)) {
+        throw new RuntimeException('File Excel gagal disimpan ke server.');
+    }
+
+    return [
+        'path' => $targetPath,
+        'original_name' => $originalName,
+    ];
+}
+
+function app_import_students_from_workbook(mysqli $connect, string $workbookPath, ?string $originalName = null): array
+{
+    if (!class_exists('ZipArchive')) {
+        throw new RuntimeException('Ekstensi ZipArchive tidak tersedia di server.');
+    }
+
+    if (!is_file($workbookPath)) {
+        throw new RuntimeException('File workbook siswa tidak ditemukan.');
+    }
+
+    if (!app_table_exists($connect, 'siswa') || !app_table_exists($connect, 'kelas')) {
+        throw new RuntimeException('Tabel siswa atau kelas belum tersedia di database.');
+    }
+
+    $students = app_parse_student_source($workbookPath);
+    if ($students === []) {
+        throw new RuntimeException('Tidak ada data siswa valid yang ditemukan di file Excel.');
+    }
+
+    $sourceHash = hash_file('sha256', $workbookPath) ?: '';
+    app_apply_student_sync($connect, $students);
+
+    return app_write_student_sync_snapshot($workbookPath, $students, $sourceHash, $originalName);
 }
 
 function app_parse_student_source(string $sourcePath): array
@@ -185,11 +231,18 @@ function app_apply_student_sync(mysqli $connect, array $students): void
             }
 
             $existingStudent = $existingStudents[$student['nisn']] ?? null;
-            $motherName = $existingStudent['nama_ibu'] ?? '';
+            $motherName = trim((string) ($existingStudent['nama_ibu'] ?? ''));
             $photoPath = $existingStudent['foto_siswa'] ?? '';
 
-            if ($motherName === '') {
-                $motherName = 'Belum tersedia di file sumber';
+            if (
+                $motherName === '' ||
+                in_array(
+                    strtolower($motherName),
+                    ['belum tersedia di file sumber', 'belum diisi saat upload'],
+                    true
+                )
+            ) {
+                $motherName = 'Belum diisi saat upload';
             }
 
             if ($photoPath === '') {
@@ -279,6 +332,7 @@ function app_apply_student_sync(mysqli $connect, array $students): void
             }
         }
 
+        app_prune_classes($connect, $students);
         $connect->commit();
     } catch (Throwable $exception) {
         $connect->rollback();
@@ -368,7 +422,41 @@ function app_student_needs_update(array $current, array $desired): bool
     return false;
 }
 
-function app_write_student_sync_snapshot(string $sourcePath, array $students, string $sourceHash): void
+function app_prune_classes(mysqli $connect, array $students): void
+{
+    $activeClassNames = [];
+    foreach ($students as $student) {
+        $className = trim((string) ($student['kelas'] ?? ''));
+        if ($className !== '') {
+            $activeClassNames[$className] = true;
+        }
+    }
+
+    $result = $connect->query('SELECT id_kelas, nama_kelas FROM kelas');
+    if (!$result instanceof mysqli_result) {
+        return;
+    }
+
+    $deleteClass = $connect->prepare('DELETE FROM kelas WHERE id_kelas = ?');
+    if (!$deleteClass) {
+        throw new RuntimeException('Query hapus kelas lama gagal disiapkan.');
+    }
+
+    while ($row = $result->fetch_assoc()) {
+        $className = trim((string) ($row['nama_kelas'] ?? ''));
+        if (isset($activeClassNames[$className])) {
+            continue;
+        }
+
+        $classId = (int) ($row['id_kelas'] ?? 0);
+        $deleteClass->bind_param('i', $classId);
+        if (!$deleteClass->execute()) {
+            throw new RuntimeException('Kelas lama gagal dihapus.');
+        }
+    }
+}
+
+function app_write_student_sync_snapshot(string $sourcePath, array $students, string $sourceHash, ?string $originalName = null): array
 {
     $snapshotPath = app_student_sync_snapshot_path();
     $snapshotDir = dirname($snapshotPath);
@@ -382,7 +470,7 @@ function app_write_student_sync_snapshot(string $sourcePath, array $students, st
     }
 
     $payload = [
-        'source_file' => basename($sourcePath),
+        'source_file' => $originalName !== null && $originalName !== '' ? $originalName : basename($sourcePath),
         'source_path' => $sourcePath,
         'source_hash' => $sourceHash,
         'student_count' => count($students),
@@ -394,6 +482,8 @@ function app_write_student_sync_snapshot(string $sourcePath, array $students, st
         $snapshotPath,
         json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
     );
+
+    return $payload;
 }
 
 function app_xlsx_first_sheet_path(ZipArchive $zip): ?string

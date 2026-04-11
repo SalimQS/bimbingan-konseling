@@ -4,14 +4,7 @@ require_once __DIR__ . '/student_sync.php';
 
 function app_boot(mysqli $connect): void
 {
-    static $booted = false;
-
-    if ($booted) {
-        return;
-    }
-
-    $booted = true;
-    app_sync_students_from_source($connect);
+    // Student import is now triggered manually from the upload page.
 }
 
 function app_h($value): string
@@ -66,7 +59,7 @@ function app_route_definitions(): array
                 'actions' => [
                     '' => ['file' => 'siswa_admin/index.php', 'title' => 'Data Siswa', 'scripts' => ['vendors/sweetalert/sweetalert.min.js', 'assets/js/siswa.js']],
                     'edit' => ['file' => 'siswa_admin/edit.php', 'title' => 'Kelola Data Siswa', 'scripts' => ['vendors/sweetalert/sweetalert.min.js', 'assets/js/edit_siswa.js']],
-                    'add' => ['file' => 'siswa_admin/add.php', 'title' => 'Sumber Data Siswa', 'scripts' => ['vendors/sweetalert/sweetalert.min.js']],
+                    'add' => ['file' => 'siswa_admin/add.php', 'title' => 'Upload Data Siswa', 'scripts' => ['vendors/sweetalert/sweetalert.min.js']],
                     'lihat' => ['file' => 'siswa_admin/review.php', 'title' => 'Detail Siswa', 'scripts' => ['vendors/sweetalert/sweetalert.min.js']],
                     'pelanggaran' => ['file' => 'siswa_admin/add_pelanggaran.php', 'title' => 'Tambah Pelanggaran Siswa', 'scripts' => ['vendors/sweetalert/sweetalert.min.js', 'assets/js/pelanggaran.js']],
                 ],
@@ -212,11 +205,10 @@ function app_script_tags(array $scripts): string
 function app_student_source_summary(): array
 {
     $snapshot = app_read_student_sync_snapshot();
-    $sourcePath = app_student_source_path();
 
     return [
-        'source_file' => $snapshot['source_file'] ?? basename($sourcePath),
-        'source_path' => $snapshot['source_path'] ?? $sourcePath,
+        'source_file' => $snapshot['source_file'] ?? 'Belum ada upload',
+        'source_path' => $snapshot['source_path'] ?? '',
         'student_count' => $snapshot['student_count'] ?? null,
         'class_count' => $snapshot['class_count'] ?? null,
         'synced_at' => $snapshot['synced_at'] ?? null,
@@ -226,7 +218,7 @@ function app_student_source_summary(): array
 function app_source_meta_chips(): array
 {
     $summary = app_student_source_summary();
-    $chips = ['Sumber siswa: ' . $summary['source_file']];
+    $chips = ['Upload siswa: ' . $summary['source_file']];
 
     if (!empty($summary['student_count'])) {
         $chips[] = $summary['student_count'] . ' siswa aktif';
@@ -237,7 +229,7 @@ function app_source_meta_chips(): array
     }
 
     if (!empty($summary['synced_at'])) {
-        $chips[] = 'Sinkron: ' . date('d M Y H:i', strtotime($summary['synced_at']));
+        $chips[] = 'Upload: ' . date('d M Y H:i', strtotime($summary['synced_at']));
     }
 
     return $chips;

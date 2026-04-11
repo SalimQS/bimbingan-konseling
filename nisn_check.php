@@ -32,7 +32,11 @@ if (isset($_GET['submit'])) {
                 $errorText = 'Data siswa tidak ditemukan.';
             } else {
                 $storedMotherName = trim((string) ($candidate['nama_ibu'] ?? ''));
-                $isSourcePlaceholder = $storedMotherName === '' || strtolower($storedMotherName) === 'belum tersedia di file sumber';
+                $isSourcePlaceholder = $storedMotherName === '' || in_array(
+                    strtolower($storedMotherName),
+                    ['belum tersedia di file sumber', 'belum diisi saat upload'],
+                    true
+                );
                 $isValidMotherName = $isSourcePlaceholder || strcasecmp($storedMotherName, $motherNameInput) === 0;
 
                 if (!$isValidMotherName) {
@@ -103,7 +107,7 @@ $summary = app_student_source_summary();
             <div class="auth-form-panel">
                 <div class="auth-form-head">
                     <h2>Verifikasi NISN</h2>
-                    <p>Jika nama ibu belum dilengkapi pada sistem, pengecekan tetap akan mencoba menampilkan data berdasarkan NISN.</p>
+                    <p>Jika nama ibu belum dilengkapi saat upload data, pengecekan tetap akan mencoba menampilkan data berdasarkan NISN.</p>
                 </div>
 
                 <?php if ($errorText !== '') : ?>

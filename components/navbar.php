@@ -17,7 +17,7 @@ $sourceSummary = app_student_source_summary();
       <?php if (!empty($sourceSummary['synced_at'])) : ?>
         <span class="topbar-badge">
           <i class="fas fa-cloud-arrow-down"></i>
-          Sinkron <?= app_h(date('d M H:i', strtotime($sourceSummary['synced_at']))) ?>
+          Upload <?= app_h(date('d M H:i', strtotime($sourceSummary['synced_at']))) ?>
         </span>
       <?php endif; ?>
 

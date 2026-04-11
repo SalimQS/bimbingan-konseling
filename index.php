@@ -51,7 +51,7 @@ $sourceSummary = app_student_source_summary();
             <div class="hero-copy">
               <span class="hero-kicker">Dashboard Konseling</span>
               <h1>Selamat datang, <?= app_h($_SESSION['nama_lengkap']) ?></h1>
-              <p>Anda masuk sebagai <strong><?= app_h($roleLabel) ?></strong>. Data siswa aktif mengikuti file sumber yang disinkronkan otomatis agar daftar, kelas, dan pencarian tetap konsisten.</p>
+              <p>Anda masuk sebagai <strong><?= app_h($roleLabel) ?></strong>. Data siswa aktif diperbarui melalui upload Excel dari menu siswa agar biodata, kelas, dan pencarian tetap konsisten.</p>
               <div class="inline-meta">
                 <span class="meta-chip"><?= app_h($sourceSummary['source_file']) ?></span>
                 <?php if (!empty($sourceSummary['student_count'])) : ?>
@@ -65,8 +65,8 @@ $sourceSummary = app_student_source_summary();
 
             <div class="hero-side">
               <div class="hero-side-card">
-                <span class="hero-side-label">Sinkron terakhir</span>
-                <strong><?= !empty($sourceSummary['synced_at']) ? app_h(date('d M Y H:i', strtotime($sourceSummary['synced_at']))) : 'Belum tersedia' ?></strong>
+                <span class="hero-side-label">Upload terakhir</span>
+                <strong><?= !empty($sourceSummary['synced_at']) ? app_h(date('d M Y H:i', strtotime($sourceSummary['synced_at']))) : 'Belum ada upload' ?></strong>
               </div>
               <div class="hero-side-card">
                 <span class="hero-side-label">Halaman aktif</span>

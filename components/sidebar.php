@@ -35,7 +35,7 @@ $sourceSummary = app_student_source_summary();
     </ul>
 
     <div class="sidebar-footer">
-        <span>Roster aktif</span>
+        <span>Upload siswa</span>
         <strong><?= app_h($sourceSummary['source_file']) ?></strong>
     </div>
 </nav>

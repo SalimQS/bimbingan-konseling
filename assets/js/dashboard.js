@@ -1,13 +1,21 @@
+window.addEventListener("DOMContentLoaded", () => {
+  const classFilter = document.querySelector(".kelasFilter");
+  if (!classFilter) {
+    return;
+  }
 
-window.onload = () => {
-  var kelasFilter = document.querySelector('.kelasFilter');
+  classFilter.addEventListener("change", (event) => {
+    const currentUrl = new URL(window.location.href);
+    const selectedValue = event.target.value;
 
-  kelasFilter.addEventListener("change", (val) => {
-    if(val.target.value != '-1') {
-      window.location.href = "index.php?page=dashboard&kelas=" + val.target.value;
+    currentUrl.searchParams.delete("page");
+
+    if (selectedValue !== "-1") {
+      currentUrl.searchParams.set("kelas", selectedValue);
+    } else {
+      currentUrl.searchParams.delete("kelas");
     }
-    else {
-      window.location.href = "index.php?page=dashboard";
-    }
+
+    window.location.href = currentUrl.toString();
   });
-}
+});

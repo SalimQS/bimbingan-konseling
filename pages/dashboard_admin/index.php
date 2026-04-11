@@ -1,256 +1,151 @@
 <?php
-$query = "SELECT * FROM siswa WHERE 1 ";
-$result = $connect->query($query);
-$siswa = $result->num_rows;
+$studentCount = ($connect->query('SELECT COUNT(*) AS total FROM siswa')->fetch_assoc()['total'] ?? 0);
+$teacherCount = ($connect->query('SELECT COUNT(*) AS total FROM guru')->fetch_assoc()['total'] ?? 0);
+$ruleCount = ($connect->query('SELECT COUNT(*) AS total FROM peraturan')->fetch_assoc()['total'] ?? 0);
+$violationCount = ($connect->query('SELECT COUNT(*) AS total FROM pelanggaran')->fetch_assoc()['total'] ?? 0);
 
-$query = "SELECT * FROM guru WHERE 1 ";
-$result = $connect->query($query);
-$guru = $result->num_rows;
+$successMessage = '';
+$errorMessage = '';
 
-$query = "SELECT * FROM peraturan";
-$result = $connect->query($query);
-$pelanggaran = $result->num_rows;
-
-$query = "SELECT * FROM pelanggaran";
-$result = $connect->query($query);
-$pelanggar = $result->num_rows;
-
-/*$query = "SELECT id FROM prodi";
-$result = $connect->query($query);
-$prodi = $result->num_rows;
-
-$query = "SELECT id FROM fakultas";
-$result = $connect->query($query);
-$fakultas = $result->num_rows;*/
-
-?>
-<div class="row mt-3">
-<div class="col">
-    <div class="small-box bg-primary">
-      <div class="inner">
-          <h3> <?= $siswa ?> </h3>
-          <p class='text-light'> Jumlah Siswa </p>
-      </div>
-      <i class="icon fas fa-users"></i>
-    </div>
-  </div>
-
-  <div class="col">
-    <div class="small-box bg-success">
-      <div class="inner">
-          <h3> <?= $guru ?> </h3>
-          <p class='text-light'> Jumlah Guru </p>
-      </div>
-      <i class="icon fas fa-chalkboard-teacher"></i></i>
-    </div>
-  </div>
-  
-  <div class="col">
-    <div class="small-box bg-warning">
-      <div class="inner">
-          <h3> <?= $pelanggaran ?> </h3>
-          <p class='text-light'> List Peraturan </p>
-      </div>
-      <i class="icon fas fa-book"></i></i>
-    </div>
-  </div>
-
-  <div class="col">
-    <div class="small-box bg-danger">
-      <div class="inner">
-          <h3> <?= $pelanggar ?> </h3>
-          <p class='text-light'> Jumlah Pelanggaran </p>
-      </div>
-      <i class="icon fas fa-exclamation-circle"></i>
-    </div>
-  </div>
-
-</div>
-<?php 
-  $errorDelete = false;
-
-  $successStatus = false;
-  $successText = "";
-  $errorStatus = false;
-  $errorText = "";
-
-  if(isset($_POST['delete'])) {
-    $query = "DELETE FROM pelanggaran WHERE id = '". $_POST['id'] ."'";
-    $result = $connect->query($query);
-    if($result) {
-        $successStatus = true;
-        $successText = "dihapus";
+if (isset($_POST['delete'])) {
+    $violationId = (int) ($_POST['id'] ?? 0);
+    if ($violationId > 0 && $connect->query("DELETE FROM pelanggaran WHERE id_pelanggaran = '{$violationId}'")) {
+        $successMessage = 'Data pelanggaran berhasil dihapus.';
     } else {
-        $errorStatus = true;
-        $errorText = "dihapus";
+        $errorMessage = 'Data pelanggaran gagal dihapus.';
     }
-  }
-?>
-<div class="row mt-3">
-  <div class="col-12">
-    <div class="card">
-      <div class="card-header">
-        <div class="dashboard-pelanggar-page">
-          <?php if($successStatus) { ?>
-          <div class="alert alert-success d-flex align-items-center" role="alert">
-              <i class="fas fa-check bi flex-shrink-0 me-2" width="24" height="24"></i>
-              <div><strong>Sukses!</strong> Pelanggar Berhasil <?= $successText ?></div>
-          </div>
-          <?php } ?>
-          <?php if($errorStatus) { ?>
-          <div class="alert alert-danger d-flex align-items-center" role="alert">
-              <i class="fas fa-exclamation-triangle bi flex-shrink-0 me-2" width="24" height="24"></i>
-              <div><strong>Gagal!</strong> Pelanggar gagal <?= $errorText ?></div>
-          </div>
-          <?php } ?>
+}
 
-          <?php
-            $query = "SELECT siswa.id_siswa, peraturan.jenis_peraturan, peraturan.poin_peraturan, siswa.nama_lengkap, kelas.nama_kelas, siswa.nisn, pelanggaran.tanggal_pelanggaran, pelanggaran.tempat_pelanggaran, pelanggaran.id_pelanggaran FROM pelanggaran ";
-            $query .= "LEFT JOIN siswa ON siswa.id_siswa = pelanggaran.id_siswa ";
-            $query .= "LEFT JOIN kelas ON kelas.id_kelas = siswa.id_kelas ";
-            $query .= "LEFT JOIN peraturan ON peraturan.id_peraturan = pelanggaran.id_peraturan ";
-            $query .= "WHERE 1 ";
-            if(isset($_GET['kelas'])) {
-              $kelas = $_GET['kelas'];
-              $query .= "AND kelas.id_kelas='$kelas' ";
-            }
-            if(isset($_POST['btn-cari'])) {
-                $cari = $_POST['cari'];
-                $query .= "AND (peraturan.jenis_peraturan LIKE '%$cari%' OR siswa.nama_lengkap LIKE '%$cari%') ";
-            }
-            $query .= "ORDER BY pelanggaran.tanggal_pelanggaran desc";
-          ?>
-          <div class="row">     
-            <div class="col-12 col-md-4 mt-2">
-              <form method="post">
-                <div class="input-group mb-3">
-                    <input type="text" class="form-control" name='cari' placeholder="Cari Pelanggaran (Nama atau Jenis Pelanggaran)" aria-label="Cari berdasarkan nama pelanggaran" aria-describedby="btn-cari" value="<?= @$_POST['cari'] ?>">
-                    <button class="btn btn-primary" type="submit" name='btn-cari' id="btn-cari" title='Cari'><i class="fa fa-search"></i></button>
-                </div>
-              </form>
-            </div>
-            <div class="col-12 col-md-4 mt-2">
-              <select class="form-select kelasFilter" name="kelas">
-                  <?php
-                  $query2 = "SELECT id_kelas as id, kelas.nama_kelas as kelas, guru.nama_guru as nama_lengkap FROM kelas LEFT JOIN guru ON guru.id_guru = kelas.id_wali_kelas WHERE 1";
-                  $result2 = $connect->query($query2);
-                  if($result2->num_rows > 0) {
-                      echo('<option value="-1">Semua Kelas</option>');
-                      while($kelas = $result2->fetch_assoc()) {
-                          if(isset($_GET['kelas'])) {
-                              if($_GET['kelas'] == $kelas['id']) {
-                                  echo('<option value="'.$kelas['id'].'" selected>'.$kelas['kelas'].' (Wali Kelas: '.$kelas['nama_lengkap'].')</option>');
-                              }
-                              else echo('<option value="'.$kelas['id'].'">'.$kelas['kelas'].' (Wali Kelas: '.$kelas['nama_lengkap'].')</option>');
-                          }
-                          else echo('<option value="'.$kelas['id'].'">'.$kelas['kelas'].' (Wali Kelas: '.$kelas['nama_lengkap'].')</option>');
-                      }
-                  }
-                  else echo('<option value="-1">Kelas Kosong</option>');
-                  ?>
-              </select>
-          </div> 
-          </div>
-          <div>
-              <div class="table-responsive">
-                  <table class="table table-bordered table-striped dataTable">
-                      <thead class="bg-primary text-white">
-                          <tr class="text-center">
-                              <th>No</th>
-                              <th>NISN</th>
-                              <th>Nama Pelanggar</th>
-                              <th>Kelas</th>
-                              <th>Jenis Pelanggaran</th>
-                              <th>Sanksi</th>
-                              <th>Tanggal Pelanggaran</th>
-                              <th>Tempat Pelanggaran</th>
-                              <th>Action</th>
-                          </tr>
-                      </thead>
-                      <tbody>
-                      <?php
-                      $result = $connect->query($query);
-                      if($result->num_rows > 0) {
-                          $pelanggar = $result->fetch_all(MYSQLI_ASSOC);
-                          for ($i = 0; $i < count($pelanggar); $i++) {
-                      ?>                                
-                          <tr>
-                              <td class="text-center"><?= $i + 1 ?></td>
-                              <td class="text-center"><?= $pelanggar[$i]['nisn'] ?></td>
-                              <td class="text-center"><a href="index.php?page=siswa&action=lihat&id=<?= $pelanggar[$i]['id_siswa'] ?>"><?= $pelanggar[$i]['nama_lengkap'] ?></a></td>
-                              <td class="text-center"><?= $pelanggar[$i]['nama_kelas'] ?></td>
-                              <td class="text-center"><?= $pelanggar[$i]['jenis_peraturan'] ?></td>
-                              <td class="text-center"><span class='bg-danger rounded-pill px-2 text-white'><?= $pelanggar[$i]['poin_peraturan'] ?> Poin</span></td>
-                              <td class="text-center"><?= $pelanggar[$i]['tanggal_pelanggaran'] ?></td>
-                              <td class="text-center"><?= $pelanggar[$i]['tempat_pelanggaran'] ?></td>
-                              <td class="text-center" style="min-width:10px">
-                                  <div class="row">
-                                      <form method="post" class="formDelete">
-                                          <input type="hidden" name="id" value="<?= $pelanggar[$i]['id_pelanggaran'] ?>"/>
-                                          <input type="hidden" name='delete'/>
-                                          <button class='btn btn-sm btn-danger' title='Hapus Data Pelanggar'>Hapus</button>
-                                      </form>
-                                  </div>
-                              </td>
-                          </tr>
-                      <?php
-                          }
-                      } 
-                      else {
-                          ?>                                
-                          <tr>
-                              <td colspan="10" class='text-center'>Tidak ada pelanggar</td>
-                          </tr>
-                          <?php
-                      }
-                      ?>
-                      </tbody>
-                  </table>
-              </div>
-          </div>
-        </div>
-      </div>
-    </div>
+$search = isset($_POST['btn-cari']) ? trim((string) ($_POST['cari'] ?? '')) : '';
+$selectedClass = isset($_GET['kelas']) ? trim((string) $_GET['kelas']) : '';
+$where = [];
+
+if ($selectedClass !== '' && $selectedClass !== '-1') {
+    $where[] = "kelas.id_kelas = '" . (int) $selectedClass . "'";
+}
+
+if ($search !== '') {
+    $safeSearch = $connect->real_escape_string($search);
+    $where[] = "(peraturan.jenis_peraturan LIKE '%{$safeSearch}%' OR siswa.nama_lengkap LIKE '%{$safeSearch}%')";
+}
+
+$query = 'SELECT siswa.id_siswa, peraturan.jenis_peraturan, peraturan.poin_peraturan, siswa.nama_lengkap, kelas.nama_kelas, siswa.nisn, pelanggaran.tanggal_pelanggaran, pelanggaran.tempat_pelanggaran, pelanggaran.id_pelanggaran FROM pelanggaran LEFT JOIN siswa ON siswa.id_siswa = pelanggaran.id_siswa LEFT JOIN kelas ON kelas.id_kelas = siswa.id_kelas LEFT JOIN peraturan ON peraturan.id_peraturan = pelanggaran.id_peraturan';
+if ($where !== []) {
+    $query .= ' WHERE ' . implode(' AND ', $where);
+}
+$query .= ' ORDER BY pelanggaran.tanggal_pelanggaran DESC';
+
+$violationResult = $connect->query($query);
+$violations = $violationResult instanceof mysqli_result ? $violationResult->fetch_all(MYSQLI_ASSOC) : [];
+$classOptions = app_fetch_class_filter_options($connect);
+?>
+
+<div class="row g-3 mt-1">
+  <div class="col-12 col-md-6 col-xl-3">
+    <?= app_render_stat_card('Jumlah siswa aktif', $studentCount, 'fa-user-graduate', 'teal', 'Data dari roster sinkron') ?>
+  </div>
+  <div class="col-12 col-md-6 col-xl-3">
+    <?= app_render_stat_card('Jumlah guru', $teacherCount, 'fa-chalkboard-user', 'blue', 'Akun pendidik aktif') ?>
+  </div>
+  <div class="col-12 col-md-6 col-xl-3">
+    <?= app_render_stat_card('List peraturan', $ruleCount, 'fa-book-open', 'gold', 'Acuan poin pelanggaran') ?>
+  </div>
+  <div class="col-12 col-md-6 col-xl-3">
+    <?= app_render_stat_card('Jumlah pelanggaran', $violationCount, 'fa-triangle-exclamation', 'red', 'Total catatan pelanggaran') ?>
+  </div>
 </div>
 
-<!--<div class="row mt-3">
-  <div class="col-12">
-    <div class="card h-100">
-      <div class="card-header">
-        <div class="row">
-          <div class="col-12 col-md-4">
-            <h3 style="display: inline-block;">Pengumuman Terbaru</h3>
-          </div>
-          <div class="col-12 col-md-8 text-right">
-            <a href="?page=pengumuman" name='pengumuman' class='btn btn-sm btn-primary text-right' title='Tambah Pengumuman'>
-                <i class="fa fa-pencil-alt"></i> Ubah
-            </a>
-          </div>
-        </div>
-      </div>
-      <div class="card-body">
-      <?php
-      $query = "SELECT * FROM berita";
-      $result = $connect->query($query);
-      if($result->num_rows > 0) {
-        $berita = $result->fetch_all(MYSQLI_ASSOC);
-        for ($i = 0; $i < count($berita); $i++) {
-      ?>                     
-      
-      <div class='border-bottom mb-4'>
-      <h5><?=$berita[$i]['judul']?> <small style="color: #cecece;"><?=$berita[$i]['created_at']?></small></h5>
-      <p><?=$berita[$i]['berita']?></p>
-      </div>
+<?php if ($successMessage !== '') : ?>
+  <div class="alert alert-success app-alert" role="alert"><?= app_h($successMessage) ?></div>
+<?php endif; ?>
+<?php if ($errorMessage !== '') : ?>
+  <div class="alert alert-danger app-alert" role="alert"><?= app_h($errorMessage) ?></div>
+<?php endif; ?>
 
-      <?php        
-        }   
-      } else {
-      ?>
-      <h5>Tidak ada pengumuman</h5>
-      <?php
-      }
-      ?>
-      </div>
+<section class="panel-card panel-spaced">
+  <div class="section-head">
+    <div>
+      <span class="section-kicker">Aktivitas Terbaru</span>
+      <h2>Daftar pelanggaran siswa</h2>
     </div>
   </div>
-</div>-->
+
+  <div class="toolbar-card">
+    <form method="post" class="toolbar-search">
+      <label class="toolbar-label" for="dashboard-cari">Cari pelanggaran</label>
+      <div class="input-group">
+        <input type="text" class="form-control" id="dashboard-cari" name="cari" placeholder="Cari nama siswa atau jenis pelanggaran" value="<?= app_h($search) ?>">
+        <button class="btn btn-primary" type="submit" name="btn-cari">
+          <i class="fas fa-search"></i>
+          <span>Cari</span>
+        </button>
+      </div>
+    </form>
+
+    <div class="toolbar-filter">
+      <label class="toolbar-label" for="dashboardKelasFilter">Filter kelas</label>
+      <select class="form-select kelasFilter" id="dashboardKelasFilter" name="kelas">
+        <option value="-1">Semua kelas</option>
+        <?php foreach ($classOptions as $classOption) : ?>
+          <option value="<?= app_h($classOption['id']) ?>" <?= $selectedClass === (string) $classOption['id'] ? 'selected' : '' ?>>
+            <?= app_h($classOption['kelas']) ?> (<?= app_h($classOption['total_siswa']) ?> siswa)
+          </option>
+        <?php endforeach; ?>
+      </select>
+    </div>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table app-table align-middle">
+      <thead>
+        <tr>
+          <th>No</th>
+          <th>NISN</th>
+          <th>Nama</th>
+          <th>Kelas</th>
+          <th>Pelanggaran</th>
+          <th>Poin</th>
+          <th>Tanggal</th>
+          <th>Tempat</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        <?php if ($violations !== []) : ?>
+          <?php foreach ($violations as $index => $violation) : ?>
+            <tr>
+              <td><?= app_h($index + 1) ?></td>
+              <td><?= app_h($violation['nisn']) ?></td>
+              <td><a href="index.php?page=siswa&action=lihat&id=<?= app_h($violation['id_siswa']) ?>" class="text-strong"><?= app_h($violation['nama_lengkap']) ?></a></td>
+              <td><?= app_h($violation['nama_kelas']) ?></td>
+              <td><?= app_h($violation['jenis_peraturan']) ?></td>
+              <td><span class="status-pill badge-points"><?= app_h($violation['poin_peraturan']) ?> poin</span></td>
+              <td><?= app_h($violation['tanggal_pelanggaran']) ?></td>
+              <td><?= app_h($violation['tempat_pelanggaran']) ?></td>
+              <td>
+                <form method="post">
+                  <input type="hidden" name="id" value="<?= app_h($violation['id_pelanggaran']) ?>">
+                  <input type="hidden" name="delete" value="1">
+                  <button class="btn btn-sm btn-outline-secondary" type="submit">
+                    <i class="fas fa-trash"></i>
+                    <span>Hapus</span>
+                  </button>
+                </form>
+              </td>
+            </tr>
+          <?php endforeach; ?>
+        <?php else : ?>
+          <tr>
+            <td colspan="9">
+              <div class="empty-state">
+                <i class="fas fa-shield-heart"></i>
+                <strong>Belum ada data pelanggaran.</strong>
+                <span>Catatan pelanggaran siswa akan muncul di sini.</span>
+              </div>
+            </td>
+          </tr>
+        <?php endif; ?>
+      </tbody>
+    </table>
+  </div>
+</section>

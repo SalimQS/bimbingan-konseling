@@ -1,221 +1,188 @@
-<div class="row">
-  <div class="col-12 col-md-6">
-      <a class="btn btn-primary" href="?page=siswa"><i class="fa fa-arrow-left"></i> Kembali</a>
-  </div>
-</div>
-
 <?php
-  $success = false;
-  $error = false;
-  $errorText = "";
-    
-  if(isset($_POST['simpan'])) {
-    $connect->begin_transaction();
-    try {
-      $query = "UPDATE siswa SET ";
-      $query .= "nisn='" .$_POST['nisn'] . "', ";
-      $query .= "id_kelas='" .$_POST['kelas'] . "', ";
-      $query .= "nama_lengkap='". $_POST['nama_lengkap'] ."', ";
-      $query .= "nama_ibu='". $_POST['nama_ibu'] ."', ";
-      $query .= "jenis_kelamin='". $_POST['jenis_kelamin'] ."', ";
-      $query .= "tempat_lahir='". $_POST['tempat_lahir'] ."', ";
-      $query .= "tanggal_lahir='". $_POST['tanggal_lahir'] ."', ";
-      $query .= "agama='". $_POST['agama'] ."', ";
-      $query .= "alamat='". $_POST['alamat'] ."', ";
-      $query .= "no_telepon='". $_POST['no_telepon'] ."' ";
-      $query .= "WHERE id_siswa='" . $_GET['id'] . "'";
-      $result = $connect->query($query);
-      if($result) {
-        $success = true;
-        $connect->commit();
-      } else {
-        $error = true;
-        $errorText = "Data gagal diperbarui";
-        $connect->rollback();
-      }
-    } catch (mysqli_sql_exception $e) {
-      $connect->rollback();
-      $error = true;
-      $errorText = $e;
-    }
-  }
 
-  $errorPass = false;    
-  $errorText = "";
-  $successPass = false;
-  $successText = "";
-  $successFoto = false;
-  $errorFoto = false;
-  $errorFotoText = "";
+$studentId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
+$successMessage = '';
+$errorMessage = '';
 
-  if(isset($_POST['changeFoto'])) {
-    $fileName = "uploads/" . basename($_FILES['foto']['name']);
-    $ext = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
-    $file = "uploads/" . time() . "." . $ext;
-    $maxSize = 2097152;
-    $imgSize = getimagesize($_FILES['foto']['tmp_name']);
-    if(($_FILES['foto']['size'] >= $maxSize)) {
-      $errorFoto = true;
-      $errorFotoText = "Ukuran foto maksimal 2MB";
+if ($studentId > 0 && isset($_POST['save_supporting_data'])) {
+    $motherName = trim((string) ($_POST['nama_ibu'] ?? ''));
+    if ($motherName === '') {
+        $errorMessage = 'Nama ibu kandung tidak boleh kosong.';
     } else {
-      $connect->begin_transaction();
-      $query = "UPDATE siswa SET foto_siswa='$file' WHERE id_siswa = '". $_GET['id'] ."'";
-      $result = $connect->query($query);
-      if($result) {
-        if(move_uploaded_file($_FILES['foto']['tmp_name'], $file)) {
-          $successFoto = true;
-          $connect->commit();
+        $safeMotherName = $connect->real_escape_string($motherName);
+        $query = "UPDATE siswa SET nama_ibu = '{$safeMotherName}' WHERE id_siswa = '{$studentId}'";
+        if ($connect->query($query)) {
+            $successMessage = 'Nama ibu kandung berhasil diperbarui.';
         } else {
-          $errorFoto = true;
-          $errorFotoText = "Foto gagal diperbarui";
-          $connect->rollback();
+            $errorMessage = 'Nama ibu kandung gagal diperbarui.';
         }
-      } else {
-        $errorFoto = true;
-        $errorFotoText = "Foto gagal diperbarui";
-        $connect->rollback();
-      }
     }
-  }
+}
 
-  $query = "SELECT kelas.nama_kelas, kelas.id_kelas as kelas_id, siswa.* FROM siswa ";
-  $query .= "LEFT JOIN kelas ON kelas.id_kelas = siswa.id_kelas ";
-  $query .= "WHERE siswa.id_siswa='" . $_GET['id'] . "'";
-  $result = $connect->query($query);
-  if($result->num_rows > 0) {
-    $user = $result->fetch_assoc();
-    $foto = $user['foto_siswa'];
-  } else {
-    echo('<script>alert("error '.$result->num_rows.'")</script>');
-  }
+if ($studentId > 0 && isset($_POST['save_photo'])) {
+    $photo = $_FILES['foto'] ?? null;
+
+    if ($photo === null || (int) ($photo['size'] ?? 0) <= 0) {
+        $errorMessage = 'Pilih foto terlebih dahulu.';
+    } elseif ((int) $photo['size'] > 2097152) {
+        $errorMessage = 'Ukuran foto maksimal 2 MB.';
+    } elseif (@getimagesize($photo['tmp_name']) === false) {
+        $errorMessage = 'File yang dipilih bukan gambar yang valid.';
+    } else {
+        $extension = strtolower(pathinfo((string) $photo['name'], PATHINFO_EXTENSION));
+        $extension = in_array($extension, ['jpg', 'jpeg', 'png'], true) ? $extension : 'jpg';
+        $targetPath = 'uploads/' . time() . '-' . $studentId . '.' . $extension;
+        $safeTargetPath = $connect->real_escape_string($targetPath);
+        $query = "UPDATE siswa SET foto_siswa = '{$safeTargetPath}' WHERE id_siswa = '{$studentId}'";
+
+        $connect->begin_transaction();
+
+        try {
+            if (!$connect->query($query)) {
+                throw new RuntimeException('Query update foto gagal dijalankan.');
+            }
+
+            if (!move_uploaded_file($photo['tmp_name'], $targetPath)) {
+                throw new RuntimeException('File foto gagal diunggah.');
+            }
+
+            $connect->commit();
+            $successMessage = 'Foto siswa berhasil diperbarui.';
+        } catch (Throwable $exception) {
+            $connect->rollback();
+            $errorMessage = $exception->getMessage();
+        }
+    }
+}
+
+$student = null;
+if ($studentId > 0) {
+    $query = "SELECT kelas.nama_kelas, siswa.* FROM siswa LEFT JOIN kelas ON kelas.id_kelas = siswa.id_kelas WHERE siswa.id_siswa = '{$studentId}' LIMIT 1";
+    $result = $connect->query($query);
+    if ($result instanceof mysqli_result && $result->num_rows > 0) {
+        $student = $result->fetch_assoc();
+    }
+}
+
+$actions = '<div class="action-stack action-stack-inline"><a class="btn btn-outline-secondary" href="?page=siswa"><i class="fas fa-arrow-left"></i> <span>Kembali</span></a>';
+if ($student !== null) {
+    $actions .= '<a class="btn btn-outline-primary" href="?page=siswa&action=lihat&id=' . app_h($studentId) . '"><i class="fas fa-eye"></i> <span>Lihat Detail</span></a>';
+}
+$actions .= '</div>';
+
+echo app_render_page_intro(
+    'Kelola Data Pendukung Siswa',
+    'Identitas inti siswa mengikuti file sumber. Halaman ini dipakai untuk melengkapi data pendukung yang tidak berasal dari file impor.',
+    app_source_meta_chips(),
+    $actions
+);
 ?>
-<div class="row ">
-  <div class="col-md-4 border-right">   
-    <?php if($successFoto) {?>
-    <div class="alert alert-success d-flex align-items-center" role="alert">
-        <i class="fas fa-check bi flex-shrink-0 me-2" width="24" height="24"></i>
-        <div><strong>Berhasil!</strong> Foto berhasil diperbarui</div>
+
+<?php if ($student === null) : ?>
+    <section class="panel-card panel-spaced">
+        <div class="empty-state">
+            <i class="fas fa-circle-exclamation"></i>
+            <strong>Data siswa tidak ditemukan.</strong>
+            <span>Kembali ke daftar siswa lalu pilih data yang ingin dikelola.</span>
+        </div>
+    </section>
+<?php else : ?>
+    <?php $photo = trim((string) ($student['foto_siswa'] ?? '')) !== '' ? $student['foto_siswa'] : 'assets/img/default.jpg'; ?>
+
+    <?php if ($successMessage !== '') : ?>
+        <div class="alert alert-success app-alert" role="alert"><?= app_h($successMessage) ?></div>
+    <?php endif; ?>
+    <?php if ($errorMessage !== '') : ?>
+        <div class="alert alert-danger app-alert" role="alert"><?= app_h($errorMessage) ?></div>
+    <?php endif; ?>
+
+    <div class="row g-4">
+        <div class="col-12 col-xl-4">
+            <section class="panel-card panel-spaced h-100">
+                <div class="student-profile-card student-profile-card-column">
+                    <img src="<?= app_h($photo) ?>" alt="<?= app_h($student['nama_lengkap']) ?>" id="previewFoto" class="student-profile-photo">
+                    <div class="text-center">
+                        <h2><?= app_h($student['nama_lengkap']) ?></h2>
+                        <p><?= app_h($student['nama_kelas']) ?> • <?= app_h($student['nisn']) ?></p>
+                    </div>
+                </div>
+
+                <form method="post" enctype="multipart/form-data" class="stack-form">
+                    <label class="toolbar-label" for="foto">Foto siswa</label>
+                    <input type="file" name="foto" id="foto" class="form-control" accept="image/png,image/jpg,image/jpeg" onchange="handlePreview(this)">
+                    <div class="action-stack action-stack-inline">
+                        <button class="btn btn-primary" type="submit" name="save_photo">
+                            <i class="fas fa-upload"></i>
+                            <span>Simpan Foto</span>
+                        </button>
+                    </div>
+                </form>
+            </section>
+        </div>
+
+        <div class="col-12 col-xl-8">
+            <section class="panel-card panel-spaced">
+                <div class="section-head">
+                    <div>
+                        <span class="section-kicker">Data Pendukung</span>
+                        <h2>Lengkapi informasi yang tidak ada di file sumber</h2>
+                    </div>
+                    <span class="status-pill badge-source">Source managed</span>
+                </div>
+
+                <form method="post" class="stack-form">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="toolbar-label" for="nama_ibu">Nama ibu kandung</label>
+                            <input type="text" id="nama_ibu" name="nama_ibu" class="form-control" value="<?= app_h($student['nama_ibu']) ?>" placeholder="Masukkan nama ibu kandung">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="toolbar-label">Nama lengkap</label>
+                            <input type="text" class="form-control" value="<?= app_h($student['nama_lengkap']) ?>" readonly>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="toolbar-label">Kelas</label>
+                            <input type="text" class="form-control" value="<?= app_h($student['nama_kelas']) ?>" readonly>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="toolbar-label">NISN</label>
+                            <input type="text" class="form-control" value="<?= app_h($student['nisn']) ?>" readonly>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="toolbar-label">Jenis kelamin</label>
+                            <input type="text" class="form-control" value="<?= app_h(app_gender_label($student['jenis_kelamin'])) ?>" readonly>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="toolbar-label">Tempat lahir</label>
+                            <input type="text" class="form-control" value="<?= app_h($student['tempat_lahir']) ?>" readonly>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="toolbar-label">Tanggal lahir</label>
+                            <input type="text" class="form-control" value="<?= app_h($student['tanggal_lahir']) ?>" readonly>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="toolbar-label">Agama</label>
+                            <input type="text" class="form-control" value="<?= app_h(app_religion_label($student['agama'])) ?>" readonly>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="toolbar-label">Telepon</label>
+                            <input type="text" class="form-control" value="<?= app_h($student['no_telepon']) ?>" readonly>
+                        </div>
+                        <div class="col-12">
+                            <label class="toolbar-label">Alamat</label>
+                            <textarea class="form-control" rows="3" readonly><?= app_h($student['alamat']) ?></textarea>
+                        </div>
+                    </div>
+
+                    <div class="action-stack action-stack-inline">
+                        <button class="btn btn-primary" type="submit" name="save_supporting_data">
+                            <i class="fas fa-save"></i>
+                            <span>Simpan Nama Ibu</span>
+                        </button>
+                    </div>
+                </form>
+            </section>
+        </div>
     </div>
-    <?php } ?>
-    <?php if($errorFoto) {?>
-    <div class="alert alert-danger d-flex align-items-center" role="alert">
-        <i class="fas fa-exclamation-triangle bi flex-shrink-0 me-2" width="24" height="24"></i>
-        <div><strong>Gagal!</strong> <?= $errorFotoText ?></div>
-    </div>
-    <?php } ?>
-    <form method="post" class="d-flex flex-column align-items-center text-center p-3" enctype="multipart/form-data">
-      <img class="rounded mt-5 object-cover border border-dark" width="150px" height="150px" src="<?= $user['foto_siswa'] ?>" id='previewFoto'>
-      <input type="file" name="foto" id="foto" class="hidden" accept='image/png,image/jpg,image/jpeg' onchange="handlePreview(this)">
-      <button class="btn btn-primary btn-sm hidden mt-2" id='btn-simpan' name='changeFoto'>Simpan</button>
-      <button class="btn btn-danger btn-sm hidden mt-2" id='btn-batal' onclick='handleCancel("<?= $foto ?>")'>Batal</button>
-      <label class="btn btn-primary btn-sm mt-2" type="button" for="foto" id='btn-ubah'> Ubah Foto</label>
-    </form>
-  </div>
-  <div class="col-md-5 border-right">
-      <div class="p-3">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h4 class="text-right">Data Siswa</h4>
-        </div>
-        <?php if($success) {?>
-        <div class="alert alert-success d-flex align-items-center" role="alert">
-            <i class="fas fa-check bi flex-shrink-0 me-2" width="24" height="24"></i>
-            <div><strong>Berhasil!</strong> Data berhasil diperbarui</div>
-        </div>
-        <?php } ?>
-        <?php if($error) {?>
-        <div class="alert alert-danger d-flex align-items-center" role="alert">
-            <i class="fas fa-exclamation-triangle bi flex-shrink-0 me-2" width="24" height="24"></i>
-            <div><strong>Gagal!</strong> <?= $errorText ?></div>
-        </div>
-        <?php } ?>
-        <?php if($successPass) {?>
-        <div class="alert alert-success d-flex align-items-center" role="alert">
-            <i class="fas fa-check bi flex-shrink-0 me-2" width="24" height="24"></i>
-            <div><strong>Berhasil!</strong> <?= $successText ?></div>
-        </div>
-        <?php } ?>
-        <?php if($errorPass) {?>
-        <div class="alert alert-danger d-flex align-items-center" role="alert">
-            <i class="fas fa-exclamation-triangle bi flex-shrink-0 me-2" width="24" height="24"></i>
-            <div><strong>Gagal!</strong> <?= $errorText ?></div>
-        </div>
-        <?php } ?>
-        <form method="POST">
-            <div class="row mt-2">
-                <div class="col-md-12 mb-2">
-                  <label class="labels">Nama Lengkap</label>
-                  <input type="text" class="form-control" placeholder="Nama Lengkap" name='nama_lengkap' value="<?= $user['nama_lengkap'] ?>">
-                </div>
-                <div class="col-md-12 mb-2">
-                  <label class="labels">Nama Ibu Kandung</label>
-                  <input type="text" class="form-control" placeholder="Nama Ibu Kandung" name='nama_ibu' value="<?= $user['nama_ibu'] ?>">
-                </div>
-                <div class="col-md-12 mb-2">
-                <label class="labels">Jenis Kelamin</label>
-                <select class="form-select" aria-label="Jenis Kelamin" name='jenis_kelamin'>
-                    <option>Pilih Jenis Kelamin</option>
-                    <option value="0" <?php if($user['jenis_kelamin'] == 0) echo 'selected'; ?>>Laki-laki</option>
-                    <option value="1" <?php if($user['jenis_kelamin'] == 1) echo 'selected'; ?>>Perempuan</option>
-                </select>
-                </div>
-                <div class="col-md-6 mb-2">
-                <label class="labels">Tempat Lahir</label>
-                <input type="text" class="form-control" placeholder="Tempat lahir" name='tempat_lahir' value="<?= $user['tempat_lahir'] ?>">
-                </div>
-                <div class="col-md-6 mb-2">
-                  <label class="labels">Tanggal Lahir</label>
-                  <input type="date" class="form-control" placeholder="Tanggal Lahir" name='tanggal_lahir' value="<?= $user['tanggal_lahir'] ?>">
-                </div>
-                <div class="col-md-12 mb-2">
-                  <label class="labels">Agama</label>
-                  <select class="form-select" aria-label="Agama" name='agama'>
-                      <option selected>Pilih Agama</option>
-                      <option value="0" <?php if($user['agama'] == 0) echo 'selected'; ?>>Islam</option>
-                      <option value="1" <?php if($user['agama'] == 1) echo 'selected'; ?>>Kristen Protestan</option>
-                      <option value="2" <?php if($user['agama'] == 2) echo 'selected'; ?>>Kristen Katholik</option>
-                      <option value="3" <?php if($user['agama'] == 3) echo 'selected'; ?>>Hindu</option>
-                      <option value="4" <?php if($user['agama'] == 4) echo 'selected'; ?>>Budha</option>
-                      <option value="5" <?php if($user['agama'] == 5) echo 'selected'; ?>>Konghucu</option>
-                  </select>
-                </div>
-                <div class="col-md-12 mb-2">
-                  <label class="labels">NISN</label>
-                  <input type="text" class="form-control" placeholder="NISN" name="nisn" value="<?= $user['nisn'] ?>">
-                </div>
-                <div class="col-md-12 mb-2">
-                  <label class="labels">Kelas</label>
-                  <select class="form-select" name="kelas">
-                    <?php
-                    $query2 = "SELECT * FROM kelas WHERE 1";
-                    $result2 = $connect->query($query2);
-                    if($result2->num_rows > 0) {
-                        echo('<option value="-1">Pilih Kelas</option>');
-                        while($kelas = $result2->fetch_assoc()) {
-                          if($user['kelas_id'] == $kelas['id_kelas']) {
-                              echo('<option value="'.$kelas['id_kelas'].'" selected>'.$kelas['nama_kelas'].'</option>');
-                          }
-                          else echo('<option value="'.$kelas['id_kelas'].'">'.$kelas['nama_kelas'].'</option>');
-                        }
-                    }
-                    else echo('<option value="-1">Kelas Kosong</option>');
-                    ?>
-                  </select>
-                </div>
-                <div class="col-md-12 mb-2">
-                  <label class="labels">Alamat</label>
-                  <textarea class="form-control" id="alamat" rows="3" name='alamat'><?= $user['alamat'] ?></textarea>
-                </div>
-                <div class="col-md-12 mb-4">
-                  <label class="labels">No Telepon</label>
-                  <input type="text" class="form-control" placeholder="Nomor Telepon" name="no_telepon" value="<?= $user['no_telepon'] ?>">
-                </div>
-            </div>
-            <div class="row">
-              <div class="col-12 col-md-12 text-right">
-                  <button class="btn btn-primary profile-button" type="submit" name='simpan'>Simpan</button>
-              </div>
-            </div>
-         </form>
-      </div>
-   </div>
-</div>
+<?php endif; ?>

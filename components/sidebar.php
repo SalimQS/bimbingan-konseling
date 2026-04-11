@@ -1,174 +1,41 @@
+<?php
+$menuItems = app_sidebar_menu_items($_SESSION);
+$sourceSummary = app_student_source_summary();
+?>
 <nav id="sidebar">
     <div class="sidebar-header">
-        <a href="index.php">
-            <h1><span class='text-white fw-bold'>MY</span>Point</h1>
-            <strong><span class='text-white'>M</span>P</strong>
+        <a href="index.php" class="sidebar-brand">
+            <span class="sidebar-brand-mark">BK</span>
+            <div>
+                <h1>Student Care</h1>
+                <p>Sistem bimbingan konseling</p>
+            </div>
         </a>
     </div>
-    <ul class="list-unstyled components">
-        <li class="<?= !isset($page) ? 'active' : $page === ('' ? 'active' : '') ?>">
-            <a href="index.php">
-            <div class="row">
-                <div class='col-12 col-md-2 sidebar-item-icon' >
-                    <i class="fas fa-home"></i>
-                </div>
-                <span class="col-10">Dashboard</span>
-            </div>
-            </a>
-        </li>
-        <?php
-            $menuAdmin = [
-                [
-                    "label" => "Siswa",
-                    "icon" => "fa-graduation-cap",
-                    "href" => "siswa",
-                ],
-                [
-                    "label" => "Guru",
-                    "icon" => "fa-graduation-cap",
-                    "href" => "guru",
-                ],
-                [
-                    "label" => "Kelas",
-                    "icon" => "fa-graduation-cap",
-                    "href" => "kelas",
-                ],
-                [
-                    "label" => "Peraturan",
-                    "icon" => "fa-list-ul",
-                    "href" => "peraturan",
-                ],
-                [
-                    "label" => "Peringatan",
-                    "icon" => "fa-exclamation-circle",
-                    "href" => "peringatan",
-                ],
-                [
-                    "label" => "Account",
-                    "icon" => "fa-user",
-                    "href" => "user",
-                ],
-            ];
-            if($_SESSION['role'] == 'admin' && $_SESSION['level'] == 'petugas') {
-                foreach ($menuAdmin as $menu) {
-        ?>
-        <li class="<?= $page === $menu['href'] ? 'active' : '' ?>">
-            <a href="index.php?page=<?=$menu['href']?>">
-                <div class="row">
-                    <div class='col-12 col-md-2 sidebar-item-icon' >
-                        <i class="fas <?=$menu['icon']?>"></i>
-                    </div>
-                    <span class="col-10"><?=$menu['label']?></span>
-                </div>
-            </a>
-        </li>
-        
-        <?php
-                }
+
+    <ul class="sidebar-menu">
+        <?php foreach ($menuItems as $menuItem) : ?>
+            <?php
+            $targetPage = '';
+            $targetQuery = parse_url($menuItem['href'], PHP_URL_QUERY);
+            if ($targetQuery) {
+                parse_str($targetQuery, $targetParams);
+                $targetPage = $targetParams['page'] ?? '';
             }
-            $menuNotAdmin = [
-                [
-                    "label" => "Siswa",
-                    "icon" => "fa-graduation-cap",
-                    "href" => "siswa",
-                ],
-                [
-                    "label" => "Guru",
-                    "icon" => "fa-graduation-cap",
-                    "href" => "guru",
-                ],
-                [
-                    "label" => "Kelas",
-                    "icon" => "fa-graduation-cap",
-                    "href" => "kelas",
-                ],
-                [
-                    "label" => "Peraturan",
-                    "icon" => "fa-list-ul",
-                    "href" => "peraturan",
-                ],
-                [
-                    "label" => "Peringatan",
-                    "icon" => "fa-exclamation-circle",
-                    "href" => "peringatan",
-                ],
-            ];
-            if($_SESSION['role'] == 'admin' && ($_SESSION['level'] == 'kepsek' || $_SESSION['level'] == 'bk')) {
-                foreach ($menuNotAdmin as $menu) {
-        ?>
-        <li class="<?= $page === $menu['href'] ? 'active' : '' ?>">
-            <a href="index.php?page=<?=$menu['href']?>">
-                <div class="row">
-                    <div class='col-12 col-md-2 sidebar-item-icon' >
-                        <i class="fas <?=$menu['icon']?>"></i>
-                    </div>
-                    <span class="col-10"><?=$menu['label']?></span>
-                </div>
-            </a>
-        </li>
-        
-        <?php
-                }
-            }
-            $menuWaliKelas = [
-                [
-                    "label" => "Siswa",
-                    "icon" => "fa-graduation-cap",
-                    "href" => "siswa",
-                ],
-                [
-                    "label" => "Peraturan",
-                    "icon" => "fa-list-ul",
-                    "href" => "peraturan",
-                ],
-                [
-                    "label" => "Data Saya",
-                    "icon" => "fa-user",
-                    "href" => "profile",
-                ],
-            ];
-            if($_SESSION['role'] == 'guru' && $_SESSION['level'] == 'walikelas') {
-                foreach ($menuWaliKelas as $menu) {
-        ?>
-        <li class="<?= $page === $menu['href'] ? 'active' : '' ?>">
-            <a href="index.php?page=<?=$menu['href']?>">
-                <div class="row">
-                    <div class='col-12 col-md-2 sidebar-item-icon' >
-                        <i class="fas <?=$menu['icon']?>"></i>
-                    </div>
-                    <span class="col-10"><?=$menu['label']?></span>
-                </div>
-            </a>
-        </li>
-        
-        <?php
-                }
-            }
-            $menuGuru = [
-                [
-                    "label" => "Data Saya",
-                    "icon" => "fa-user",
-                    "href" => "profile",
-                ],
-            ];
-            if($_SESSION['role'] == 'guru' && $_SESSION['level'] == 'guru') {
-                foreach ($menuGuru as $menu) {
-        ?>
-        <li class="<?= $page === $menu['href'] ? 'active' : '' ?>">
-            <a href="index.php?page=<?=$menu['href']?>">
-                <div class="row">
-                    <div class='col-12 col-md-2 sidebar-item-icon' >
-                        <i class="fas <?=$menu['icon']?>"></i>
-                    </div>
-                    <span class="col-10"><?=$menu['label']?></span>
-                </div>
-            </a>
-        </li>
-        
-        <?php
-                }
-            }
-        ?>
+
+            $isActive = ($targetPage === '' && $page === '') || ($targetPage !== '' && $page === $targetPage);
+            ?>
+            <li class="<?= $isActive ? 'active' : '' ?>">
+                <a href="<?= app_h($menuItem['href']) ?>">
+                    <i class="fas <?= app_h($menuItem['icon']) ?>"></i>
+                    <span><?= app_h($menuItem['label']) ?></span>
+                </a>
+            </li>
+        <?php endforeach; ?>
     </ul>
 
+    <div class="sidebar-footer">
+        <span>Roster aktif</span>
+        <strong><?= app_h($sourceSummary['source_file']) ?></strong>
+    </div>
 </nav>

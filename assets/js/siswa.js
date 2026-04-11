@@ -1,49 +1,50 @@
-window.onload = () => {
+window.addEventListener("DOMContentLoaded", () => {
+  const deleteForms = document.querySelectorAll(".formDelete");
 
-var deleteForm = document.querySelectorAll('.formDelete');
+  deleteForms.forEach((form) => {
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
 
-deleteForm.forEach((form) => {
-  form.addEventListener("submit", function (e) {
-    e.preventDefault();
-    var currForm = this;
-    var nama = this.getAttribute("nama-siswa");
-    Swal.fire({
-      title: "Anda yakin?",
-      html: `Siswa <b>${nama}</b> akan dihapus!`,
-      icon: "question",
-      confirmButtonText: "Ya!",
-      showCancelButton: true,
-      cancelButtonText: "Tidak!",
-    }).then((response) => {
-      if(response.isConfirmed) {
-        currForm.submit();
+      const currentForm = event.currentTarget;
+      const studentName = currentForm.getAttribute("nama-siswa") || "siswa ini";
+
+      if (typeof Swal === "undefined") {
+        currentForm.submit();
+        return;
       }
+
+      Swal.fire({
+        title: "Anda yakin?",
+        html: `Data <b>${studentName}</b> akan dihapus.`,
+        icon: "question",
+        confirmButtonText: "Ya, hapus",
+        showCancelButton: true,
+        cancelButtonText: "Batal",
+      }).then((response) => {
+        if (response.isConfirmed) {
+          currentForm.submit();
+        }
+      });
     });
   });
-});
 
-/*var dataTable = document.querySelectorAll('.dataTable tr:not(thead tr)');
+  const classFilter = document.querySelector("#kelasFilter");
+  if (!classFilter) {
+    return;
+  }
 
-dataTable.forEach((row) => {
-  row.addEventListener("click", function (e) {
-    var id = this.getAttribute("id-data");
-    //document.getElementById("id-selector").value = id;
-    document.querySelectorAll('.dataTable tr:not(thead tr)').forEach((doc) => {
-      doc.style.backgroundColor = '#fff';
-    })
-    alert(e.target.parentElement.parentElement.parentElement.querySelector('span').style.innerHTML)
-    //e.target.parentElement.style.backgroundColor = 'rgba(37, 52, 163, 0.219)';
+  classFilter.addEventListener("change", (event) => {
+    const currentUrl = new URL(window.location.href);
+    const selectedValue = event.target.value;
+
+    currentUrl.searchParams.set("page", "siswa");
+
+    if (selectedValue !== "-1") {
+      currentUrl.searchParams.set("kelas", selectedValue);
+    } else {
+      currentUrl.searchParams.delete("kelas");
+    }
+
+    window.location.href = currentUrl.toString();
   });
-});*/
-
-var kelasFilter = document.querySelector('#kelasFilter');
-
-kelasFilter.addEventListener("change", (val) => {
-  if(val.target.value != '-1') {
-    window.location.href = "index.php?page=siswa&kelas=" + val.target.value;
-  }
-  else {
-    window.location.href = "index.php?page=siswa";
-  }
 });
-};

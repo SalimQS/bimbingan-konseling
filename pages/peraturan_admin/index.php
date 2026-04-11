@@ -11,7 +11,7 @@
                 $errorText = "";
 
                 if(isset($_POST['delete'])) {
-                    $query = "DELETE FROM aturan WHERE id = '". $_POST['id'] ."'";
+                    $query = "DELETE FROM peraturan WHERE id_peraturan = '". $_POST['id'] ."'";
                     $result = $connect->query($query);
                     if($result) {
                         $successStatus = true;

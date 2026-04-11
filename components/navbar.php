@@ -16,7 +16,7 @@ $sourceSummary = app_student_source_summary();
     <div class="topbar-right">
       <?php if (!empty($sourceSummary['synced_at'])) : ?>
         <span class="topbar-badge">
-          <i class="fas fa-cloud-arrow-down"></i>
+                    <i class="fas fa-cloud-download-alt"></i>
           Upload <?= app_h(date('d M H:i', strtotime($sourceSummary['synced_at']))) ?>
         </span>
       <?php endif; ?>

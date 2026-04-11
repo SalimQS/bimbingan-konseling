@@ -90,9 +90,6 @@
                                     else if($akun[$i]['level_admin'] == 'kepsek') {
                                         $level = 'Kepala Sekolah';
                                     }
-                                    else if($akun[$i]['level_admin'] == 'walikelas') {
-                                        $level = 'Wali Kelas';
-                                    }
                             ?>                                
                                 <tr>
                                     <td class="text-center"><?= $i + 1 ?></td>

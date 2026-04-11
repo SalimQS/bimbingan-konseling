@@ -81,7 +81,7 @@ echo app_render_page_intro(
 <?php if ($student === null) : ?>
     <section class="panel-card panel-spaced">
         <div class="empty-state">
-            <i class="fas fa-circle-exclamation"></i>
+            <i class="fas fa-exclamation-circle"></i>
             <strong>Data siswa tidak ditemukan.</strong>
             <span>Kembali ke daftar siswa lalu pilih data yang ingin dikelola.</span>
         </div>

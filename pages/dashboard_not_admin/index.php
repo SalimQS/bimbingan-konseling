@@ -33,13 +33,13 @@ $classOptions = app_fetch_class_filter_options($connect);
     <?= app_render_stat_card('Jumlah siswa aktif', $studentCount, 'fa-user-graduate', 'teal', 'Roster sinkron aktif') ?>
   </div>
   <div class="col-12 col-md-6 col-xl-3">
-    <?= app_render_stat_card('Jumlah guru', $teacherCount, 'fa-chalkboard-user', 'blue', 'Data tenaga pendidik') ?>
+    <?= app_render_stat_card('Jumlah guru', $teacherCount, 'fa-chalkboard-teacher', 'blue', 'Data tenaga pendidik') ?>
   </div>
   <div class="col-12 col-md-6 col-xl-3">
     <?= app_render_stat_card('List peraturan', $ruleCount, 'fa-book-open', 'gold', 'Jenis pelanggaran aktif') ?>
   </div>
   <div class="col-12 col-md-6 col-xl-3">
-    <?= app_render_stat_card('Jumlah pelanggaran', $violationCount, 'fa-triangle-exclamation', 'red', 'Catatan poin keseluruhan') ?>
+    <?= app_render_stat_card('Jumlah pelanggaran', $violationCount, 'fa-exclamation-triangle', 'red', 'Catatan poin keseluruhan') ?>
   </div>
 </div>
 
@@ -108,7 +108,7 @@ $classOptions = app_fetch_class_filter_options($connect);
           <tr>
             <td colspan="8">
               <div class="empty-state">
-                <i class="fas fa-shield-heart"></i>
+                <i class="fas fa-shield-alt"></i>
                 <strong>Belum ada data pelanggaran.</strong>
                 <span>Catatan pelanggaran siswa akan muncul di sini.</span>
               </div>

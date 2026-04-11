@@ -5,8 +5,7 @@
 </div>
 
 <?php
-  $query = "SELECT guru.*, kelas.nama_kelas FROM guru ";
-  $query .= "LEFT JOIN kelas ON kelas.id_wali_kelas = guru.id_guru ";
+  $query = "SELECT guru.* FROM guru ";
   $query .= "WHERE guru.id_guru='" . $_SESSION['id_user'] . "'";
   $result = $connect->query($query);
   if($result->num_rows > 0) {

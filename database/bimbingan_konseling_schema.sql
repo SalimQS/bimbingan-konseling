@@ -43,16 +43,10 @@ CREATE TABLE IF NOT EXISTS `guru` (
 CREATE TABLE IF NOT EXISTS `kelas` (
   `id_kelas` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `nama_kelas` VARCHAR(64) NOT NULL,
-  `id_wali_kelas` INT UNSIGNED DEFAULT NULL,
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id_kelas`),
-  UNIQUE KEY `uniq_kelas_nama` (`nama_kelas`),
-  UNIQUE KEY `uniq_kelas_wali` (`id_wali_kelas`),
-  CONSTRAINT `fk_kelas_wali`
-    FOREIGN KEY (`id_wali_kelas`) REFERENCES `guru` (`id_guru`)
-    ON DELETE SET NULL
-    ON UPDATE CASCADE
+  UNIQUE KEY `uniq_kelas_nama` (`nama_kelas`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `siswa` (
@@ -110,6 +104,16 @@ CREATE TABLE IF NOT EXISTS `pelanggaran` (
     ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS `pengaturan_peringatan` (
+  `id_pengaturan` TINYINT UNSIGNED NOT NULL DEFAULT 1,
+  `sp1_min_poin` TINYINT UNSIGNED NOT NULL DEFAULT 50,
+  `sp2_min_poin` TINYINT UNSIGNED NOT NULL DEFAULT 100,
+  `sp3_min_poin` TINYINT UNSIGNED NOT NULL DEFAULT 150,
+  `pemberhentian_min_poin` TINYINT UNSIGNED NOT NULL DEFAULT 200,
+  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id_pengaturan`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 INSERT INTO `admin` (`nama_admin`, `username_admin`, `password_admin`, `level_admin`)
 SELECT 'Administrator', 'admin', 'admin123', 'petugas'
 WHERE NOT EXISTS (
@@ -124,4 +128,12 @@ WHERE NOT EXISTS (
   SELECT 1
   FROM `guru`
   WHERE `username_guru` = 'guru'
+);
+
+INSERT INTO `pengaturan_peringatan` (`id_pengaturan`, `sp1_min_poin`, `sp2_min_poin`, `sp3_min_poin`, `pemberhentian_min_poin`)
+SELECT 1, 50, 100, 150, 200
+WHERE NOT EXISTS (
+  SELECT 1
+  FROM `pengaturan_peringatan`
+  WHERE `id_pengaturan` = 1
 );

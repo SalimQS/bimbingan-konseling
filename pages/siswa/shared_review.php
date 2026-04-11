@@ -8,6 +8,8 @@ $studentId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 $student = null;
 $violations = [];
 $totalPoints = 0;
+$warningSettings = app_warning_settings($connect);
+$warningState = null;
 
 if ($studentId > 0) {
     $query = "SELECT kelas.nama_kelas, kelas.id_kelas AS kelas_id, siswa.* FROM siswa LEFT JOIN kelas ON kelas.id_kelas = siswa.id_kelas WHERE siswa.id_siswa = '{$studentId}' LIMIT 1";
@@ -23,9 +25,8 @@ if ($studentId > 0) {
             $violations = $violationResult->fetch_all(MYSQLI_ASSOC);
         }
 
-        foreach ($violations as $violation) {
-            $totalPoints += (int) ($violation['poin_peraturan'] ?? 0);
-        }
+        $totalPoints = app_total_points_from_violations($violations);
+        $warningState = app_warning_state_for_points($totalPoints, $warningSettings);
     }
 }
 
@@ -46,7 +47,7 @@ echo app_render_page_intro(
 <?php if ($student === null) : ?>
     <section class="panel-card panel-spaced">
         <div class="empty-state">
-            <i class="fas fa-circle-exclamation"></i>
+            <i class="fas fa-exclamation-circle"></i>
             <strong>Data siswa tidak ditemukan.</strong>
             <span>Periksa kembali tautan yang dibuka atau sinkronisasi data siswa.</span>
         </div>
@@ -104,7 +105,16 @@ echo app_render_page_intro(
                         <span class="section-kicker">Riwayat Pelanggaran</span>
                         <h2>Ringkasan poin siswa</h2>
                     </div>
-                    <span class="status-pill badge-points"><?= app_h($totalPoints) ?> poin</span>
+                    <div class="action-stack">
+                        <span class="status-pill badge-points"><?= app_h($totalPoints) ?> poin</span>
+                        <?php if ($warningState !== null) : ?>
+                            <span class="status-pill <?= app_h(app_warning_state_badge_class($warningState['key'])) ?>">
+                                <?= app_h($warningState['label']) ?>
+                            </span>
+                        <?php else : ?>
+                            <span class="status-pill badge-source">Belum SP1</span>
+                        <?php endif; ?>
+                    </div>
                 </div>
 
                 <div class="table-responsive">
@@ -135,7 +145,7 @@ echo app_render_page_intro(
                                 <tr>
                                     <td colspan="5">
                                         <div class="empty-state empty-state-compact">
-                                            <i class="fas fa-shield-heart"></i>
+                                            <i class="fas fa-shield-alt"></i>
                                             <strong>Belum ada riwayat pelanggaran.</strong>
                                             <span>Siswa ini belum memiliki catatan poin pada sistem.</span>
                                         </div>

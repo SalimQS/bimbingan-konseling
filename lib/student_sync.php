@@ -342,7 +342,6 @@ function app_apply_student_sync(mysqli $connect, array $students): void
 
 function app_sync_classes(mysqli $connect, array $students): array
 {
-    $columns = app_table_columns($connect, 'kelas');
     $classMap = [];
 
     $result = $connect->query('SELECT id_kelas, nama_kelas FROM kelas');
@@ -361,20 +360,7 @@ function app_sync_classes(mysqli $connect, array $students): array
         return $classMap;
     }
 
-    $insertSql = 'INSERT INTO kelas (nama_kelas)';
-    $bindTypes = 's';
-    $usesWaliKelas = isset($columns['id_wali_kelas']);
-
-    if ($usesWaliKelas) {
-        $isNullable = strtoupper((string) ($columns['id_wali_kelas']['null'] ?? '')) === 'YES';
-        $insertSql = $isNullable
-            ? 'INSERT INTO kelas (nama_kelas, id_wali_kelas) VALUES (?, NULL)'
-            : 'INSERT INTO kelas (nama_kelas, id_wali_kelas) VALUES (?, 0)';
-    } else {
-        $insertSql .= ' VALUES (?)';
-    }
-
-    $statement = $connect->prepare($insertSql);
+    $statement = $connect->prepare('INSERT INTO kelas (nama_kelas) VALUES (?)');
     if (!$statement) {
         throw new RuntimeException('Query kelas gagal disiapkan.');
     }
@@ -384,7 +370,7 @@ function app_sync_classes(mysqli $connect, array $students): array
             continue;
         }
 
-        $statement->bind_param($bindTypes, $className);
+        $statement->bind_param('s', $className);
         if (!$statement->execute()) {
             throw new RuntimeException('Kelas baru gagal ditambahkan.');
         }

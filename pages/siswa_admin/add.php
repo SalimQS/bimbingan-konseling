@@ -67,7 +67,7 @@ echo app_render_page_intro(
 
         <div class="action-stack action-stack-inline">
             <button class="btn btn-primary" type="submit" name="upload_students">
-                <i class="fas fa-file-arrow-up"></i>
+                    <i class="fas fa-file-upload"></i>
                 <span>Upload dan Sinkronkan</span>
             </button>
         </div>

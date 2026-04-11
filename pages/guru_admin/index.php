@@ -36,8 +36,7 @@
                 </div>
                 <?php } ?>
                 <?php
-                  $query = "SELECT guru.*, kelas.nama_kelas FROM guru ";
-                  $query .= "LEFT JOIN kelas ON kelas.id_wali_kelas = guru.id_guru ";
+                  $query = "SELECT guru.* FROM guru ";
                   $query .= "WHERE 1 ";
                   if(isset($_POST['btn-cari'])) {
                     $cari = $_POST['cari'];
@@ -70,7 +69,6 @@
                                     <th>Nama Lengkap</th>
                                     <th>Jenis Kelamin</th>
                                     <th>No Telepon</th>
-                                    <th>Wali Kelas</th>
                                     <th>Aksi</th>
                                 </tr>
                             </thead>
@@ -90,7 +88,6 @@
                                     <td class="text-center"><?= $guru[$i]['nama_guru'] ?></td>
                                     <td class="text-center"><span class='<?= $guru[$i]['jenis_kelamin'] ? 'bg-danger' : 'bg-primary' ?> rounded-pill px-2 text-white'><?= $guru[$i]['jenis_kelamin'] ? 'Perempuan' : 'Laki-Laki' ?></span></td>
                                     <td class="text-center"><?= $guru[$i]['no_telepon'] ?></td>
-                                    <td class="text-center"><b><?= $guru[$i]['nama_kelas'] ? $guru[$i]['nama_kelas'] : 'Bukan<br>Wali Kelas' ?></b></td>
                                     <td class="text-center" style="min-width:10px">
                                         <div>
                                             <a href="?page=guru&action=edit&id=<?= $guru[$i]['id_guru'] ?>"name='delete' class='btn btn-sm btn-primary btn-data-form' title='Ubah Data Guru'>Ubah</a>
@@ -108,7 +105,7 @@
                             else {
                                 ?>                                
                                 <tr>
-                                    <td colspan="9" class='text-center'>Tidak ada data Guru</td>
+                                    <td colspan="8" class='text-center'>Tidak ada data Guru</td>
                                 </tr>
                                 <?php
                             }

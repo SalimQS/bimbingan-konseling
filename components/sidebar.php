@@ -1,6 +1,5 @@
 <?php
 $menuItems = app_sidebar_menu_items($_SESSION);
-$sourceSummary = app_student_source_summary();
 ?>
 <nav id="sidebar">
     <div class="sidebar-header">
@@ -33,9 +32,4 @@ $sourceSummary = app_student_source_summary();
             </li>
         <?php endforeach; ?>
     </ul>
-
-    <div class="sidebar-footer">
-        <span>Upload siswa</span>
-        <strong><?= app_h($sourceSummary['source_file']) ?></strong>
-    </div>
 </nav>

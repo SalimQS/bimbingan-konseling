@@ -34,28 +34,12 @@ if (isset($_POST['submit'])) {
                     } elseif ((string) $user['password_guru'] !== $password) {
                         $errorText = 'Password salah.';
                     } else {
-                        $kelas = null;
-                        if (app_table_exists($connect, 'kelas')) {
-                            $kelasStatement = $connect->prepare('SELECT * FROM kelas WHERE id_wali_kelas = ? LIMIT 1');
-                            if ($kelasStatement) {
-                                $kelasStatement->bind_param('i', $user['id_guru']);
-                                $kelasStatement->execute();
-                                $kelasResult = $kelasStatement->get_result();
-                                $kelas = $kelasResult instanceof mysqli_result ? $kelasResult->fetch_assoc() : null;
-                            }
-                        }
-
                         $_SESSION['id_user'] = $user['id_guru'];
                         $_SESSION['username'] = $user['username_guru'];
                         $_SESSION['nama_lengkap'] = $user['nama_guru'];
                         $_SESSION['role'] = 'guru';
-                        $_SESSION['level'] = $kelas ? 'walikelas' : 'guru';
-
-                        if ($kelas) {
-                            $_SESSION['kelas'] = $kelas['nama_kelas'];
-                        } else {
-                            unset($_SESSION['kelas']);
-                        }
+                        $_SESSION['level'] = 'guru';
+                        unset($_SESSION['kelas']);
 
                         header('location: index.php');
                         exit;

@@ -35,10 +35,6 @@ function app_role_key(array $session): string
         return 'admin:non_petugas';
     }
 
-    if ($role === 'guru' && $level === 'walikelas') {
-        return 'guru:walikelas';
-    }
-
     return 'guru:guru';
 }
 
@@ -47,7 +43,13 @@ function app_route_definitions(): array
     return [
         'admin:petugas' => [
             '' => ['file' => 'dashboard_admin/index.php', 'title' => 'Dashboard', 'scripts' => ['assets/js/dashboard.js']],
-            'kelas' => ['file' => 'kelas_admin/index.php', 'title' => 'Data Kelas', 'scripts' => ['vendors/sweetalert/sweetalert.min.js', 'assets/js/kelas.js']],
+            'kelas' => [
+                'actions' => [
+                    '' => ['file' => 'kelas_admin/index.php', 'title' => 'Data Kelas', 'scripts' => ['vendors/sweetalert/sweetalert.min.js', 'assets/js/kelas.js']],
+                    'edit' => ['file' => 'kelas_admin/index.php', 'title' => 'Ubah Kelas', 'scripts' => ['vendors/sweetalert/sweetalert.min.js', 'assets/js/kelas.js']],
+                    'detail' => ['file' => 'kelas/shared_detail.php', 'title' => 'Detail Kelas', 'scripts' => ['assets/js/siswa.js']],
+                ],
+            ],
             'guru' => [
                 'actions' => [
                     '' => ['file' => 'guru_admin/index.php', 'title' => 'Data Guru', 'scripts' => ['vendors/sweetalert/sweetalert.min.js', 'assets/js/guru.js']],
@@ -71,7 +73,12 @@ function app_route_definitions(): array
                     'edit' => ['file' => 'peraturan_admin/edit.php', 'title' => 'Ubah List Peraturan', 'scripts' => ['vendors/sweetalert/sweetalert.min.js']],
                 ],
             ],
-            'peringatan' => ['file' => 'peringatan/index.php', 'title' => 'Peringatan', 'scripts' => ['vendors/sweetalert/sweetalert.min.js', 'assets/js/peringatan.js']],
+            'peringatan' => [
+                'actions' => [
+                    '' => ['file' => 'peringatan/index.php', 'title' => 'Peringatan', 'scripts' => ['assets/js/peringatan.js']],
+                    'setting' => ['file' => 'peringatan/settings.php', 'title' => 'Pengaturan Peringatan', 'scripts' => []],
+                ],
+            ],
             'user' => [
                 'actions' => [
                     '' => ['file' => 'user_admin/index.php', 'title' => 'User', 'scripts' => ['vendors/sweetalert/sweetalert.min.js', 'assets/js/user.js']],
@@ -82,7 +89,12 @@ function app_route_definitions(): array
         ],
         'admin:non_petugas' => [
             '' => ['file' => 'dashboard_not_admin/index.php', 'title' => 'Dashboard', 'scripts' => ['assets/js/dashboard.js']],
-            'kelas' => ['file' => 'kelas_not_admin/index.php', 'title' => 'Data Kelas', 'scripts' => ['vendors/sweetalert/sweetalert.min.js', 'assets/js/kelas.js']],
+            'kelas' => [
+                'actions' => [
+                    '' => ['file' => 'kelas_not_admin/index.php', 'title' => 'Data Kelas', 'scripts' => ['vendors/sweetalert/sweetalert.min.js', 'assets/js/kelas.js']],
+                    'detail' => ['file' => 'kelas/shared_detail.php', 'title' => 'Detail Kelas', 'scripts' => ['assets/js/siswa.js']],
+                ],
+            ],
             'guru' => ['file' => 'guru_not_admin/index.php', 'title' => 'Data Guru', 'scripts' => ['vendors/sweetalert/sweetalert.min.js', 'assets/js/guru.js']],
             'siswa' => [
                 'actions' => [
@@ -93,17 +105,6 @@ function app_route_definitions(): array
             ],
             'peraturan' => ['file' => 'peraturan_not_admin/index.php', 'title' => 'List Peraturan', 'scripts' => ['vendors/sweetalert/sweetalert.min.js', 'assets/js/list.js']],
             'peringatan' => ['file' => 'peringatan/index.php', 'title' => 'Peringatan', 'scripts' => ['vendors/sweetalert/sweetalert.min.js', 'assets/js/peringatan.js']],
-        ],
-        'guru:walikelas' => [
-            '' => ['file' => 'dashboard_wali_kelas/index.php', 'title' => 'Dashboard', 'scripts' => []],
-            'siswa' => [
-                'actions' => [
-                    '' => ['file' => 'siswa_wali_kelas/index.php', 'title' => 'Data Siswa', 'scripts' => ['assets/js/siswa.js']],
-                    'lihat' => ['file' => 'siswa_wali_kelas/review.php', 'title' => 'Detail Siswa', 'scripts' => []],
-                ],
-            ],
-            'peraturan' => ['file' => 'peraturan_guru/index.php', 'title' => 'Peraturan', 'scripts' => []],
-            'profile' => ['file' => 'profile_guru/index.php', 'title' => 'Profil', 'scripts' => ['assets/js/profile.js']],
         ],
         'guru:guru' => [
             '' => ['file' => 'peraturan_guru/index.php', 'title' => 'Dashboard', 'scripts' => []],
@@ -136,30 +137,24 @@ function app_sidebar_menu_items(array $session): array
 {
     $menus = [
         'admin:petugas' => [
-            ['label' => 'Dashboard', 'icon' => 'fa-house', 'href' => 'index.php'],
+            ['label' => 'Dashboard', 'icon' => 'fa-home', 'href' => 'index.php'],
             ['label' => 'Siswa', 'icon' => 'fa-user-graduate', 'href' => 'index.php?page=siswa'],
-            ['label' => 'Guru', 'icon' => 'fa-chalkboard-user', 'href' => 'index.php?page=guru'],
+            ['label' => 'Guru', 'icon' => 'fa-chalkboard-teacher', 'href' => 'index.php?page=guru'],
             ['label' => 'Kelas', 'icon' => 'fa-layer-group', 'href' => 'index.php?page=kelas'],
-            ['label' => 'Peraturan', 'icon' => 'fa-list-check', 'href' => 'index.php?page=peraturan'],
+            ['label' => 'Peraturan', 'icon' => 'fa-list-alt', 'href' => 'index.php?page=peraturan'],
             ['label' => 'Peringatan', 'icon' => 'fa-bell', 'href' => 'index.php?page=peringatan'],
             ['label' => 'Akun', 'icon' => 'fa-user-shield', 'href' => 'index.php?page=user'],
         ],
         'admin:non_petugas' => [
-            ['label' => 'Dashboard', 'icon' => 'fa-house', 'href' => 'index.php'],
+            ['label' => 'Dashboard', 'icon' => 'fa-home', 'href' => 'index.php'],
             ['label' => 'Siswa', 'icon' => 'fa-user-graduate', 'href' => 'index.php?page=siswa'],
-            ['label' => 'Guru', 'icon' => 'fa-chalkboard-user', 'href' => 'index.php?page=guru'],
+            ['label' => 'Guru', 'icon' => 'fa-chalkboard-teacher', 'href' => 'index.php?page=guru'],
             ['label' => 'Kelas', 'icon' => 'fa-layer-group', 'href' => 'index.php?page=kelas'],
-            ['label' => 'Peraturan', 'icon' => 'fa-list-check', 'href' => 'index.php?page=peraturan'],
+            ['label' => 'Peraturan', 'icon' => 'fa-list-alt', 'href' => 'index.php?page=peraturan'],
             ['label' => 'Peringatan', 'icon' => 'fa-bell', 'href' => 'index.php?page=peringatan'],
         ],
-        'guru:walikelas' => [
-            ['label' => 'Dashboard', 'icon' => 'fa-house', 'href' => 'index.php'],
-            ['label' => 'Siswa', 'icon' => 'fa-user-graduate', 'href' => 'index.php?page=siswa'],
-            ['label' => 'Peraturan', 'icon' => 'fa-list-check', 'href' => 'index.php?page=peraturan'],
-            ['label' => 'Profil', 'icon' => 'fa-id-card', 'href' => 'index.php?page=profile'],
-        ],
         'guru:guru' => [
-            ['label' => 'Dashboard', 'icon' => 'fa-house', 'href' => 'index.php'],
+            ['label' => 'Dashboard', 'icon' => 'fa-home', 'href' => 'index.php'],
             ['label' => 'Profil', 'icon' => 'fa-id-card', 'href' => 'index.php?page=profile'],
         ],
     ];
@@ -184,12 +179,17 @@ function app_user_role_label(array $session): string
         return 'Kepala Sekolah';
     }
 
-    if ($role === 'guru' && $level === 'walikelas') {
-        $kelas = $session['kelas'] ?? '';
-        return $kelas !== '' ? 'Wali Kelas ' . $kelas : 'Wali Kelas';
-    }
-
     return 'Guru';
+}
+
+function app_can_manage_students(array $session): bool
+{
+    return app_role_key($session) === 'admin:petugas';
+}
+
+function app_can_manage_warning_settings(array $session): bool
+{
+    return app_role_key($session) === 'admin:petugas';
 }
 
 function app_script_tags(array $scripts): string
@@ -310,7 +310,7 @@ function app_religion_label($value): string
 
 function app_fetch_class_filter_options(mysqli $connect, ?string $restrictClassName = null): array
 {
-    $query = 'SELECT kelas.id_kelas AS id, kelas.nama_kelas AS kelas, COALESCE(guru.nama_guru, \'Belum ditetapkan\') AS nama_lengkap, COUNT(siswa.id_siswa) AS total_siswa FROM kelas LEFT JOIN siswa ON siswa.id_kelas = kelas.id_kelas LEFT JOIN guru ON guru.id_guru = kelas.id_wali_kelas';
+    $query = 'SELECT kelas.id_kelas AS id, kelas.nama_kelas AS kelas, COUNT(siswa.id_siswa) AS total_siswa FROM kelas LEFT JOIN siswa ON siswa.id_kelas = kelas.id_kelas';
     $where = [];
 
     if ($restrictClassName !== null && $restrictClassName !== '') {
@@ -324,7 +324,7 @@ function app_fetch_class_filter_options(mysqli $connect, ?string $restrictClassN
         $query .= ' WHERE ' . implode(' AND ', $where);
     }
 
-    $query .= ' GROUP BY kelas.id_kelas, kelas.nama_kelas, guru.nama_guru ORDER BY kelas.nama_kelas';
+    $query .= ' GROUP BY kelas.id_kelas, kelas.nama_kelas ORDER BY kelas.nama_kelas';
 
     $options = [];
     $result = $connect->query($query);
@@ -337,4 +337,262 @@ function app_fetch_class_filter_options(mysqli $connect, ?string $restrictClassN
     }
 
     return $options;
+}
+
+function app_warning_max_points(): int
+{
+    return 200;
+}
+
+function app_warning_default_thresholds(): array
+{
+    return [
+        'sp1' => 50,
+        'sp2' => 100,
+        'sp3' => 150,
+        'pemberhentian' => 200,
+    ];
+}
+
+function app_warning_state_blueprints(): array
+{
+    return [
+        'sp1' => [
+            'key' => 'sp1',
+            'label' => 'SP1',
+            'title' => 'Peringatan 1',
+            'description' => 'Surat Peringatan 1',
+            'tone' => 'gold',
+            'icon' => 'fa-flag',
+            'badge_class' => 'badge-warning-sp1',
+        ],
+        'sp2' => [
+            'key' => 'sp2',
+            'label' => 'SP2',
+            'title' => 'Peringatan 2',
+            'description' => 'Surat Peringatan 2',
+            'tone' => 'blue',
+            'icon' => 'fa-bell',
+            'badge_class' => 'badge-warning-sp2',
+        ],
+        'sp3' => [
+            'key' => 'sp3',
+            'label' => 'SP3',
+            'title' => 'Peringatan 3',
+            'description' => 'Surat Peringatan 3',
+            'tone' => 'red',
+            'icon' => 'fa-exclamation-triangle',
+            'badge_class' => 'badge-warning-sp3',
+        ],
+        'pemberhentian' => [
+            'key' => 'pemberhentian',
+            'label' => 'Pemberhentian',
+            'title' => 'Pemberhentian',
+            'description' => 'Surat pemberhentian siswa',
+            'tone' => 'red',
+            'icon' => 'fa-user-slash',
+            'badge_class' => 'badge-warning-pemberhentian',
+        ],
+    ];
+}
+
+function app_parse_warning_thresholds(array $input): array
+{
+    $thresholds = [];
+    foreach (app_warning_default_thresholds() as $key => $defaultValue) {
+        $thresholds[$key] = isset($input[$key]) ? (int) $input[$key] : $defaultValue;
+    }
+
+    return $thresholds;
+}
+
+function app_validate_warning_thresholds(array $thresholds): string
+{
+    $labels = [
+        'sp1' => 'SP1',
+        'sp2' => 'SP2',
+        'sp3' => 'SP3',
+        'pemberhentian' => 'Pemberhentian',
+    ];
+    $maxPoints = app_warning_max_points();
+    $previousValue = 0;
+    $previousLabel = '';
+
+    foreach (app_warning_default_thresholds() as $key => $defaultValue) {
+        $value = (int) ($thresholds[$key] ?? $defaultValue);
+
+        if ($value < 1) {
+            return 'Batas poin ' . $labels[$key] . ' harus minimal 1.';
+        }
+
+        if ($value > $maxPoints) {
+            return 'Batas poin ' . $labels[$key] . ' tidak boleh lebih dari ' . $maxPoints . '.';
+        }
+
+        if ($previousLabel !== '' && $value <= $previousValue) {
+            return 'Batas poin ' . $labels[$key] . ' harus lebih besar dari ' . $previousLabel . '.';
+        }
+
+        $previousValue = $value;
+        $previousLabel = $labels[$key];
+    }
+
+    return '';
+}
+
+function app_ensure_warning_settings_table(mysqli $connect): void
+{
+    $defaults = app_warning_default_thresholds();
+    $createTableQuery = "CREATE TABLE IF NOT EXISTS `pengaturan_peringatan` (
+        `id_pengaturan` TINYINT UNSIGNED NOT NULL DEFAULT 1,
+        `sp1_min_poin` TINYINT UNSIGNED NOT NULL DEFAULT {$defaults['sp1']},
+        `sp2_min_poin` TINYINT UNSIGNED NOT NULL DEFAULT {$defaults['sp2']},
+        `sp3_min_poin` TINYINT UNSIGNED NOT NULL DEFAULT {$defaults['sp3']},
+        `pemberhentian_min_poin` TINYINT UNSIGNED NOT NULL DEFAULT {$defaults['pemberhentian']},
+        `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (`id_pengaturan`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
+    $connect->query($createTableQuery);
+
+    if (!app_table_exists($connect, 'pengaturan_peringatan')) {
+        return;
+    }
+
+    $seedQuery = "INSERT INTO `pengaturan_peringatan` (`id_pengaturan`, `sp1_min_poin`, `sp2_min_poin`, `sp3_min_poin`, `pemberhentian_min_poin`)
+        SELECT 1, {$defaults['sp1']}, {$defaults['sp2']}, {$defaults['sp3']}, {$defaults['pemberhentian']}
+        WHERE NOT EXISTS (
+            SELECT 1
+            FROM `pengaturan_peringatan`
+            WHERE `id_pengaturan` = 1
+        )";
+    $connect->query($seedQuery);
+}
+
+function app_warning_states(array $thresholds): array
+{
+    $states = [];
+
+    foreach (app_warning_state_blueprints() as $key => $blueprint) {
+        $states[$key] = array_merge($blueprint, [
+            'min_points' => (int) ($thresholds[$key] ?? app_warning_default_thresholds()[$key]),
+        ]);
+    }
+
+    return $states;
+}
+
+function app_warning_settings(mysqli $connect): array
+{
+    app_ensure_warning_settings_table($connect);
+
+    $thresholds = app_warning_default_thresholds();
+    $result = $connect->query('SELECT sp1_min_poin, sp2_min_poin, sp3_min_poin, pemberhentian_min_poin FROM pengaturan_peringatan WHERE id_pengaturan = 1 LIMIT 1');
+    if ($result instanceof mysqli_result && $result->num_rows > 0) {
+        $row = $result->fetch_assoc();
+        $candidateThresholds = [
+            'sp1' => (int) ($row['sp1_min_poin'] ?? $thresholds['sp1']),
+            'sp2' => (int) ($row['sp2_min_poin'] ?? $thresholds['sp2']),
+            'sp3' => (int) ($row['sp3_min_poin'] ?? $thresholds['sp3']),
+            'pemberhentian' => (int) ($row['pemberhentian_min_poin'] ?? $thresholds['pemberhentian']),
+        ];
+
+        if (app_validate_warning_thresholds($candidateThresholds) === '') {
+            $thresholds = $candidateThresholds;
+        }
+    }
+
+    return [
+        'max_points' => app_warning_max_points(),
+        'thresholds' => $thresholds,
+        'states' => app_warning_states($thresholds),
+    ];
+}
+
+function app_save_warning_settings(mysqli $connect, array $thresholds): bool
+{
+    if (app_validate_warning_thresholds($thresholds) !== '') {
+        return false;
+    }
+
+    app_ensure_warning_settings_table($connect);
+
+    $sp1 = (int) ($thresholds['sp1'] ?? 0);
+    $sp2 = (int) ($thresholds['sp2'] ?? 0);
+    $sp3 = (int) ($thresholds['sp3'] ?? 0);
+    $pemberhentian = (int) ($thresholds['pemberhentian'] ?? 0);
+
+    $query = "INSERT INTO `pengaturan_peringatan` (`id_pengaturan`, `sp1_min_poin`, `sp2_min_poin`, `sp3_min_poin`, `pemberhentian_min_poin`)
+        VALUES (1, {$sp1}, {$sp2}, {$sp3}, {$pemberhentian})
+        ON DUPLICATE KEY UPDATE
+            `sp1_min_poin` = VALUES(`sp1_min_poin`),
+            `sp2_min_poin` = VALUES(`sp2_min_poin`),
+            `sp3_min_poin` = VALUES(`sp3_min_poin`),
+            `pemberhentian_min_poin` = VALUES(`pemberhentian_min_poin`)";
+
+    return (bool) $connect->query($query);
+}
+
+function app_cap_warning_points(int $points, ?int $maxPoints = null): int
+{
+    $maxPoints = $maxPoints ?? app_warning_max_points();
+
+    return max(0, min($points, $maxPoints));
+}
+
+function app_total_points_from_violations(array $violations): int
+{
+    $totalPoints = 0;
+
+    foreach ($violations as $violation) {
+        $totalPoints += (int) ($violation['poin_peraturan'] ?? 0);
+    }
+
+    return app_cap_warning_points($totalPoints);
+}
+
+function app_student_total_points(mysqli $connect, int $studentId): int
+{
+    if ($studentId <= 0) {
+        return 0;
+    }
+
+    $studentId = (int) $studentId;
+    $query = "SELECT COALESCE(SUM(peraturan.poin_peraturan), 0) AS total_points
+        FROM pelanggaran
+        LEFT JOIN peraturan ON peraturan.id_peraturan = pelanggaran.id_peraturan
+        WHERE pelanggaran.id_siswa = '{$studentId}'";
+    $result = $connect->query($query);
+    $row = $result instanceof mysqli_result ? $result->fetch_assoc() : null;
+
+    return app_cap_warning_points((int) ($row['total_points'] ?? 0));
+}
+
+function app_warning_points_remaining(int $currentPoints, ?int $maxPoints = null): int
+{
+    $maxPoints = $maxPoints ?? app_warning_max_points();
+
+    return max(0, $maxPoints - app_cap_warning_points($currentPoints, $maxPoints));
+}
+
+function app_warning_state_for_points(int $points, array $settings): ?array
+{
+    $maxPoints = (int) ($settings['max_points'] ?? app_warning_max_points());
+    $points = app_cap_warning_points($points, $maxPoints);
+    $states = $settings['states'] ?? app_warning_states(app_warning_default_thresholds());
+    $activeState = null;
+
+    foreach ($states as $state) {
+        if ($points >= (int) ($state['min_points'] ?? 0)) {
+            $activeState = $state;
+        }
+    }
+
+    return $activeState;
+}
+
+function app_warning_state_badge_class(string $stateKey): string
+{
+    $states = app_warning_state_blueprints();
+
+    return $states[$stateKey]['badge_class'] ?? 'badge-source';
 }

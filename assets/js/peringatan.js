@@ -1,14 +1,22 @@
+document.addEventListener("DOMContentLoaded", () => {
+  const kelasFilter = document.querySelector("#kelasFilter");
 
-window.onload = () => {
-    var kelasFilter = document.querySelector('#kelasFilter');
-  
-    kelasFilter.addEventListener("change", (val) => {
-      if(val.target.value != '-1') {
-        window.location.href = "index.php?page=peringatan&kelas=" + val.target.value;
-      }
-      else {
-        window.location.href = "index.php?page=peringatan";
-      }
-    });
+  if (!kelasFilter) {
+    return;
   }
+
+  kelasFilter.addEventListener("change", (event) => {
+    const url = new URL(window.location.href);
+    url.searchParams.set("page", "peringatan");
+    url.searchParams.delete("action");
+
+    if (event.target.value !== "-1") {
+      url.searchParams.set("kelas", event.target.value);
+    } else {
+      url.searchParams.delete("kelas");
+    }
+
+    window.location.href = url.toString();
+  });
+});
   

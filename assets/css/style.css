@@ -907,6 +907,22 @@ textarea.form-control:focus {
   box-shadow: var(--shadow-md);
 }
 
+.warning-letter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+.warning-letter-card {
+  display: grid;
+  gap: 0.7rem;
+  height: 100%;
+}
+
+.warning-letter-card p strong {
+  color: var(--text);
+}
+
 .hidden {
   display: none !important;
 }

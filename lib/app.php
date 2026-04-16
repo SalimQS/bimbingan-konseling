@@ -192,6 +192,34 @@ function app_can_manage_warning_settings(array $session): bool
     return app_role_key($session) === 'admin:petugas';
 }
 
+function app_can_manage_warning_letters(array $session): bool
+{
+    $roleKey = app_role_key($session);
+
+    return $roleKey === 'admin:petugas' || $roleKey === 'admin:non_petugas';
+}
+
+function app_flash_set(string $key, array $payload): void
+{
+    if (!isset($_SESSION['_app_flash']) || !is_array($_SESSION['_app_flash'])) {
+        $_SESSION['_app_flash'] = [];
+    }
+
+    $_SESSION['_app_flash'][$key] = $payload;
+}
+
+function app_flash_get(string $key): ?array
+{
+    if (!isset($_SESSION['_app_flash']) || !is_array($_SESSION['_app_flash']) || !isset($_SESSION['_app_flash'][$key])) {
+        return null;
+    }
+
+    $payload = $_SESSION['_app_flash'][$key];
+    unset($_SESSION['_app_flash'][$key]);
+
+    return is_array($payload) ? $payload : null;
+}
+
 function app_script_tags(array $scripts): string
 {
     $tags = [];
@@ -595,4 +623,754 @@ function app_warning_state_badge_class(string $stateKey): string
     $states = app_warning_state_blueprints();
 
     return $states[$stateKey]['badge_class'] ?? 'badge-source';
+}
+
+function app_project_root(): string
+{
+    return dirname(__DIR__);
+}
+
+function app_warning_letter_templates(): array
+{
+    $baseDir = app_project_root() . '/storage/warning-letters/templates';
+
+    return [
+        'sp1' => [
+            'key' => 'sp1',
+            'label' => 'SP 1',
+            'title' => 'Surat Peringatan 1',
+            'template_path' => $baseDir . '/sp1.docx',
+            'default_date_text' => 'Banjarmasin, 2 Februari 2026',
+            'default_number_text' => '421.3/421/SMA.04/DIKBUD/2026',
+            'search_names' => ['Siti Amaliah Ulaa', 'Siti Amalia Ulaa'],
+            'search_classes' => ['kelas XI 9', 'Kelas XI'],
+            'rank' => 1,
+        ],
+        'sp2' => [
+            'key' => 'sp2',
+            'label' => 'SP 2',
+            'title' => 'Surat Peringatan 2',
+            'template_path' => $baseDir . '/sp2.docx',
+            'default_date_text' => 'Banjarmasin, 2 Februari 2026',
+            'default_number_text' => '421.3/422/SMA.04/DIKBUD/2026',
+            'search_names' => ['Siti Amaliah Ulaa', 'Siti Amalia Ulaa'],
+            'search_classes' => ['kelas XI 9', 'Kelas XI'],
+            'rank' => 2,
+        ],
+        'sp3' => [
+            'key' => 'sp3',
+            'label' => 'SP 3',
+            'title' => 'Surat Peringatan 3',
+            'template_path' => $baseDir . '/sp3.docx',
+            'default_date_text' => 'Banjarmasin, 11 Februari 2026',
+            'default_number_text' => '421.3/423/SMA.04/DIKBUD/2026',
+            'search_names' => ['Siti Amaliah Ulaa', 'Siti Amalia Ulaa'],
+            'search_classes' => ['kelas XI 9', 'Kelas XI'],
+            'rank' => 3,
+        ],
+        'pemberhentian' => [
+            'key' => 'pemberhentian',
+            'label' => 'Pemberhentian',
+            'title' => 'Surat Pemberhentian',
+            'template_path' => $baseDir . '/pemberhentian.docx',
+            'default_date_text' => 'Banjarmasin, 14 November 2025',
+            'default_number_text' => '421.3/424/SMA.04/DIKBUD/2025',
+            'search_names' => ['Siti Amalia Ulaa'],
+            'rank' => 4,
+        ],
+    ];
+}
+
+function app_warning_letter_types_for_state(string $stateKey): array
+{
+    $templates = app_warning_letter_templates();
+    $currentRank = (int) ($templates[$stateKey]['rank'] ?? 0);
+    $availableTypes = [];
+
+    foreach ($templates as $key => $template) {
+        if ((int) ($template['rank'] ?? 0) <= $currentRank) {
+            $availableTypes[$key] = $template;
+        }
+    }
+
+    return $availableTypes;
+}
+
+function app_warning_letter_timezone(): DateTimeZone
+{
+    static $timezone = null;
+
+    if (!$timezone instanceof DateTimeZone) {
+        $timezone = new DateTimeZone('Asia/Makassar');
+    }
+
+    return $timezone;
+}
+
+function app_warning_letter_now(): DateTimeImmutable
+{
+    return new DateTimeImmutable('now', app_warning_letter_timezone());
+}
+
+function app_warning_letter_month_label(int $month): string
+{
+    $months = [
+        1 => 'Januari',
+        2 => 'Februari',
+        3 => 'Maret',
+        4 => 'April',
+        5 => 'Mei',
+        6 => 'Juni',
+        7 => 'Juli',
+        8 => 'Agustus',
+        9 => 'September',
+        10 => 'Oktober',
+        11 => 'November',
+        12 => 'Desember',
+    ];
+
+    return $months[$month] ?? 'Januari';
+}
+
+function app_warning_letter_date_text(DateTimeInterface $date): string
+{
+    return 'Banjarmasin, ' . $date->format('j') . ' ' . app_warning_letter_month_label((int) $date->format('n')) . ' ' . $date->format('Y');
+}
+
+function app_warning_letter_number(int $sequence, DateTimeInterface $date): string
+{
+    return '421.3/' . $sequence . '/SMA.04/DIKBUD/' . $date->format('Y');
+}
+
+function app_warning_letter_generated_dir(): string
+{
+    return app_project_root() . '/storage/warning-letters/generated';
+}
+
+function app_ensure_warning_letter_storage(): void
+{
+    $paths = [
+        app_project_root() . '/storage/warning-letters',
+        app_project_root() . '/storage/warning-letters/templates',
+        app_warning_letter_generated_dir(),
+    ];
+
+    foreach ($paths as $path) {
+        if (!is_dir($path)) {
+            mkdir($path, 0775, true);
+        }
+    }
+}
+
+function app_ensure_warning_letters_table(mysqli $connect): void
+{
+    $createTableQuery = "CREATE TABLE IF NOT EXISTS `surat_peringatan` (
+        `id_surat` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+        `id_siswa` INT UNSIGNED NOT NULL,
+        `jenis_surat` VARCHAR(32) NOT NULL,
+        `state_siswa` VARCHAR(32) NOT NULL DEFAULT '',
+        `no_urut_bulanan` INT UNSIGNED NOT NULL,
+        `no_surat` VARCHAR(255) NOT NULL,
+        `tanggal_surat` DATE NOT NULL,
+        `bulan_surat` TINYINT UNSIGNED NOT NULL,
+        `tahun_surat` SMALLINT UNSIGNED NOT NULL,
+        `file_path` VARCHAR(255) NOT NULL,
+        `created_by_name` VARCHAR(150) NOT NULL DEFAULT '',
+        `created_by_role` VARCHAR(64) NOT NULL DEFAULT '',
+        `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (`id_surat`),
+        UNIQUE KEY `uniq_surat_peringatan_siswa_jenis` (`id_siswa`, `jenis_surat`),
+        KEY `idx_surat_peringatan_periode` (`tahun_surat`, `bulan_surat`, `no_urut_bulanan`),
+        KEY `idx_surat_peringatan_siswa` (`id_siswa`),
+        CONSTRAINT `fk_surat_peringatan_siswa`
+            FOREIGN KEY (`id_siswa`) REFERENCES `siswa` (`id_siswa`)
+            ON DELETE CASCADE
+            ON UPDATE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
+
+    $connect->query($createTableQuery);
+}
+
+function app_warning_letters_by_student_ids(mysqli $connect, array $studentIds): array
+{
+    app_ensure_warning_letters_table($connect);
+
+    $studentIds = array_values(array_unique(array_filter(array_map('intval', $studentIds), static function ($value) {
+        return $value > 0;
+    })));
+
+    if ($studentIds === []) {
+        return [];
+    }
+
+    $idList = implode(', ', $studentIds);
+    $query = "SELECT surat_peringatan.*, siswa.nama_lengkap
+        FROM surat_peringatan
+        LEFT JOIN siswa ON siswa.id_siswa = surat_peringatan.id_siswa
+        WHERE surat_peringatan.id_siswa IN ({$idList})
+        ORDER BY surat_peringatan.created_at DESC, surat_peringatan.id_surat DESC";
+    $result = $connect->query($query);
+    $letters = [];
+
+    if (!$result instanceof mysqli_result) {
+        return $letters;
+    }
+
+    while ($row = $result->fetch_assoc()) {
+        $studentId = (int) ($row['id_siswa'] ?? 0);
+        $letterType = (string) ($row['jenis_surat'] ?? '');
+        if ($studentId <= 0 || $letterType === '') {
+            continue;
+        }
+
+        $letters[$studentId][$letterType] = $row;
+    }
+
+    return $letters;
+}
+
+function app_warning_letter_find_by_student_and_type(mysqli $connect, int $studentId, string $letterType): ?array
+{
+    app_ensure_warning_letters_table($connect);
+
+    if ($studentId <= 0 || $letterType === '') {
+        return null;
+    }
+
+    $safeLetterType = $connect->real_escape_string($letterType);
+    $query = "SELECT surat_peringatan.*, siswa.nama_lengkap
+        FROM surat_peringatan
+        LEFT JOIN siswa ON siswa.id_siswa = surat_peringatan.id_siswa
+        WHERE surat_peringatan.id_siswa = '{$studentId}'
+            AND surat_peringatan.jenis_surat = '{$safeLetterType}'
+        LIMIT 1";
+    $result = $connect->query($query);
+
+    if (!$result instanceof mysqli_result || $result->num_rows === 0) {
+        return null;
+    }
+
+    return $result->fetch_assoc();
+}
+
+function app_warning_letter_find_by_id(mysqli $connect, int $letterId): ?array
+{
+    app_ensure_warning_letters_table($connect);
+
+    if ($letterId <= 0) {
+        return null;
+    }
+
+    $query = "SELECT surat_peringatan.*, siswa.nama_lengkap
+        FROM surat_peringatan
+        LEFT JOIN siswa ON siswa.id_siswa = surat_peringatan.id_siswa
+        WHERE surat_peringatan.id_surat = '{$letterId}'
+        LIMIT 1";
+    $result = $connect->query($query);
+
+    if (!$result instanceof mysqli_result || $result->num_rows === 0) {
+        return null;
+    }
+
+    return $result->fetch_assoc();
+}
+
+function app_warning_student_snapshot(mysqli $connect, int $studentId): ?array
+{
+    if ($studentId <= 0) {
+        return null;
+    }
+
+    $query = "SELECT siswa.id_siswa, siswa.nisn, siswa.nama_lengkap, kelas.nama_kelas, COALESCE(SUM(peraturan.poin_peraturan), 0) AS total_poin
+        FROM siswa
+        LEFT JOIN kelas ON kelas.id_kelas = siswa.id_kelas
+        LEFT JOIN pelanggaran ON pelanggaran.id_siswa = siswa.id_siswa
+        LEFT JOIN peraturan ON peraturan.id_peraturan = pelanggaran.id_peraturan
+        WHERE siswa.id_siswa = '{$studentId}'
+        GROUP BY siswa.id_siswa, siswa.nisn, siswa.nama_lengkap, kelas.nama_kelas
+        LIMIT 1";
+    $result = $connect->query($query);
+
+    if (!$result instanceof mysqli_result || $result->num_rows === 0) {
+        return null;
+    }
+
+    $row = $result->fetch_assoc();
+    $warningSettings = app_warning_settings($connect);
+    $row['total_poin'] = app_cap_warning_points((int) ($row['total_poin'] ?? 0), $warningSettings['max_points']);
+    $row['state'] = app_warning_state_for_points((int) $row['total_poin'], $warningSettings);
+
+    return $row;
+}
+
+function app_warning_letter_next_monthly_sequence(mysqli $connect, int $year, int $month): int
+{
+    app_ensure_warning_letters_table($connect);
+
+    $query = "SELECT COALESCE(MAX(no_urut_bulanan), 0) AS max_sequence
+        FROM surat_peringatan
+        WHERE tahun_surat = '{$year}'
+            AND bulan_surat = '{$month}'";
+    $result = $connect->query($query);
+    $row = $result instanceof mysqli_result ? $result->fetch_assoc() : null;
+
+    return ((int) ($row['max_sequence'] ?? 0)) + 1;
+}
+
+function app_warning_letter_slug(string $value): string
+{
+    $slug = $value;
+
+    if (function_exists('iconv')) {
+        $converted = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $value);
+        if ($converted !== false) {
+            $slug = $converted;
+        }
+    }
+
+    $slug = strtolower((string) preg_replace('/[^a-zA-Z0-9]+/', '-', $slug));
+    $slug = trim($slug, '-');
+
+    return $slug !== '' ? $slug : 'siswa';
+}
+
+function app_warning_letter_absolute_path(string $filePath): string
+{
+    if ($filePath === '') {
+        return '';
+    }
+
+    if (str_starts_with($filePath, '/')) {
+        return $filePath;
+    }
+
+    return app_project_root() . '/' . ltrim($filePath, '/');
+}
+
+function app_warning_letter_download_name(array $letter): string
+{
+    $studentSlug = app_warning_letter_slug((string) ($letter['nama_lengkap'] ?? 'siswa'));
+    $letterType = app_warning_letter_slug((string) ($letter['jenis_surat'] ?? 'surat'));
+    $datePart = preg_replace('/[^0-9]/', '', (string) ($letter['tanggal_surat'] ?? ''));
+
+    return 'surat-' . $letterType . '-' . $studentSlug . '-' . ($datePart !== '' ? $datePart : 'dokumen') . '.docx';
+}
+
+function app_warning_letter_paragraph_text(DOMXPath $xpath, DOMElement $paragraph): string
+{
+    $text = '';
+
+    foreach ($xpath->query('.//w:t', $paragraph) as $textNode) {
+        $text .= $textNode->textContent;
+    }
+
+    return $text;
+}
+
+function app_warning_letter_replace_first_in_paragraph(DOMXPath $xpath, DOMElement $paragraph, string $search, string $replace): bool
+{
+    if ($search === '') {
+        return false;
+    }
+
+    $segments = [];
+    $paragraphText = '';
+
+    foreach ($xpath->query('.//w:t', $paragraph) as $textNode) {
+        $nodeText = $textNode->textContent;
+        $start = mb_strlen($paragraphText, 'UTF-8');
+        $paragraphText .= $nodeText;
+        $segments[] = [
+            'node' => $textNode,
+            'text' => $nodeText,
+            'start' => $start,
+            'end' => mb_strlen($paragraphText, 'UTF-8'),
+        ];
+    }
+
+    if ($segments === []) {
+        return false;
+    }
+
+    $matchStart = mb_strpos($paragraphText, $search, 0, 'UTF-8');
+    if ($matchStart === false) {
+        return false;
+    }
+
+    $matchEnd = $matchStart + mb_strlen($search, 'UTF-8');
+    $firstIndex = null;
+    $lastIndex = null;
+
+    foreach ($segments as $index => $segment) {
+        if ($segment['end'] <= $matchStart || $segment['start'] >= $matchEnd) {
+            continue;
+        }
+
+        if ($firstIndex === null) {
+            $firstIndex = $index;
+        }
+
+        $lastIndex = $index;
+    }
+
+    if ($firstIndex === null || $lastIndex === null) {
+        return false;
+    }
+
+    if ($firstIndex === $lastIndex) {
+        $segment = $segments[$firstIndex];
+        $prefixLength = $matchStart - $segment['start'];
+        $suffixStart = $matchEnd - $segment['start'];
+        $prefix = mb_substr($segment['text'], 0, $prefixLength, 'UTF-8');
+        $suffix = mb_substr($segment['text'], $suffixStart, null, 'UTF-8');
+        $segment['node']->nodeValue = $prefix . $replace . $suffix;
+
+        return true;
+    }
+
+    foreach ($segments as $index => $segment) {
+        if ($index < $firstIndex || $index > $lastIndex) {
+            continue;
+        }
+
+        if ($index === $firstIndex) {
+            $prefixLength = $matchStart - $segment['start'];
+            $prefix = mb_substr($segment['text'], 0, $prefixLength, 'UTF-8');
+            $segment['node']->nodeValue = $prefix . $replace;
+            continue;
+        }
+
+        if ($index === $lastIndex) {
+            $suffixStart = $matchEnd - $segment['start'];
+            $suffix = mb_substr($segment['text'], $suffixStart, null, 'UTF-8');
+            $segment['node']->nodeValue = $suffix;
+            continue;
+        }
+
+        $segment['node']->nodeValue = '';
+    }
+
+    return true;
+}
+
+function app_warning_letter_replace_all_in_document(DOMXPath $xpath, string $search, string $replace): int
+{
+    if ($search === '') {
+        return 0;
+    }
+
+    $replacements = 0;
+    foreach ($xpath->query('//w:p') as $paragraph) {
+        if (!$paragraph instanceof DOMElement) {
+            continue;
+        }
+
+        $paragraphText = app_warning_letter_paragraph_text($xpath, $paragraph);
+        if ($paragraphText === '') {
+            continue;
+        }
+
+        $occurrences = 0;
+        $offset = 0;
+        $searchLength = mb_strlen($search, 'UTF-8');
+
+        while (($position = mb_strpos($paragraphText, $search, $offset, 'UTF-8')) !== false) {
+            $occurrences++;
+            $offset = $position + $searchLength;
+        }
+
+        for ($index = 0; $index < $occurrences; $index++) {
+            if (app_warning_letter_replace_first_in_paragraph($xpath, $paragraph, $search, $replace)) {
+                $replacements++;
+            }
+        }
+    }
+
+    return $replacements;
+}
+
+function app_warning_letter_generate_docx(array $template, array $payload): string
+{
+    app_ensure_warning_letter_storage();
+
+    $templatePath = (string) ($template['template_path'] ?? '');
+    if ($templatePath === '' || !is_file($templatePath)) {
+        throw new RuntimeException('Template surat tidak ditemukan: ' . $templatePath);
+    }
+
+    $date = $payload['date'] ?? app_warning_letter_now();
+    if (!$date instanceof DateTimeInterface) {
+        throw new RuntimeException('Tanggal surat tidak valid.');
+    }
+
+    $targetDir = app_warning_letter_generated_dir() . '/' . $date->format('Y') . '/' . $date->format('m');
+    if (!is_dir($targetDir)) {
+        mkdir($targetDir, 0775, true);
+    }
+
+    $studentSlug = app_warning_letter_slug((string) ($payload['student_name'] ?? 'siswa'));
+    $targetRelativePath = 'storage/warning-letters/generated/' . $date->format('Y') . '/' . $date->format('m') . '/'
+        . $date->format('YmdHis') . '-' . app_warning_letter_slug((string) ($template['key'] ?? 'surat')) . '-' . $studentSlug . '.docx';
+    $targetPath = app_project_root() . '/' . $targetRelativePath;
+
+    if (!copy($templatePath, $targetPath)) {
+        throw new RuntimeException('Template surat gagal disalin.');
+    }
+
+    $zip = new ZipArchive();
+    if ($zip->open($targetPath) !== true) {
+        @unlink($targetPath);
+        throw new RuntimeException('File surat hasil salinan tidak bisa dibuka.');
+    }
+
+    $documentXml = $zip->getFromName('word/document.xml');
+    if ($documentXml === false) {
+        $zip->close();
+        @unlink($targetPath);
+        throw new RuntimeException('Isi dokumen surat tidak ditemukan.');
+    }
+
+    $document = new DOMDocument();
+    $document->preserveWhiteSpace = true;
+    if (!$document->loadXML($documentXml)) {
+        $zip->close();
+        @unlink($targetPath);
+        throw new RuntimeException('Template surat tidak bisa diproses.');
+    }
+
+    $xpath = new DOMXPath($document);
+    $xpath->registerNamespace('w', 'http://schemas.openxmlformats.org/wordprocessingml/2006/main');
+
+    $dateReplaceCount = app_warning_letter_replace_all_in_document(
+        $xpath,
+        (string) ($template['default_date_text'] ?? ''),
+        (string) ($payload['date_text'] ?? '')
+    );
+    $numberReplaceCount = app_warning_letter_replace_all_in_document(
+        $xpath,
+        (string) ($template['default_number_text'] ?? ''),
+        (string) ($payload['letter_number'] ?? '')
+    );
+    $nameReplaceCount = 0;
+    $classReplaceCount = 0;
+
+    foreach ((array) ($template['search_names'] ?? []) as $searchName) {
+        $nameReplaceCount += app_warning_letter_replace_all_in_document(
+            $xpath,
+            (string) $searchName,
+            (string) ($payload['student_name'] ?? '')
+        );
+    }
+
+    foreach ((array) ($template['search_classes'] ?? []) as $searchClass) {
+        $replacementClass = trim((string) ($payload['student_class'] ?? ''));
+        if (str_starts_with((string) $searchClass, 'kelas ')) {
+            $replacementClass = 'kelas ' . $replacementClass;
+        } elseif (str_starts_with((string) $searchClass, 'Kelas ')) {
+            $replacementClass = 'Kelas ' . $replacementClass;
+        }
+
+        $classReplaceCount += app_warning_letter_replace_all_in_document(
+            $xpath,
+            (string) $searchClass,
+            $replacementClass
+        );
+    }
+
+    $requiresClassReplacement = ((array) ($template['search_classes'] ?? [])) !== [];
+    if ($dateReplaceCount < 1 || $numberReplaceCount < 1 || $nameReplaceCount < 1 || ($requiresClassReplacement && $classReplaceCount < 1)) {
+        $zip->close();
+        @unlink($targetPath);
+        throw new RuntimeException('Template surat berubah dan tidak bisa dipetakan otomatis.');
+    }
+
+    if ($zip->addFromString('word/document.xml', $document->saveXML()) === false) {
+        $zip->close();
+        @unlink($targetPath);
+        throw new RuntimeException('File surat gagal diperbarui.');
+    }
+
+    $zip->close();
+
+    return $targetRelativePath;
+}
+
+function app_warning_letter_create(mysqli $connect, int $studentId, string $letterType, array $session): array
+{
+    app_ensure_warning_letters_table($connect);
+
+    $templates = app_warning_letter_templates();
+    $template = $templates[$letterType] ?? null;
+    if ($template === null) {
+        throw new RuntimeException('Jenis surat tidak valid.');
+    }
+
+    $student = app_warning_student_snapshot($connect, $studentId);
+    if ($student === null) {
+        throw new RuntimeException('Data siswa tidak ditemukan.');
+    }
+
+    $studentState = $student['state'] ?? null;
+    if (!is_array($studentState) || ($studentState['key'] ?? '') === '') {
+        throw new RuntimeException('Siswa belum masuk state peringatan yang bisa dibuatkan surat.');
+    }
+
+    $allowedTypes = app_warning_letter_types_for_state((string) $studentState['key']);
+    if (!isset($allowedTypes[$letterType])) {
+        throw new RuntimeException('Surat ' . ($template['label'] ?? $letterType) . ' belum bisa dibuat untuk state siswa saat ini.');
+    }
+
+    $existingLetter = app_warning_letter_find_by_student_and_type($connect, $studentId, $letterType);
+    if ($existingLetter !== null) {
+        return [
+            'status' => 'existing',
+            'letter' => $existingLetter,
+            'template' => $template,
+            'student' => $student,
+        ];
+    }
+
+    $date = app_warning_letter_now();
+    $sequence = app_warning_letter_next_monthly_sequence($connect, (int) $date->format('Y'), (int) $date->format('n'));
+    $letterNumber = app_warning_letter_number($sequence, $date);
+    $dateText = app_warning_letter_date_text($date);
+    $generatedPath = app_warning_letter_generate_docx($template, [
+        'date' => $date,
+        'date_text' => $dateText,
+        'letter_number' => $letterNumber,
+        'student_name' => (string) ($student['nama_lengkap'] ?? ''),
+        'student_class' => trim((string) ($student['nama_kelas'] ?? '')),
+    ]);
+
+    $safeLetterType = $connect->real_escape_string($letterType);
+    $safeState = $connect->real_escape_string((string) ($studentState['key'] ?? ''));
+    $safeLetterNumber = $connect->real_escape_string($letterNumber);
+    $safeGeneratedPath = $connect->real_escape_string($generatedPath);
+    $safeCreatedByName = $connect->real_escape_string((string) ($session['nama_lengkap'] ?? ''));
+    $safeCreatedByRole = $connect->real_escape_string(app_user_role_label($session));
+    $tanggalSurat = $date->format('Y-m-d');
+    $bulanSurat = (int) $date->format('n');
+    $tahunSurat = (int) $date->format('Y');
+
+    $insertQuery = "INSERT INTO surat_peringatan (
+            id_siswa,
+            jenis_surat,
+            state_siswa,
+            no_urut_bulanan,
+            no_surat,
+            tanggal_surat,
+            bulan_surat,
+            tahun_surat,
+            file_path,
+            created_by_name,
+            created_by_role
+        ) VALUES (
+            '{$studentId}',
+            '{$safeLetterType}',
+            '{$safeState}',
+            '{$sequence}',
+            '{$safeLetterNumber}',
+            '{$tanggalSurat}',
+            '{$bulanSurat}',
+            '{$tahunSurat}',
+            '{$safeGeneratedPath}',
+            '{$safeCreatedByName}',
+            '{$safeCreatedByRole}'
+        )";
+
+    if (!$connect->query($insertQuery)) {
+        @unlink(app_warning_letter_absolute_path($generatedPath));
+
+        if ((int) $connect->errno === 1062) {
+            $existingLetter = app_warning_letter_find_by_student_and_type($connect, $studentId, $letterType);
+            if ($existingLetter !== null) {
+                return [
+                    'status' => 'existing',
+                    'letter' => $existingLetter,
+                    'template' => $template,
+                    'student' => $student,
+                ];
+            }
+        }
+
+        throw new RuntimeException('Data surat gagal disimpan ke database.');
+    }
+
+    $createdLetter = app_warning_letter_find_by_id($connect, (int) $connect->insert_id);
+    if ($createdLetter === null) {
+        throw new RuntimeException('Surat berhasil dibuat, tetapi data hasil simpan tidak ditemukan.');
+    }
+
+    return [
+        'status' => 'created',
+        'letter' => $createdLetter,
+        'template' => $template,
+        'student' => $student,
+    ];
+}
+
+function app_warning_letter_regenerate(mysqli $connect, int $letterId): array
+{
+    app_ensure_warning_letters_table($connect);
+
+    $letter = app_warning_letter_find_by_id($connect, $letterId);
+    if ($letter === null) {
+        throw new RuntimeException('Surat yang akan diregenerate tidak ditemukan.');
+    }
+
+    $templates = app_warning_letter_templates();
+    $letterType = (string) ($letter['jenis_surat'] ?? '');
+    $template = $templates[$letterType] ?? null;
+    if ($template === null) {
+        throw new RuntimeException('Template surat untuk data ini tidak ditemukan.');
+    }
+
+    $studentId = (int) ($letter['id_siswa'] ?? 0);
+    $student = app_warning_student_snapshot($connect, $studentId);
+    if ($student === null) {
+        throw new RuntimeException('Data siswa untuk surat ini tidak ditemukan.');
+    }
+
+    $letterDateValue = trim((string) ($letter['tanggal_surat'] ?? ''));
+    $letterDate = DateTimeImmutable::createFromFormat('Y-m-d', $letterDateValue, app_warning_letter_timezone());
+    if (!$letterDate instanceof DateTimeImmutable) {
+        throw new RuntimeException('Tanggal surat lama tidak valid.');
+    }
+
+    $generatedPath = app_warning_letter_generate_docx($template, [
+        'date' => $letterDate,
+        'date_text' => app_warning_letter_date_text($letterDate),
+        'letter_number' => (string) ($letter['no_surat'] ?? ''),
+        'student_name' => (string) ($student['nama_lengkap'] ?? ''),
+        'student_class' => trim((string) ($student['nama_kelas'] ?? '')),
+    ]);
+
+    $safeGeneratedPath = $connect->real_escape_string($generatedPath);
+    $updateQuery = "UPDATE surat_peringatan
+        SET file_path = '{$safeGeneratedPath}'
+        WHERE id_surat = '{$letterId}'
+        LIMIT 1";
+
+    if (!$connect->query($updateQuery)) {
+        @unlink(app_warning_letter_absolute_path($generatedPath));
+        throw new RuntimeException('File surat berhasil diregenerate, tetapi data database gagal diperbarui.');
+    }
+
+    $oldPath = app_warning_letter_absolute_path((string) ($letter['file_path'] ?? ''));
+    $newPath = app_warning_letter_absolute_path($generatedPath);
+    if ($oldPath !== '' && $oldPath !== $newPath && is_file($oldPath)) {
+        @unlink($oldPath);
+    }
+
+    $updatedLetter = app_warning_letter_find_by_id($connect, $letterId);
+    if ($updatedLetter === null) {
+        throw new RuntimeException('Data surat hasil regenerate tidak ditemukan.');
+    }
+
+    return [
+        'status' => 'regenerated',
+        'letter' => $updatedLetter,
+        'template' => $template,
+        'student' => $student,
+    ];
 }

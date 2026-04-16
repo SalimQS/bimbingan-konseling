@@ -114,6 +114,30 @@ CREATE TABLE IF NOT EXISTS `pengaturan_peringatan` (
   PRIMARY KEY (`id_pengaturan`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS `surat_peringatan` (
+  `id_surat` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `id_siswa` INT UNSIGNED NOT NULL,
+  `jenis_surat` VARCHAR(32) NOT NULL,
+  `state_siswa` VARCHAR(32) NOT NULL DEFAULT '',
+  `no_urut_bulanan` INT UNSIGNED NOT NULL,
+  `no_surat` VARCHAR(255) NOT NULL,
+  `tanggal_surat` DATE NOT NULL,
+  `bulan_surat` TINYINT UNSIGNED NOT NULL,
+  `tahun_surat` SMALLINT UNSIGNED NOT NULL,
+  `file_path` VARCHAR(255) NOT NULL,
+  `created_by_name` VARCHAR(150) NOT NULL DEFAULT '',
+  `created_by_role` VARCHAR(64) NOT NULL DEFAULT '',
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id_surat`),
+  UNIQUE KEY `uniq_surat_peringatan_siswa_jenis` (`id_siswa`, `jenis_surat`),
+  KEY `idx_surat_peringatan_periode` (`tahun_surat`, `bulan_surat`, `no_urut_bulanan`),
+  KEY `idx_surat_peringatan_siswa` (`id_siswa`),
+  CONSTRAINT `fk_surat_peringatan_siswa`
+    FOREIGN KEY (`id_siswa`) REFERENCES `siswa` (`id_siswa`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 INSERT INTO `admin` (`nama_admin`, `username_admin`, `password_admin`, `level_admin`)
 SELECT 'Administrator', 'admin', 'admin123', 'petugas'
 WHERE NOT EXISTS (

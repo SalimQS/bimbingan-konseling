@@ -1,9 +1,11 @@
 <?php
 
 $warningSettings = app_warning_settings($connect);
+$warningLetterFlash = app_flash_get('warning_letter');
 $selectedClass = isset($_GET['kelas']) ? (string) (int) $_GET['kelas'] : '-1';
-$search = isset($_POST['btn-cari']) ? trim((string) ($_POST['cari'] ?? '')) : '';
+$search = isset($_GET['cari']) ? trim((string) ($_GET['cari'] ?? '')) : '';
 $where = [];
+$canManageWarningLetters = app_can_manage_warning_letters($_SESSION);
 
 if ($selectedClass !== '' && $selectedClass !== '-1') {
     $where[] = "kelas.id_kelas = '" . (int) $selectedClass . "'";
@@ -45,6 +47,9 @@ if ($warningResult instanceof mysqli_result) {
     }
 }
 
+$warningLetters = app_warning_letters_by_student_ids($connect, array_column($warningRows, 'id_siswa'));
+$warningLetterModals = [];
+
 $classOptions = app_fetch_class_filter_options($connect);
 $chips = app_source_meta_chips();
 $chips[] = 'Maksimal ' . $warningSettings['max_points'] . ' poin';
@@ -65,6 +70,14 @@ echo app_render_page_intro(
 );
 ?>
 
+<?php if (is_array($warningLetterFlash) && ($warningLetterFlash['message'] ?? '') !== '') : ?>
+    <?php
+    $flashType = (string) ($warningLetterFlash['type'] ?? 'info');
+    $flashClass = in_array($flashType, ['success', 'danger', 'warning', 'info'], true) ? $flashType : 'info';
+    ?>
+    <div class="alert alert-<?= app_h($flashClass) ?> app-alert mt-3" role="alert"><?= app_h((string) $warningLetterFlash['message']) ?></div>
+<?php endif; ?>
+
 <div class="row g-3 mt-1">
     <?php foreach ($warningSettings['states'] as $state) : ?>
         <div class="col-12 col-md-6 col-xl-3">
@@ -83,11 +96,15 @@ echo app_render_page_intro(
     </div>
 
     <div class="toolbar-card">
-        <form method="post" class="toolbar-search">
+        <form method="get" class="toolbar-search">
+            <input type="hidden" name="page" value="peringatan">
+            <?php if ($selectedClass !== '' && $selectedClass !== '-1') : ?>
+                <input type="hidden" name="kelas" value="<?= app_h($selectedClass) ?>">
+            <?php endif; ?>
             <label class="toolbar-label" for="peringatan-cari">Cari siswa</label>
             <div class="input-group">
                 <input type="text" class="form-control" id="peringatan-cari" name="cari" placeholder="Cari NISN atau nama siswa" value="<?= app_h($search) ?>">
-                <button class="btn btn-primary" type="submit" name="btn-cari">
+                <button class="btn btn-primary" type="submit">
                     <i class="fas fa-search"></i>
                     <span>Cari</span>
                 </button>
@@ -123,7 +140,12 @@ echo app_render_page_intro(
             <tbody>
                 <?php if ($warningRows !== []) : ?>
                     <?php foreach ($warningRows as $index => $row) : ?>
-                        <?php $photo = trim((string) ($row['foto_siswa'] ?? '')) !== '' ? $row['foto_siswa'] : 'assets/img/default.jpg'; ?>
+                        <?php
+                        $photo = trim((string) ($row['foto_siswa'] ?? '')) !== '' ? $row['foto_siswa'] : 'assets/img/default.jpg';
+                        $studentLetters = $warningLetters[(int) $row['id_siswa']] ?? [];
+                        $availableLetterTypes = app_warning_letter_types_for_state((string) ($row['state']['key'] ?? ''));
+                        $modalId = 'warningLetterModal' . (int) $row['id_siswa'];
+                        ?>
                         <tr>
                             <td><?= app_h($index + 1) ?></td>
                             <td><span class="text-strong"><?= app_h($row['nisn']) ?></span></td>
@@ -158,9 +180,92 @@ echo app_render_page_intro(
                                             <span>Pelanggaran</span>
                                         </a>
                                     <?php endif; ?>
+                                    <?php if ($canManageWarningLetters) : ?>
+                                        <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#<?= app_h($modalId) ?>">
+                                            <i class="fas fa-file-signature"></i>
+                                            <span><?= $studentLetters !== [] ? 'Kelola Surat' : 'Buat Surat' ?></span>
+                                        </button>
+                                    <?php endif; ?>
                                 </div>
+                                <?php if ($canManageWarningLetters) : ?>
+                                    <span class="text-muted small mt-2 d-inline-flex">
+                                        <?= $studentLetters !== [] ? app_h(count($studentLetters)) . ' surat tersimpan' : 'Belum ada surat tersimpan' ?>
+                                    </span>
+                                <?php endif; ?>
                             </td>
                         </tr>
+                        <?php if ($canManageWarningLetters) : ?>
+                            <?php ob_start(); ?>
+                            <div class="modal fade" id="<?= app_h($modalId) ?>" tabindex="-1" aria-labelledby="<?= app_h($modalId) ?>Label" aria-hidden="true">
+                                <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <div>
+                                                <h5 class="modal-title mb-1" id="<?= app_h($modalId) ?>Label">Surat untuk <?= app_h($row['nama_lengkap']) ?></h5>
+                                                <span class="text-muted small">State saat ini: <?= app_h($row['state']['label']) ?>, total <?= app_h($row['total_poin']) ?> poin</span>
+                                            </div>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="warning-letter-grid">
+                                                <?php foreach ($availableLetterTypes as $letterKey => $letterTemplate) : ?>
+                                                    <?php $existingLetter = $studentLetters[$letterKey] ?? null; ?>
+                                                    <div class="info-card warning-letter-card">
+                                                        <div class="d-flex justify-content-between align-items-start gap-2 flex-wrap">
+                                                            <span class="status-pill <?= app_h(app_warning_state_badge_class($letterKey)) ?>"><?= app_h($letterTemplate['label']) ?></span>
+                                                            <?php if (is_array($existingLetter)) : ?>
+                                                                <span class="status-pill badge-source">Tersimpan</span>
+                                                            <?php else : ?>
+                                                                <span class="status-pill badge-points">Belum dibuat</span>
+                                                            <?php endif; ?>
+                                                        </div>
+                                                        <h3><?= app_h($letterTemplate['title']) ?></h3>
+                                                        <?php if (is_array($existingLetter)) : ?>
+                                                            <p>Nomor surat: <strong><?= app_h((string) ($existingLetter['no_surat'] ?? '-')) ?></strong></p>
+                                                            <p>Tanggal surat: <?= app_h((string) ($existingLetter['tanggal_surat'] ?? '-')) ?></p>
+                                                            <p>Regenerate akan membangun ulang file dari template terbaru tanpa mengubah nomor dan tanggal surat.</p>
+                                                        <?php else : ?>
+                                                            <p>Surat akan dibuat dari template asli dengan mengganti nama siswa, nomor surat, dan tanggal sesuai bulan berjalan.</p>
+                                                        <?php endif; ?>
+                                                        <div class="action-stack mt-3">
+                                                            <?php if (is_array($existingLetter)) : ?>
+                                                                <a class="btn btn-primary" href="warning_letter.php?action=download&id=<?= app_h((string) ($existingLetter['id_surat'] ?? '0')) ?>">
+                                                                    <i class="fas fa-download"></i>
+                                                                    <span>Download</span>
+                                                                </a>
+                                                                <form method="post" action="warning_letter.php" class="d-inline-flex">
+                                                                    <input type="hidden" name="action" value="regenerate">
+                                                                    <input type="hidden" name="letter_id" value="<?= app_h((string) ($existingLetter['id_surat'] ?? '0')) ?>">
+                                                                    <input type="hidden" name="return_kelas" value="<?= app_h($selectedClass) ?>">
+                                                                    <input type="hidden" name="return_search" value="<?= app_h($search) ?>">
+                                                                    <button class="btn btn-outline-secondary" type="submit">
+                                                                        <i class="fas fa-sync-alt"></i>
+                                                                        <span>Regenerate</span>
+                                                                    </button>
+                                                                </form>
+                                                            <?php else : ?>
+                                                                <form method="post" action="warning_letter.php" class="d-inline-flex">
+                                                                    <input type="hidden" name="action" value="create">
+                                                                    <input type="hidden" name="student_id" value="<?= app_h((string) $row['id_siswa']) ?>">
+                                                                    <input type="hidden" name="letter_type" value="<?= app_h($letterKey) ?>">
+                                                                    <input type="hidden" name="return_kelas" value="<?= app_h($selectedClass) ?>">
+                                                                    <input type="hidden" name="return_search" value="<?= app_h($search) ?>">
+                                                                    <button class="btn btn-outline-primary" type="submit">
+                                                                        <i class="fas fa-file-plus"></i>
+                                                                        <span>Buat Surat</span>
+                                                                    </button>
+                                                                </form>
+                                                            <?php endif; ?>
+                                                        </div>
+                                                    </div>
+                                                <?php endforeach; ?>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <?php $warningLetterModals[] = trim((string) ob_get_clean()); ?>
+                        <?php endif; ?>
                     <?php endforeach; ?>
                 <?php else : ?>
                     <tr>
@@ -177,3 +282,7 @@ echo app_render_page_intro(
         </table>
     </div>
 </section>
+
+<?php if ($warningLetterModals !== []) : ?>
+    <?= implode("\n", $warningLetterModals) ?>
+<?php endif; ?>

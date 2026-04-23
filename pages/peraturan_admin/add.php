@@ -6,6 +6,7 @@
 <?php
   $error = false;
   $errorText = "";
+  $maxPoints = app_warning_max_points();
 
   if(isset($_POST['simpan'])) {
     $error = true;
@@ -14,8 +15,8 @@
 
     if($jenis == '') {
       $errorText = "Jenis Peraturan tidak boleh kosong";
-    } else if($sanksi == '' || $sanksi > 100 || $sanksi < 1) {
-      $errorText = "Sanksi harus valid (1-100)";
+    } else if($sanksi == '' || $sanksi > $maxPoints || $sanksi < 1) {
+      $errorText = "Poin pengurang harus valid (1-" . $maxPoints . ")";
     } else {
       $error = false;
       $connect->begin_transaction();
@@ -71,8 +72,8 @@
                 <textarea class="form-control" id="jenis" rows="3" name='jenis' placeholder="Jenis Peraturan"><?= @$_POST['jenis'] ?></textarea>
             </div>
             <div class="col-md-12 mb-2">
-                <label class="labels">Sanksi Peraturan</label>
-                <input type="number" class="form-control" placeholder="Sanksi Peraturan (1-100)" name='sanksi' value="<?= @$_POST['sanksi'] ?>" min="1" max="100">
+                <label class="labels">Poin Pengurang</label>
+                <input type="number" class="form-control" placeholder="Poin Pengurang (1-<?= app_h($maxPoints) ?>)" name='sanksi' value="<?= @$_POST['sanksi'] ?>" min="1" max="<?= app_h($maxPoints) ?>">
             </div>
         </div>
         <div class="row mt-4">
@@ -83,4 +84,4 @@
       </div>
     </div>
   </div>
-</form>  
+</form>

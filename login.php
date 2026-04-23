@@ -122,10 +122,6 @@ $summary = app_student_source_summary();
                         <span class="meta-chip"><?= app_h($summary['student_count']) ?> siswa</span>
                     <?php endif; ?>
                 </div>
-                <a class="btn btn-light auth-secondary-btn" href="nisn_check.php">
-                    <i class="fas fa-id-card"></i>
-                    <span>Cek Data dengan NISN</span>
-                </a>
             </div>
 
             <div class="auth-form-panel">

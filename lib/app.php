@@ -372,13 +372,18 @@ function app_warning_max_points(): int
     return 200;
 }
 
+function app_warning_min_points(): int
+{
+    return 1;
+}
+
 function app_warning_default_thresholds(): array
 {
     return [
-        'sp1' => 50,
+        'sp1' => 150,
         'sp2' => 100,
-        'sp3' => 150,
-        'pemberhentian' => 200,
+        'sp3' => 50,
+        'pemberhentian' => 1,
     ];
 }
 
@@ -443,22 +448,23 @@ function app_validate_warning_thresholds(array $thresholds): string
         'pemberhentian' => 'Pemberhentian',
     ];
     $maxPoints = app_warning_max_points();
-    $previousValue = 0;
+    $minPoints = app_warning_min_points();
+    $previousValue = null;
     $previousLabel = '';
 
     foreach (app_warning_default_thresholds() as $key => $defaultValue) {
         $value = (int) ($thresholds[$key] ?? $defaultValue);
 
-        if ($value < 1) {
-            return 'Batas poin ' . $labels[$key] . ' harus minimal 1.';
+        if ($value < $minPoints) {
+            return 'Batas poin ' . $labels[$key] . ' harus minimal ' . $minPoints . '.';
         }
 
         if ($value > $maxPoints) {
             return 'Batas poin ' . $labels[$key] . ' tidak boleh lebih dari ' . $maxPoints . '.';
         }
 
-        if ($previousLabel !== '' && $value <= $previousValue) {
-            return 'Batas poin ' . $labels[$key] . ' harus lebih besar dari ' . $previousLabel . '.';
+        if ($previousLabel !== '' && $previousValue !== null && $value >= $previousValue) {
+            return 'Batas poin ' . $labels[$key] . ' harus lebih kecil dari ' . $previousLabel . '.';
         }
 
         $previousValue = $value;
@@ -526,6 +532,8 @@ function app_warning_settings(mysqli $connect): array
 
         if (app_validate_warning_thresholds($candidateThresholds) === '') {
             $thresholds = $candidateThresholds;
+        } elseif (app_validate_legacy_warning_thresholds($candidateThresholds) === '') {
+            $thresholds = app_convert_legacy_warning_thresholds($candidateThresholds);
         }
     }
 
@@ -560,46 +568,103 @@ function app_save_warning_settings(mysqli $connect, array $thresholds): bool
     return (bool) $connect->query($query);
 }
 
+function app_validate_legacy_warning_thresholds(array $thresholds): string
+{
+    $maxPoints = app_warning_max_points();
+    $previousValue = 0;
+
+    foreach (app_warning_default_thresholds() as $key => $defaultValue) {
+        $value = (int) ($thresholds[$key] ?? $defaultValue);
+
+        if ($value < 1 || $value > $maxPoints) {
+            return 'invalid';
+        }
+
+        if ($value <= $previousValue) {
+            return 'invalid';
+        }
+
+        $previousValue = $value;
+    }
+
+    return '';
+}
+
+function app_convert_legacy_warning_thresholds(array $thresholds): array
+{
+    $maxPoints = app_warning_max_points();
+    $minPoints = app_warning_min_points();
+    $converted = [];
+
+    foreach (app_warning_default_thresholds() as $key => $defaultValue) {
+        $legacyValue = (int) ($thresholds[$key] ?? ($maxPoints - $defaultValue));
+        $converted[$key] = max($minPoints, $maxPoints - $legacyValue);
+    }
+
+    return app_validate_warning_thresholds($converted) === ''
+        ? $converted
+        : app_warning_default_thresholds();
+}
+
 function app_cap_warning_points(int $points, ?int $maxPoints = null): int
 {
     $maxPoints = $maxPoints ?? app_warning_max_points();
 
-    return max(0, min($points, $maxPoints));
+    return max(app_warning_min_points(), min($points, $maxPoints));
+}
+
+function app_cap_warning_deduction_points(int $points, ?int $maxPoints = null): int
+{
+    $maxPoints = $maxPoints ?? app_warning_max_points();
+
+    return max(0, min($points, $maxPoints - app_warning_min_points()));
+}
+
+function app_points_after_warning_deduction(int $deductedPoints, ?int $maxPoints = null): int
+{
+    $maxPoints = $maxPoints ?? app_warning_max_points();
+
+    return app_cap_warning_points($maxPoints - app_cap_warning_deduction_points($deductedPoints, $maxPoints), $maxPoints);
 }
 
 function app_total_points_from_violations(array $violations): int
 {
-    $totalPoints = 0;
+    $deductedPoints = 0;
 
     foreach ($violations as $violation) {
-        $totalPoints += (int) ($violation['poin_peraturan'] ?? 0);
+        $deductedPoints += (int) ($violation['poin_peraturan'] ?? 0);
     }
 
-    return app_cap_warning_points($totalPoints);
+    return app_points_after_warning_deduction($deductedPoints);
 }
 
 function app_student_total_points(mysqli $connect, int $studentId): int
 {
     if ($studentId <= 0) {
-        return 0;
+        return app_warning_max_points();
     }
 
     $studentId = (int) $studentId;
-    $query = "SELECT COALESCE(SUM(peraturan.poin_peraturan), 0) AS total_points
+    $query = "SELECT COALESCE(SUM(peraturan.poin_peraturan), 0) AS deducted_points
         FROM pelanggaran
         LEFT JOIN peraturan ON peraturan.id_peraturan = pelanggaran.id_peraturan
         WHERE pelanggaran.id_siswa = '{$studentId}'";
     $result = $connect->query($query);
     $row = $result instanceof mysqli_result ? $result->fetch_assoc() : null;
 
-    return app_cap_warning_points((int) ($row['total_points'] ?? 0));
+    return app_points_after_warning_deduction((int) ($row['deducted_points'] ?? 0));
 }
 
 function app_warning_points_remaining(int $currentPoints, ?int $maxPoints = null): int
 {
+    return app_warning_deductible_points($currentPoints, $maxPoints);
+}
+
+function app_warning_deductible_points(int $currentPoints, ?int $maxPoints = null): int
+{
     $maxPoints = $maxPoints ?? app_warning_max_points();
 
-    return max(0, $maxPoints - app_cap_warning_points($currentPoints, $maxPoints));
+    return max(0, app_cap_warning_points($currentPoints, $maxPoints) - app_warning_min_points());
 }
 
 function app_warning_state_for_points(int $points, array $settings): ?array
@@ -610,7 +675,7 @@ function app_warning_state_for_points(int $points, array $settings): ?array
     $activeState = null;
 
     foreach ($states as $state) {
-        if ($points >= (int) ($state['min_points'] ?? 0)) {
+        if ($points <= (int) ($state['min_points'] ?? $maxPoints)) {
             $activeState = $state;
         }
     }
@@ -881,7 +946,7 @@ function app_warning_student_snapshot(mysqli $connect, int $studentId): ?array
         return null;
     }
 
-    $query = "SELECT siswa.id_siswa, siswa.nisn, siswa.nama_lengkap, kelas.nama_kelas, COALESCE(SUM(peraturan.poin_peraturan), 0) AS total_poin
+    $query = "SELECT siswa.id_siswa, siswa.nisn, siswa.nama_lengkap, kelas.nama_kelas, COALESCE(SUM(peraturan.poin_peraturan), 0) AS poin_berkurang
         FROM siswa
         LEFT JOIN kelas ON kelas.id_kelas = siswa.id_kelas
         LEFT JOIN pelanggaran ON pelanggaran.id_siswa = siswa.id_siswa
@@ -897,7 +962,8 @@ function app_warning_student_snapshot(mysqli $connect, int $studentId): ?array
 
     $row = $result->fetch_assoc();
     $warningSettings = app_warning_settings($connect);
-    $row['total_poin'] = app_cap_warning_points((int) ($row['total_poin'] ?? 0), $warningSettings['max_points']);
+    $row['poin_berkurang'] = app_cap_warning_deduction_points((int) ($row['poin_berkurang'] ?? 0), $warningSettings['max_points']);
+    $row['total_poin'] = app_points_after_warning_deduction((int) $row['poin_berkurang'], $warningSettings['max_points']);
     $row['state'] = app_warning_state_for_points((int) $row['total_poin'], $warningSettings);
 
     return $row;

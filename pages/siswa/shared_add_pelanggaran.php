@@ -6,17 +6,18 @@ $rules = [];
 $warningSettings = app_warning_settings($connect);
 $maxPoints = $warningSettings['max_points'];
 $currentPoints = 0;
-$remainingPoints = $maxPoints;
+$deductiblePoints = $maxPoints - app_warning_min_points();
 $warningState = null;
 $successMessage = '';
 $errorMessage = '';
+$defaultViolationDate = (new DateTimeImmutable('now', app_warning_letter_timezone()))->format('Y-m-d');
 
 $studentQuery = "SELECT kelas.nama_kelas, kelas.id_kelas AS kelas_id, siswa.* FROM siswa LEFT JOIN kelas ON kelas.id_kelas = siswa.id_kelas WHERE siswa.id_siswa = '{$studentId}' LIMIT 1";
 $studentResult = $connect->query($studentQuery);
 if ($studentResult instanceof mysqli_result && $studentResult->num_rows > 0) {
     $student = $studentResult->fetch_assoc();
     $currentPoints = app_student_total_points($connect, $studentId);
-    $remainingPoints = app_warning_points_remaining($currentPoints, $maxPoints);
+    $deductiblePoints = app_warning_deductible_points($currentPoints, $maxPoints);
     $warningState = app_warning_state_for_points($currentPoints, $warningSettings);
 }
 
@@ -59,10 +60,10 @@ if (isset($_POST['submit']) && $student !== null) {
         $errorMessage = 'Tempat pelanggaran wajib diisi.';
     } elseif ($selectedRuleIds === [] || $selectedPoints <= 0) {
         $errorMessage = 'Pilih minimal satu pelanggaran.';
-    } elseif ($remainingPoints <= 0) {
-        $errorMessage = 'Siswa sudah mencapai batas maksimum ' . $maxPoints . ' poin.';
-    } elseif (($currentPoints + $selectedPoints) > $maxPoints) {
-        $errorMessage = 'Total poin melebihi batas maksimum ' . $maxPoints . '. Sisa poin yang masih bisa ditambahkan hanya ' . $remainingPoints . '.';
+    } elseif ($deductiblePoints <= 0) {
+        $errorMessage = 'Siswa sudah mencapai batas bawah ' . app_warning_min_points() . ' poin.';
+    } elseif ($selectedPoints > $deductiblePoints) {
+        $errorMessage = 'Poin pelanggaran melebihi sisa poin yang bisa dikurangi. Maksimal pengurangan saat ini hanya ' . $deductiblePoints . ' poin.';
     } else {
         $statement = $connect->prepare('INSERT INTO pelanggaran (id_siswa, id_peraturan, tanggal_pelanggaran, tempat_pelanggaran) VALUES (?, ?, ?, ?)');
 
@@ -83,8 +84,8 @@ if (isset($_POST['submit']) && $student !== null) {
                 $statement->close();
 
                 $successMessage = 'Pelanggaran berhasil ditambahkan.';
-                $currentPoints = app_cap_warning_points($currentPoints + $selectedPoints, $maxPoints);
-                $remainingPoints = app_warning_points_remaining($currentPoints, $maxPoints);
+                $currentPoints = app_cap_warning_points($currentPoints - $selectedPoints, $maxPoints);
+                $deductiblePoints = app_warning_deductible_points($currentPoints, $maxPoints);
                 $warningState = app_warning_state_for_points($currentPoints, $warningSettings);
             } catch (Throwable $throwable) {
                 $connect->rollback();
@@ -99,13 +100,13 @@ $actions = '<div class="action-stack action-stack-inline"><a class="btn btn-outl
 $chips = app_source_meta_chips();
 if ($student !== null) {
     $chips[] = $student['nama_kelas'];
-    $chips[] = $currentPoints . '/' . $maxPoints . ' poin';
+    $chips[] = 'Sisa ' . $currentPoints . '/' . $maxPoints . ' poin';
     $chips[] = $warningState !== null ? $warningState['label'] : 'Belum SP1';
 }
 
 echo app_render_page_intro(
     'Tambah Pelanggaran Siswa',
-    'Tambahkan catatan pelanggaran baru tanpa melewati batas maksimum poin siswa.',
+    'Tambahkan catatan pelanggaran baru yang akan mengurangi poin siswa.',
     $chips,
     $actions
 );
@@ -141,12 +142,12 @@ echo app_render_page_intro(
 
                 <div class="profile-data-list">
                     <div>
-                        <span>Total poin saat ini</span>
+                        <span>Poin tersisa saat ini</span>
                         <strong><?= app_h($currentPoints) ?> dari <?= app_h($maxPoints) ?> poin</strong>
                     </div>
                     <div>
-                        <span>Sisa poin yang dapat ditambahkan</span>
-                        <strong><?= app_h($remainingPoints) ?> poin</strong>
+                        <span>Sisa poin yang dapat dikurangi</span>
+                        <strong><?= app_h($deductiblePoints) ?> poin</strong>
                     </div>
                     <div>
                         <span>State aktif</span>
@@ -190,7 +191,7 @@ echo app_render_page_intro(
                     <div class="row g-3">
                         <div class="col-12 col-md-6">
                             <label class="toolbar-label" for="pelanggaran-tanggal">Tanggal pelanggaran</label>
-                            <input id="pelanggaran-tanggal" type="date" class="form-control" name="tanggal" value="<?= app_h($_POST['tanggal'] ?? '') ?>" required>
+                            <input id="pelanggaran-tanggal" type="date" class="form-control" name="tanggal" value="<?= app_h($_POST['tanggal'] ?? $defaultViolationDate) ?>" required>
                         </div>
                         <div class="col-12 col-md-6">
                             <label class="toolbar-label" for="pelanggaran-tempat">Tempat pelanggaran</label>
@@ -200,7 +201,7 @@ echo app_render_page_intro(
 
                     <div class="info-card mt-3">
                         <h3>Aturan batas poin</h3>
-                        <p>Total poin setelah submit tidak boleh melebihi <?= app_h($maxPoints) ?> poin. Sisa poin siswa saat ini: <?= app_h($remainingPoints) ?> poin.</p>
+                        <p>Setiap pelanggaran mengurangi poin siswa. Poin tidak boleh turun di bawah <?= app_h(app_warning_min_points()) ?>. Maksimal pengurangan saat ini: <?= app_h($deductiblePoints) ?> poin.</p>
                     </div>
 
                     <div class="table-responsive">
@@ -219,7 +220,7 @@ echo app_render_page_intro(
                                         <?php
                                         $ruleId = (int) $rule['id_peraturan'];
                                         $rulePoints = (int) ($rule['poin_peraturan'] ?? 0);
-                                        $isDisabled = $remainingPoints <= 0 || $rulePoints > $remainingPoints;
+                                        $isDisabled = $deductiblePoints <= 0 || $rulePoints > $deductiblePoints;
                                         ?>
                                         <tr>
                                             <td><?= app_h($index + 1) ?></td>
@@ -234,7 +235,7 @@ echo app_render_page_intro(
                                                 >
                                                 <input type="hidden" name="id[<?= app_h($index + 1) ?>]" value="<?= app_h($ruleId) ?>">
                                                 <?php if ($isDisabled) : ?>
-                                                    <div class="text-muted small mt-2">Melebihi sisa poin</div>
+                                                    <div class="text-muted small mt-2">Melebihi sisa poin yang bisa dikurangi</div>
                                                 <?php endif; ?>
                                             </td>
                                         </tr>
@@ -255,7 +256,7 @@ echo app_render_page_intro(
                     </div>
 
                     <div class="action-stack">
-                        <button class="btn btn-primary" type="submit" name="submit" <?= $remainingPoints <= 0 ? 'disabled' : '' ?>>
+                        <button class="btn btn-primary" type="submit" name="submit" <?= $deductiblePoints <= 0 ? 'disabled' : '' ?>>
                             <i class="fas fa-save"></i>
                             <span>Tambah</span>
                         </button>

@@ -22,12 +22,12 @@ if (isset($_POST['simpan'])) {
 
 $statePreview = app_warning_states($thresholdValues);
 $chips = app_source_meta_chips();
-$chips[] = 'Maksimal ' . $warningSettings['max_points'] . ' poin';
+$chips[] = 'Poin awal ' . $warningSettings['max_points'];
 $actions = '<div class="action-stack action-stack-inline"><a class="btn btn-outline-secondary" href="?page=peringatan"><i class="fas fa-arrow-left"></i> <span>Kembali ke peringatan</span></a></div>';
 
 echo app_render_page_intro(
     'Pengaturan Peringatan',
-    'Atur jumlah poin minimum untuk memicu SP1, SP2, SP3, dan pemberhentian. Urutan state harus selalu menaik.',
+    'Atur batas poin tersisa untuk memicu SP1, SP2, SP3, dan pemberhentian. Urutan state harus selalu menurun.',
     $chips,
     $actions
 );
@@ -48,7 +48,7 @@ echo app_render_page_intro(
                     <span class="section-kicker">Threshold State</span>
                     <h2>Form pengaturan poin</h2>
                 </div>
-                <span class="status-pill badge-points">Maks. <?= app_h($warningSettings['max_points']) ?> poin</span>
+                <span class="status-pill badge-points">Awal <?= app_h($warningSettings['max_points']) ?> poin</span>
             </div>
 
             <form method="post" class="stack-form mt-4">
@@ -59,7 +59,7 @@ echo app_render_page_intro(
                                 <span class="status-pill <?= app_h(app_warning_state_badge_class($state['key'])) ?>"><?= app_h($state['label']) ?></span>
                                 <h3><?= app_h($state['title']) ?></h3>
                                 <p><?= app_h($state['description']) ?></p>
-                                <label class="toolbar-label mt-3" for="threshold-<?= app_h($state['key']) ?>">Mulai dari poin</label>
+                                <label class="toolbar-label mt-3" for="threshold-<?= app_h($state['key']) ?>">Aktif saat poin tersisa maksimal</label>
                                 <input
                                     type="number"
                                     class="form-control mt-2"
@@ -77,7 +77,7 @@ echo app_render_page_intro(
 
                 <div class="info-card mt-4">
                     <h3>Aturan validasi</h3>
-                    <p>Nilai `SP1` harus lebih kecil dari `SP2`, `SP2` lebih kecil dari `SP3`, dan `SP3` lebih kecil dari `Pemberhentian`. Total poin siswa pada sistem dibatasi sampai 200 poin.</p>
+                    <p>Nilai `SP1` harus lebih besar dari `SP2`, `SP2` lebih besar dari `SP3`, dan `SP3` lebih besar dari `Pemberhentian`. Poin siswa dimulai dari 200 lalu berkurang sampai batas bawah 1 poin.</p>
                 </div>
 
                 <div class="action-stack mt-4">
@@ -107,12 +107,12 @@ echo app_render_page_intro(
                 <?php foreach ($statePreview as $state) : ?>
                     <div>
                         <span><?= app_h($state['description']) ?></span>
-                        <strong><?= app_h($state['label']) ?> dimulai dari <?= app_h($state['min_points']) ?> poin</strong>
+                        <strong><?= app_h($state['label']) ?> aktif saat poin tersisa <= <?= app_h($state['min_points']) ?></strong>
                     </div>
                 <?php endforeach; ?>
                 <div>
                     <span>Batas sistem</span>
-                    <strong>Total poin siswa maksimal <?= app_h($warningSettings['max_points']) ?> poin</strong>
+                    <strong>Poin siswa dimulai dari <?= app_h($warningSettings['max_points']) ?> dan tidak turun di bawah <?= app_h(app_warning_min_points()) ?></strong>
                 </div>
             </div>
         </section>

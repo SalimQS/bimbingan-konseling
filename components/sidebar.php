@@ -4,7 +4,9 @@ $menuItems = app_sidebar_menu_items($_SESSION);
 <nav id="sidebar">
     <div class="sidebar-header">
         <a href="index.php" class="sidebar-brand">
-            <span class="sidebar-brand-mark">BK</span>
+            <span class="sidebar-brand-mark">
+                <img src="assets/img/icon.png" alt="Bimbingan Konseling">
+            </span>
             <div>
                 <h1>Student Care</h1>
                 <p>Sistem bimbingan konseling</p>

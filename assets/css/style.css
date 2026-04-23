@@ -119,6 +119,12 @@ span {
   letter-spacing: 0.08em;
 }
 
+.sidebar-brand-mark img {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+}
+
 .sidebar-brand h1 {
   margin: 0;
   color: #fff;
@@ -1002,11 +1008,6 @@ textarea.form-control:focus {
 .auth-showcase .meta-chip {
   background: rgba(255, 255, 255, 0.12);
   border-color: rgba(255, 255, 255, 0.14);
-}
-
-.auth-secondary-btn {
-  margin-top: 1rem;
-  width: fit-content;
 }
 
 .auth-form-panel {

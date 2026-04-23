@@ -106,10 +106,10 @@ CREATE TABLE IF NOT EXISTS `pelanggaran` (
 
 CREATE TABLE IF NOT EXISTS `pengaturan_peringatan` (
   `id_pengaturan` TINYINT UNSIGNED NOT NULL DEFAULT 1,
-  `sp1_min_poin` TINYINT UNSIGNED NOT NULL DEFAULT 50,
+  `sp1_min_poin` TINYINT UNSIGNED NOT NULL DEFAULT 150,
   `sp2_min_poin` TINYINT UNSIGNED NOT NULL DEFAULT 100,
-  `sp3_min_poin` TINYINT UNSIGNED NOT NULL DEFAULT 150,
-  `pemberhentian_min_poin` TINYINT UNSIGNED NOT NULL DEFAULT 200,
+  `sp3_min_poin` TINYINT UNSIGNED NOT NULL DEFAULT 50,
+  `pemberhentian_min_poin` TINYINT UNSIGNED NOT NULL DEFAULT 1,
   `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id_pengaturan`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -155,7 +155,7 @@ WHERE NOT EXISTS (
 );
 
 INSERT INTO `pengaturan_peringatan` (`id_pengaturan`, `sp1_min_poin`, `sp2_min_poin`, `sp3_min_poin`, `pemberhentian_min_poin`)
-SELECT 1, 50, 100, 150, 200
+SELECT 1, 150, 100, 50, 1
 WHERE NOT EXISTS (
   SELECT 1
   FROM `pengaturan_peringatan`

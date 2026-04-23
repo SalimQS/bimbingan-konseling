@@ -63,7 +63,7 @@
                                 <tr class="text-center">
                                     <th>No</th>
                                     <th>Nama Pelanggaran</th>
-                                    <th>Sanksi</th>
+                                    <th>Pengurang Poin</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>

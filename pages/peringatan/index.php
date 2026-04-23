@@ -16,7 +16,7 @@ if ($search !== '') {
     $where[] = "(siswa.nisn LIKE '%{$safeSearch}%' OR siswa.nama_lengkap LIKE '%{$safeSearch}%')";
 }
 
-$query = 'SELECT siswa.id_siswa, siswa.nisn, siswa.nama_lengkap, siswa.foto_siswa, kelas.nama_kelas, COALESCE(SUM(peraturan.poin_peraturan), 0) AS total_poin
+$query = 'SELECT siswa.id_siswa, siswa.nisn, siswa.nama_lengkap, siswa.foto_siswa, kelas.nama_kelas, COALESCE(SUM(peraturan.poin_peraturan), 0) AS poin_berkurang
     FROM siswa
     LEFT JOIN kelas ON kelas.id_kelas = siswa.id_kelas
     LEFT JOIN pelanggaran ON pelanggaran.id_siswa = siswa.id_siswa
@@ -24,7 +24,7 @@ $query = 'SELECT siswa.id_siswa, siswa.nisn, siswa.nama_lengkap, siswa.foto_sisw
 if ($where !== []) {
     $query .= ' WHERE ' . implode(' AND ', $where);
 }
-$query .= ' GROUP BY siswa.id_siswa, siswa.nisn, siswa.nama_lengkap, siswa.foto_siswa, kelas.nama_kelas ORDER BY total_poin DESC, siswa.nama_lengkap ASC';
+$query .= ' GROUP BY siswa.id_siswa, siswa.nisn, siswa.nama_lengkap, siswa.foto_siswa, kelas.nama_kelas ORDER BY poin_berkurang DESC, siswa.nama_lengkap ASC';
 
 $warningResult = $connect->query($query);
 $warningRows = [];
@@ -35,7 +35,8 @@ foreach ($warningSettings['states'] as $state) {
 
 if ($warningResult instanceof mysqli_result) {
     while ($row = $warningResult->fetch_assoc()) {
-        $row['total_poin'] = app_cap_warning_points((int) ($row['total_poin'] ?? 0), $warningSettings['max_points']);
+        $row['poin_berkurang'] = app_cap_warning_deduction_points((int) ($row['poin_berkurang'] ?? 0), $warningSettings['max_points']);
+        $row['total_poin'] = app_points_after_warning_deduction((int) $row['poin_berkurang'], $warningSettings['max_points']);
         $row['state'] = app_warning_state_for_points((int) $row['total_poin'], $warningSettings);
 
         if ($row['state'] === null) {
@@ -52,9 +53,9 @@ $warningLetterModals = [];
 
 $classOptions = app_fetch_class_filter_options($connect);
 $chips = app_source_meta_chips();
-$chips[] = 'Maksimal ' . $warningSettings['max_points'] . ' poin';
+$chips[] = 'Poin awal ' . $warningSettings['max_points'];
 foreach ($warningSettings['states'] as $state) {
-    $chips[] = $state['label'] . ' mulai ' . $state['min_points'] . ' poin';
+    $chips[] = $state['label'] . ' <= ' . $state['min_points'] . ' poin';
 }
 
 $actions = '';
@@ -64,7 +65,7 @@ if (app_can_manage_warning_settings($_SESSION)) {
 
 echo app_render_page_intro(
     'Peringatan',
-    'Pantau siswa yang sudah memasuki state SP1, SP2, SP3, atau pemberhentian berdasarkan akumulasi poin pelanggaran.',
+    'Pantau siswa yang sudah memasuki state SP1, SP2, SP3, atau pemberhentian berdasarkan sisa poin setelah dikurangi poin pelanggaran.',
     $chips,
     $actions
 );
@@ -81,7 +82,7 @@ echo app_render_page_intro(
 <div class="row g-3 mt-1">
     <?php foreach ($warningSettings['states'] as $state) : ?>
         <div class="col-12 col-md-6 col-xl-3">
-            <?= app_render_stat_card($state['label'], $stateCounts[$state['key']] ?? 0, $state['icon'], $state['tone'], 'Mulai ' . $state['min_points'] . ' poin') ?>
+            <?= app_render_stat_card($state['label'], $stateCounts[$state['key']] ?? 0, $state['icon'], $state['tone'], '<= ' . $state['min_points'] . ' poin tersisa') ?>
         </div>
     <?php endforeach; ?>
 </div>
@@ -132,7 +133,7 @@ echo app_render_page_intro(
                     <th>NISN</th>
                     <th>Nama</th>
                     <th>Kelas</th>
-                    <th>Poin</th>
+                    <th>Poin Tersisa</th>
                     <th>State</th>
                     <th>Aksi</th>
                 </tr>
@@ -159,7 +160,12 @@ echo app_render_page_intro(
                                 </div>
                             </td>
                             <td><?= app_h($row['nama_kelas']) ?></td>
-                            <td><span class="status-pill badge-points"><?= app_h($row['total_poin']) ?> poin</span></td>
+                            <td>
+                                <div class="d-grid gap-1">
+                                    <span class="status-pill badge-points"><?= app_h($row['total_poin']) ?> poin</span>
+                                    <span class="text-muted small">Dikurangi <?= app_h($row['poin_berkurang']) ?> poin</span>
+                                </div>
+                            </td>
                             <td>
                                 <div class="d-grid gap-2">
                                     <span class="status-pill <?= app_h(app_warning_state_badge_class($row['state']['key'])) ?>">
@@ -202,7 +208,7 @@ echo app_render_page_intro(
                                         <div class="modal-header">
                                             <div>
                                                 <h5 class="modal-title mb-1" id="<?= app_h($modalId) ?>Label">Surat untuk <?= app_h($row['nama_lengkap']) ?></h5>
-                                                <span class="text-muted small">State saat ini: <?= app_h($row['state']['label']) ?>, total <?= app_h($row['total_poin']) ?> poin</span>
+                                                <span class="text-muted small">State saat ini: <?= app_h($row['state']['label']) ?>, sisa <?= app_h($row['total_poin']) ?> poin</span>
                                             </div>
                                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                         </div>
@@ -273,7 +279,7 @@ echo app_render_page_intro(
                             <div class="empty-state">
                                 <i class="fas fa-shield-alt"></i>
                                 <strong>Belum ada siswa yang masuk state peringatan.</strong>
-                                <span>Siswa akan muncul di sini saat total poinnya sudah mencapai batas minimal SP1.</span>
+                                <span>Siswa akan muncul di sini saat poin tersisanya sudah mencapai batas SP1 atau lebih rendah.</span>
                             </div>
                         </td>
                     </tr>

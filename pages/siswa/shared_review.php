@@ -38,7 +38,7 @@ $actions .= '</div>';
 
 echo app_render_page_intro(
     'Detail Siswa',
-    'Lihat identitas siswa, data pelanggaran, dan ringkasan poin secara ringkas dalam satu halaman.',
+    'Lihat identitas siswa, data pelanggaran, dan ringkasan poin tersisa secara ringkas dalam satu halaman.',
     app_source_meta_chips(),
     $actions
 );
@@ -103,7 +103,7 @@ echo app_render_page_intro(
                 <div class="section-head">
                     <div>
                         <span class="section-kicker">Riwayat Pelanggaran</span>
-                        <h2>Ringkasan poin siswa</h2>
+                        <h2>Ringkasan poin tersisa</h2>
                     </div>
                     <div class="action-stack">
                         <span class="status-pill badge-points"><?= app_h($totalPoints) ?> poin</span>
@@ -147,7 +147,7 @@ echo app_render_page_intro(
                                         <div class="empty-state empty-state-compact">
                                             <i class="fas fa-shield-alt"></i>
                                             <strong>Belum ada riwayat pelanggaran.</strong>
-                                            <span>Siswa ini belum memiliki catatan poin pada sistem.</span>
+                                            <span>Siswa ini belum memiliki catatan pengurangan poin pada sistem.</span>
                                         </div>
                                     </td>
                                 </tr>

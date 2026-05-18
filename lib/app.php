@@ -70,6 +70,8 @@ function app_route_definitions(): array
                 'actions' => [
                     '' => ['file' => 'peraturan_admin/index.php', 'title' => 'List Peraturan', 'scripts' => ['vendors/sweetalert/sweetalert.min.js', 'assets/js/list.js']],
                     'add' => ['file' => 'peraturan_admin/add.php', 'title' => 'Tambah List Peraturan', 'scripts' => ['vendors/sweetalert/sweetalert.min.js']],
+                    'upload' => ['file' => 'peraturan_admin/upload.php', 'title' => 'Upload Peraturan', 'scripts' => ['vendors/sweetalert/sweetalert.min.js']],
+                    'download_template' => ['file' => 'peraturan_admin/upload.php', 'title' => 'Download Format Peraturan', 'scripts' => []],
                     'edit' => ['file' => 'peraturan_admin/edit.php', 'title' => 'Ubah List Peraturan', 'scripts' => ['vendors/sweetalert/sweetalert.min.js']],
                 ],
             ],

@@ -10,10 +10,10 @@
                 $errorStatus = false;
                 $errorText = "";
 
-                if(isset($_POST['delete'])) {
-                    $query = "DELETE FROM peraturan WHERE id_peraturan = '". $_POST['id'] ."'";
+                if (isset($_POST['delete'])) {
+                    $query = "DELETE FROM peraturan WHERE id_peraturan = '" . $_POST['id'] . "'";
                     $result = $connect->query($query);
-                    if($result) {
+                    if ($result) {
                         $successStatus = true;
                         $successText = "dihapus";
                     } else {
@@ -23,27 +23,27 @@
                 }
 
                 ?>
-                <?php if($successStatus) { ?>
-                <div class="alert alert-success d-flex align-items-center" role="alert">
-                    <i class="fas fa-check bi flex-shrink-0 me-2" width="24" height="24"></i>
-                    <div><strong>Sukses!</strong> Siswa Berhasil <?= $successText ?></div>
-                </div>
+                <?php if ($successStatus) { ?>
+                    <div class="alert alert-success d-flex align-items-center" role="alert">
+                        <i class="fas fa-check bi flex-shrink-0 me-2" width="24" height="24"></i>
+                        <div><strong>Sukses!</strong> Siswa Berhasil <?= $successText ?></div>
+                    </div>
                 <?php } ?>
-                <?php if($errorStatus) { ?>
-                <div class="alert alert-danger d-flex align-items-center" role="alert">
-                    <i class="fas fa-exclamation-triangle bi flex-shrink-0 me-2" width="24" height="24"></i>
-                    <div><strong>Gagal!</strong> Siswa gagal <?= $errorText ?></div>
-                </div>
+                <?php if ($errorStatus) { ?>
+                    <div class="alert alert-danger d-flex align-items-center" role="alert">
+                        <i class="fas fa-exclamation-triangle bi flex-shrink-0 me-2" width="24" height="24"></i>
+                        <div><strong>Gagal!</strong> Siswa gagal <?= $errorText ?></div>
+                    </div>
                 <?php } ?>
 
                 <?php
-                  $query = "SELECT * FROM peraturan WHERE 1 ";
-                  if(isset($_POST['btn-cari'])) {
+                $query = "SELECT * FROM peraturan WHERE 1 ";
+                if (isset($_POST['btn-cari'])) {
                     $cari = $_POST['cari'];
                     $query .= "AND (jenis_peraturan LIKE '%$cari%') ";
-                  }
+                }
                 ?>
-                <div class="row">     
+                <div class="row">
                     <div class="col-12 col-md-4 ">
                         <form method="post">
                             <div class="input-group mb-3">
@@ -51,8 +51,9 @@
                                 <button class="btn btn-primary" type="submit" name='btn-cari' id="btn-cari" title='Cari'><i class="fa fa-search"></i></button>
                             </div>
                         </form>
-                    </div>           
+                    </div>
                     <div class="col-12 col-md-8 text-right">
+                        <a href="?page=peraturan&action=upload" class="btn btn-secondary me-2" title='Upload Excel Peraturan'><i class="fas fa-file-upload"></i> Upload Excel</a>
                         <a href="?page=peraturan&action=add" class="btn btn-success" title='Tambah Peraturan'><i class="fas fa-plus"></i> Tambah</a>
                     </div>
                 </div>
@@ -68,40 +69,39 @@
                                 </tr>
                             </thead>
                             <tbody>
-                            <?php
-                            $result = $connect->query($query);
-                            if($result->num_rows > 0) {
-                                $list = $result->fetch_all(MYSQLI_ASSOC);
-                                for ($i = 0; $i < count($list); $i++) {
-                            ?>                                
-                                <tr>
-                                    <td class="text-center"><?= $i + 1 ?></td>
-                                    <td class="text-center"><?= $list[$i]['jenis_peraturan'] ?></td>
-                                    <td class="text-center"><?= $list[$i]['poin_peraturan'] ?> Poin</td>
-                                    <td class="text-center">
-                                        <div class="row d-inline">
-                                            <div style="display: inline-block; width: fit-content;">
-                                                <a href="?page=peraturan&action=edit&id=<?= $list[$i]['id_peraturan'] ?>" name='delete' class='btn btn-sm btn-primary btn-data-form' title='Ubah Data Siswa'>Ubah</a>
-                                            </div>
-                                            <form method="post" class="formDelete" style="display: inline-block; width: fit-content;">
-                                                <input type="hidden" name="id" value="<?= $list[$i]['id_peraturan'] ?>"/>
-                                                <input type="hidden" name='delete'/>
-                                                <button class='btn btn-sm btn-danger btn-data-form' title='Hapus Data list'>Hapus</button>
-                                            </form>
-                                        </div>
-                                    </td>
-                                </tr>
-                            <?php
-                                }
-                            } 
-                            else {
-                                ?>                                
-                                <tr>
-                                    <td colspan="9" class='text-center'>Tidak ada list</td>
-                                </tr>
                                 <?php
-                            }
-                            ?>
+                                $result = $connect->query($query);
+                                if ($result->num_rows > 0) {
+                                    $list = $result->fetch_all(MYSQLI_ASSOC);
+                                    for ($i = 0; $i < count($list); $i++) {
+                                ?>
+                                        <tr>
+                                            <td class="text-center"><?= $i + 1 ?></td>
+                                            <td class="text-center"><?= $list[$i]['jenis_peraturan'] ?></td>
+                                            <td class="text-center"><?= $list[$i]['poin_peraturan'] ?> Poin</td>
+                                            <td class="text-center">
+                                                <div class="row d-inline">
+                                                    <div style="display: inline-block; width: fit-content;">
+                                                        <a href="?page=peraturan&action=edit&id=<?= $list[$i]['id_peraturan'] ?>" name='delete' class='btn btn-sm btn-primary btn-data-form' title='Ubah Data Siswa'>Ubah</a>
+                                                    </div>
+                                                    <form method="post" class="formDelete" style="display: inline-block; width: fit-content;">
+                                                        <input type="hidden" name="id" value="<?= $list[$i]['id_peraturan'] ?>" />
+                                                        <input type="hidden" name='delete' />
+                                                        <button class='btn btn-sm btn-danger btn-data-form' title='Hapus Data list'>Hapus</button>
+                                                    </form>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    <?php
+                                    }
+                                } else {
+                                    ?>
+                                    <tr>
+                                        <td colspan="9" class='text-center'>Tidak ada list</td>
+                                    </tr>
+                                <?php
+                                }
+                                ?>
                             </tbody>
                         </table>
                     </div>

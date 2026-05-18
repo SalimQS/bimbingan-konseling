@@ -116,12 +116,12 @@ $summary = app_student_source_summary();
                 <span class="auth-kicker">Student Care</span>
                 <h1>Masuk ke sistem bimbingan konseling</h1>
                 <p>Dashboard ini memusatkan pemantauan siswa, poin pelanggaran, dan data kelas yang diperbarui dari upload Excel siswa terakhir.</p>
-                <div class="inline-meta">
+                <!-- <div class="inline-meta">
                     <span class="meta-chip"><?= app_h($summary['source_file']) ?></span>
                     <?php if (!empty($summary['student_count'])) : ?>
                         <span class="meta-chip"><?= app_h($summary['student_count']) ?> siswa</span>
                     <?php endif; ?>
-                </div>
+                </div> -->
             </div>
 
             <div class="auth-form-panel">
@@ -154,7 +154,7 @@ $summary = app_student_source_summary();
                     </div>
 
                     <button type="submit" name="submit" class="btn btn-primary btn-lg w-100">
-                        <i class="fas fa-right-to-bracket"></i>
+                        <!-- <i class="fas fa-right-to-bracket"></i> -->
                         <span>Masuk</span>
                     </button>
                 </form>

@@ -5,6 +5,11 @@ function app_student_upload_directory(): string
     return dirname(__DIR__) . '/storage/student-uploads';
 }
 
+function app_peraturan_upload_directory(): string
+{
+    return dirname(__DIR__) . '/storage/peraturan-uploads';
+}
+
 function app_student_sync_snapshot_path(): string
 {
     return dirname(__DIR__) . '/storage/cache/student-import.json';
@@ -85,6 +90,50 @@ function app_store_uploaded_student_workbook(array $uploadedFile): array
     ];
 }
 
+function app_store_uploaded_peraturan_workbook(array $uploadedFile): array
+{
+    if (!isset($uploadedFile['error']) || (int) $uploadedFile['error'] !== UPLOAD_ERR_OK) {
+        throw new RuntimeException('Upload file peraturan gagal. Pilih ulang file Excel yang valid.');
+    }
+
+    $originalName = trim((string) ($uploadedFile['name'] ?? ''));
+    if ($originalName === '') {
+        throw new RuntimeException('Nama file upload tidak valid.');
+    }
+
+    $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+    if ($extension !== 'xlsx') {
+        throw new RuntimeException('File peraturan harus berformat .xlsx.');
+    }
+
+    $tmpName = (string) ($uploadedFile['tmp_name'] ?? '');
+    if ($tmpName === '' || !is_uploaded_file($tmpName)) {
+        throw new RuntimeException('Berkas upload tidak dikenali oleh server.');
+    }
+
+    $uploadDir = app_peraturan_upload_directory();
+    if (!is_dir($uploadDir) && !mkdir($uploadDir, 0777, true) && !is_dir($uploadDir)) {
+        throw new RuntimeException('Folder upload peraturan tidak dapat dibuat.');
+    }
+
+    $baseName = pathinfo($originalName, PATHINFO_FILENAME);
+    $safeBaseName = preg_replace('/[^a-zA-Z0-9_-]+/', '-', $baseName);
+    $safeBaseName = trim((string) $safeBaseName, '-');
+    if ($safeBaseName === '') {
+        $safeBaseName = 'data-peraturan';
+    }
+
+    $targetPath = $uploadDir . '/' . date('Ymd-His') . '-' . $safeBaseName . '.xlsx';
+    if (!move_uploaded_file($tmpName, $targetPath)) {
+        throw new RuntimeException('File Excel gagal disimpan ke server.');
+    }
+
+    return [
+        'path' => $targetPath,
+        'original_name' => $originalName,
+    ];
+}
+
 function app_import_students_from_workbook(mysqli $connect, string $workbookPath, ?string $originalName = null): array
 {
     if (!class_exists('ZipArchive')) {
@@ -108,6 +157,36 @@ function app_import_students_from_workbook(mysqli $connect, string $workbookPath
     app_apply_student_sync($connect, $students);
 
     return app_write_student_sync_snapshot($workbookPath, $students, $sourceHash, $originalName);
+}
+
+function app_import_peraturan_from_workbook(mysqli $connect, string $workbookPath, ?string $originalName = null): array
+{
+    if (!class_exists('ZipArchive')) {
+        throw new RuntimeException('Ekstensi ZipArchive tidak tersedia di server.');
+    }
+
+    if (!is_file($workbookPath)) {
+        throw new RuntimeException('File workbook peraturan tidak ditemukan.');
+    }
+
+    if (!app_table_exists($connect, 'peraturan')) {
+        throw new RuntimeException('Tabel peraturan belum tersedia di database.');
+    }
+
+    $rules = app_parse_peraturan_source($workbookPath);
+    if ($rules === []) {
+        throw new RuntimeException('Tidak ada data peraturan valid yang ditemukan di file Excel.');
+    }
+
+    $sourceHash = hash_file('sha256', $workbookPath) ?: '';
+    $summary = app_apply_peraturan_sync($connect, $rules);
+
+    return [
+        'source_path' => $workbookPath,
+        'original_name' => $originalName,
+        'source_hash' => $sourceHash,
+        'summary' => $summary,
+    ];
 }
 
 function app_parse_student_source(string $sourcePath): array
@@ -188,6 +267,188 @@ function app_parse_student_source(string $sourcePath): array
     }
 
     return array_values($students);
+}
+
+function app_parse_peraturan_source(string $sourcePath): array
+{
+    $zip = new ZipArchive();
+    if ($zip->open($sourcePath) !== true) {
+        return [];
+    }
+
+    $sharedStrings = app_xlsx_shared_strings($zip);
+    $worksheetPath = app_xlsx_first_sheet_path($zip);
+    if ($worksheetPath === null) {
+        $zip->close();
+        return [];
+    }
+
+    $worksheetXml = $zip->getFromName($worksheetPath);
+    $zip->close();
+
+    if ($worksheetXml === false) {
+        return [];
+    }
+
+    $worksheet = @simplexml_load_string($worksheetXml);
+    if ($worksheet === false) {
+        return [];
+    }
+
+    $worksheet->registerXPathNamespace('main', 'http://schemas.openxmlformats.org/spreadsheetml/2006/main');
+    $rows = $worksheet->xpath('//main:sheetData/main:row');
+    if ($rows === false || $rows === []) {
+        return [];
+    }
+
+    $headers = [];
+    $rules = [];
+    $dedupe = [];
+
+    foreach ($rows as $rowIndex => $row) {
+        $row->registerXPathNamespace('main', 'http://schemas.openxmlformats.org/spreadsheetml/2006/main');
+        $cells = $row->xpath('main:c');
+        if ($cells === false) {
+            continue;
+        }
+
+        $valuesByColumn = [];
+        foreach ($cells as $cell) {
+            $cellReference = (string) ($cell['r'] ?? '');
+            $columnReference = preg_replace('/\d+/', '', $cellReference);
+            if ($columnReference === '') {
+                continue;
+            }
+
+            $valuesByColumn[$columnReference] = app_xlsx_cell_value($cell, $sharedStrings);
+        }
+
+        if ($rowIndex === 0) {
+            foreach ($valuesByColumn as $columnReference => $header) {
+                $headers[$columnReference] = app_normalize_peraturan_header($header);
+            }
+            continue;
+        }
+
+        $rawRow = [];
+        foreach ($headers as $columnReference => $header) {
+            if ($header === '') {
+                continue;
+            }
+
+            $rawRow[$header] = trim((string) ($valuesByColumn[$columnReference] ?? ''));
+        }
+
+        $rule = app_normalize_peraturan_row($rawRow);
+        if ($rule === null) {
+            continue;
+        }
+
+        $key = strtolower(trim($rule['jenis_peraturan']));
+        if ($key === '') {
+            continue;
+        }
+
+        $dedupe[$key] = $rule;
+    }
+
+    return array_values($dedupe);
+}
+
+function app_normalize_peraturan_header(string $header): string
+{
+    $header = strtolower(trim($header));
+    $header = str_replace(['(', ')', '.', '-', '/'], ' ', $header);
+    $header = preg_replace('/\s+/', ' ', $header);
+
+    $map = [
+        'jenis peraturan' => 'jenis_peraturan',
+        'nama peraturan' => 'jenis_peraturan',
+        'peraturan' => 'jenis_peraturan',
+        'pelanggaran' => 'jenis_peraturan',
+        'jenis pelanggaran' => 'jenis_peraturan',
+        'sanksi' => 'poin_peraturan',
+        'poin' => 'poin_peraturan',
+        'poin pengurang' => 'poin_peraturan',
+        'pengurang poin' => 'poin_peraturan',
+        'nilai' => 'poin_peraturan',
+        'nilai poin' => 'poin_peraturan',
+    ];
+
+    return $map[$header] ?? '';
+}
+
+function app_normalize_peraturan_row(array $row): ?array
+{
+    $ruleName = trim((string) ($row['jenis_peraturan'] ?? ''));
+    $pointValue = trim((string) ($row['poin_peraturan'] ?? ''));
+
+    if ($ruleName === '' || $pointValue === '') {
+        return null;
+    }
+
+    $pointValue = preg_replace('/[^0-9]+/', '', $pointValue);
+    if ($pointValue === '') {
+        return null;
+    }
+
+    $points = (int) $pointValue;
+    if ($points < 1) {
+        return null;
+    }
+
+    return [
+        'jenis_peraturan' => $ruleName,
+        'poin_peraturan' => $points,
+    ];
+}
+
+function app_apply_peraturan_sync(mysqli $connect, array $rules): array
+{
+    $connect->begin_transaction();
+
+    try {
+        $existingRules = [];
+        $result = $connect->query('SELECT id_peraturan, jenis_peraturan FROM peraturan');
+        if ($result instanceof mysqli_result) {
+            while ($row = $result->fetch_assoc()) {
+                $existingRules[strtolower(trim((string) ($row['jenis_peraturan'] ?? '')))] = (int) ($row['id_peraturan'] ?? 0);
+            }
+        }
+
+        $insert = $connect->prepare('INSERT INTO peraturan (jenis_peraturan, poin_peraturan) VALUES (?, ?)');
+        $update = $connect->prepare('UPDATE peraturan SET poin_peraturan = ? WHERE id_peraturan = ?');
+        if (!$insert || !$update) {
+            throw new RuntimeException('Persiapan query peraturan gagal.');
+        }
+
+        $added = 0;
+        $updated = 0;
+        foreach ($rules as $rule) {
+            $existingId = $existingRules[strtolower(trim($rule['jenis_peraturan']))] ?? 0;
+            if ($existingId > 0) {
+                $update->bind_param('ii', $rule['poin_peraturan'], $existingId);
+                $update->execute();
+                if ($update->affected_rows >= 0) {
+                    $updated++;
+                }
+                continue;
+            }
+
+            $insert->bind_param('si', $rule['jenis_peraturan'], $rule['poin_peraturan']);
+            $insert->execute();
+            if ($insert->affected_rows > 0) {
+                $added++;
+            }
+        }
+
+        $connect->commit();
+
+        return ['added' => $added, 'updated' => $updated, 'total' => count($rules)];
+    } catch (Throwable $exception) {
+        $connect->rollback();
+        throw $exception;
+    }
 }
 
 function app_apply_student_sync(mysqli $connect, array $students): void

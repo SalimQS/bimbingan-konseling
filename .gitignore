@@ -3,6 +3,7 @@
 .env.*.local
 
 /storage/cache/
+/storage/warning-letters/generated/
 /storage/student-source/*.xls
 /storage/student-source/*.xlsx
 /storage/student-source/*.csv

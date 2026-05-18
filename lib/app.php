@@ -266,7 +266,7 @@ function app_source_meta_chips(): array
 function app_render_page_intro(string $title, string $description, array $chips = [], string $actionsHtml = ''): string
 {
     ob_start();
-    ?>
+?>
     <section class="page-intro">
         <div class="page-intro-copy">
             <span class="page-intro-kicker">Bimbingan Konseling</span>
@@ -286,7 +286,7 @@ function app_render_page_intro(string $title, string $description, array $chips 
             </div>
         <?php endif; ?>
     </section>
-    <?php
+<?php
 
     return trim((string) ob_get_clean());
 }
@@ -294,7 +294,7 @@ function app_render_page_intro(string $title, string $description, array $chips 
 function app_render_stat_card(string $label, $value, string $icon, string $tone = 'teal', string $meta = ''): string
 {
     ob_start();
-    ?>
+?>
     <div class="stat-card stat-card-<?= app_h($tone) ?>">
         <div>
             <span class="stat-label"><?= app_h($label) ?></span>
@@ -307,7 +307,7 @@ function app_render_stat_card(string $label, $value, string $icon, string $tone 
             <i class="fas <?= app_h($icon) ?>"></i>
         </div>
     </div>
-    <?php
+<?php
 
     return trim((string) ob_get_clean());
 }
@@ -812,6 +812,204 @@ function app_warning_letter_generated_dir(): string
     return app_project_root() . '/storage/warning-letters/generated';
 }
 
+function app_warning_letter_generated_relative_path(DateTimeInterface $date, string $templateKey, string $studentSlug): string
+{
+    $slug = app_warning_letter_slug($templateKey);
+    $suffix = bin2hex(random_bytes(4));
+
+    return 'storage/warning-letters/generated/' . $date->format('Y') . '/' . $date->format('m') . '/'
+        . $date->format('YmdHis') . '-' . $slug . '-' . $studentSlug . '-' . $suffix . '.docx';
+}
+
+function app_warning_letter_qr_json_data(array $letter, array $student): string
+{
+    $payload = [
+        'id' => (int) ($letter['id_surat'] ?? 0),
+        'no_surat' => (string) ($letter['no_surat'] ?? ''),
+        'tanggal_surat' => (string) ($letter['tanggal_surat'] ?? ''),
+        'jenis_surat' => (string) ($letter['jenis_surat'] ?? ''),
+        'id_siswa' => (int) ($letter['id_siswa'] ?? 0),
+        'nama_lengkap' => (string) ($student['nama_lengkap'] ?? ''),
+        'kelas' => (string) ($student['nama_kelas'] ?? ''),
+        'state_siswa' => (string) ($letter['state_siswa'] ?? ''),
+    ];
+
+    $json = json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    if ($json === false) {
+        throw new RuntimeException('Gagal membuat data QR code.');
+    }
+
+    return $json;
+}
+
+function app_warning_letter_generate_qr_png_data(string $data): string
+{
+    $descriptor = [
+        0 => ['pipe', 'r'],
+        1 => ['pipe', 'w'],
+        2 => ['pipe', 'w'],
+    ];
+
+    $process = proc_open([
+        'python3',
+        '-c',
+        'import qrcode,sys; data=sys.stdin.buffer.read().decode("utf-8"); img=qrcode.make(data); img.save(sys.stdout.buffer, format="PNG")',
+    ], $descriptor, $pipes);
+
+    if (!is_resource($process)) {
+        throw new RuntimeException('Gagal menjalankan generator QR code.');
+    }
+
+    fwrite($pipes[0], $data);
+    fclose($pipes[0]);
+
+    $imageData = stream_get_contents($pipes[1]);
+    fclose($pipes[1]);
+
+    $errorOutput = stream_get_contents($pipes[2]);
+    fclose($pipes[2]);
+
+    $status = proc_close($process);
+    if ($status !== 0 || $imageData === '') {
+        throw new RuntimeException('Generator QR code gagal: ' . trim($errorOutput));
+    }
+
+    return $imageData;
+}
+
+function app_warning_letter_next_image_index(ZipArchive $zip): int
+{
+    $max = 0;
+    for ($i = 0; $i < $zip->numFiles; $i++) {
+        $name = $zip->getNameIndex($i);
+        if (preg_match('#^word/media/image(\d+)\.(?:png|jpe?g|gif)$#i', $name, $matches)) {
+            $max = max($max, (int) $matches[1]);
+        }
+    }
+
+    return $max;
+}
+
+function app_warning_letter_add_image_to_docx(ZipArchive $zip, string $imageData, ?string $fileName = null): string
+{
+    $imageIndex = app_warning_letter_next_image_index($zip) + 1;
+    $fileName = $fileName ?? 'image' . $imageIndex . '.png';
+    $targetName = 'word/media/' . $fileName;
+
+    if ($zip->addFromString($targetName, $imageData) === false) {
+        throw new RuntimeException('Gagal menambahkan gambar ke dokumen.');
+    }
+
+    $relsXml = $zip->getFromName('word/_rels/document.xml.rels');
+    if ($relsXml === false) {
+        throw new RuntimeException('Relasi dokumen tidak ditemukan.');
+    }
+
+    $rels = new DOMDocument();
+    $rels->loadXML($relsXml);
+    $relXpath = new DOMXPath($rels);
+    $relXpath->registerNamespace('pkg', 'http://schemas.openxmlformats.org/package/2006/relationships');
+
+    $maxId = 0;
+    foreach ($relXpath->query('//pkg:Relationship') as $rel) {
+        $id = $rel->getAttribute('Id');
+        if (preg_match('/^rId(\d+)$/', $id, $matches) && (int) $matches[1] > $maxId) {
+            $maxId = (int) $matches[1];
+        }
+    }
+
+    $nextId = 'rId' . ($maxId + 1);
+    $relationship = $rels->createElementNS('http://schemas.openxmlformats.org/package/2006/relationships', 'Relationship');
+    $relationship->setAttribute('Id', $nextId);
+    $relationship->setAttribute('Type', 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/image');
+    $relationship->setAttribute('Target', 'media/' . $fileName);
+    $rels->documentElement->appendChild($relationship);
+    $zip->addFromString('word/_rels/document.xml.rels', $rels->saveXML());
+
+    return $nextId;
+}
+
+function app_warning_letter_remove_image_relation(ZipArchive $zip, DOMDocument $document, string $relationId): void
+{
+    $xpath = new DOMXPath($document);
+    $xpath->registerNamespace('w', 'http://schemas.openxmlformats.org/wordprocessingml/2006/main');
+    $xpath->registerNamespace('a', 'http://schemas.openxmlformats.org/drawingml/2006/main');
+    $xpath->registerNamespace('r', 'http://schemas.openxmlformats.org/officeDocument/2006/relationships');
+
+    $query = '//w:drawing[.//a:blip[@r:embed="' . $relationId . '"]]/ancestor::w:r[1]';
+    foreach ($xpath->query($query) as $run) {
+        if ($run instanceof DOMElement && $run->parentNode) {
+            $run->parentNode->removeChild($run);
+        }
+    }
+
+    $relsXml = $zip->getFromName('word/_rels/document.xml.rels');
+    if ($relsXml === false) {
+        return;
+    }
+
+    $rels = new DOMDocument();
+    $rels->loadXML($relsXml);
+    $relXpath = new DOMXPath($rels);
+    $relXpath->registerNamespace('pkg', 'http://schemas.openxmlformats.org/package/2006/relationships');
+
+    foreach ($relXpath->query('//pkg:Relationship[@Id="' . $relationId . '"]') as $rel) {
+        if ($rel->parentNode) {
+            $rel->parentNode->removeChild($rel);
+        }
+    }
+
+    $zip->addFromString('word/_rels/document.xml.rels', $rels->saveXML());
+}
+
+function app_warning_letter_insert_qr_image_after_role(DOMDocument $document, DOMXPath $xpath, string $relationId): void
+{
+    $roleParagraph = null;
+    foreach ($xpath->query('//w:p') as $paragraph) {
+        if (!$paragraph instanceof DOMElement) {
+            continue;
+        }
+
+        $text = trim(app_warning_letter_paragraph_text($xpath, $paragraph));
+        if ($text === '') {
+            continue;
+        }
+
+        $normalized = mb_strtolower($text, 'UTF-8');
+        if (str_contains($normalized, 'wakakur kesiswaan') || str_contains($normalized, 'wakakur') || str_contains($normalized, 'kesiswaan')) {
+            $roleParagraph = $paragraph;
+            break;
+        }
+    }
+
+    if (!$roleParagraph instanceof DOMElement) {
+        return;
+    }
+
+    $emu = 100 * 9525;
+    $docPrId = mt_rand(1000000, 9999999);
+    $fragment = $document->createDocumentFragment();
+    $fragment->appendXML(
+        '<w:p xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'
+            . '<w:pPr><w:jc w:val="right"/><w:ind w:right="720"/><w:pSpacing w:before="0" w:after="0"/><w:spacing w:line="240" w:lineRule="auto"/></w:pPr>'
+            . '<w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0">'
+            . '<wp:extent cx="' . $emu . '" cy="' . $emu . '"/>'
+            . '<wp:effectExtent l="0" t="0" r="0" b="0"/>'
+            . '<wp:docPr id="' . $docPrId . '" name="QR Code"/>'
+            . '<wp:cNvGraphicFramePr><a:graphicFrameLocks noChangeAspect="1"/></wp:cNvGraphicFramePr>'
+            . '<a:graphic uri="http://schemas.openxmlformats.org/drawingml/2006/main">'
+            . '<a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">'
+            . '<pic:pic><pic:nvPicPr><pic:cNvPr id="0" name="QR Code"/><pic:cNvPicPr/></pic:nvPicPr>'
+            . '<pic:blipFill><a:blip r:embed="' . $relationId . '"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>'
+            . '<pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="' . $emu . '" cy="' . $emu . '"/></a:xfrm>'
+            . '<a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr>'
+            . '</pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>'
+    );
+
+    $nextSibling = $roleParagraph->nextSibling;
+    $roleParagraph->parentNode->insertBefore($fragment, $nextSibling);
+}
+
 function app_ensure_warning_letter_storage(): void
 {
     $paths = [
@@ -1169,15 +1367,19 @@ function app_warning_letter_generate_docx(array $template, array $payload): stri
         throw new RuntimeException('Tanggal surat tidak valid.');
     }
 
-    $targetDir = app_warning_letter_generated_dir() . '/' . $date->format('Y') . '/' . $date->format('m');
-    if (!is_dir($targetDir)) {
-        mkdir($targetDir, 0775, true);
+    $targetRelativePath = isset($payload['target_relative_path']) && trim((string) $payload['target_relative_path']) !== ''
+        ? trim((string) $payload['target_relative_path'])
+        : app_warning_letter_generated_relative_path($date, (string) ($template['key'] ?? 'surat'), app_warning_letter_slug((string) ($payload['student_name'] ?? 'siswa')));
+
+    $targetPath = app_warning_letter_absolute_path($targetRelativePath);
+    if ($targetPath === '') {
+        throw new RuntimeException('Target path dokumen tidak valid.');
     }
 
-    $studentSlug = app_warning_letter_slug((string) ($payload['student_name'] ?? 'siswa'));
-    $targetRelativePath = 'storage/warning-letters/generated/' . $date->format('Y') . '/' . $date->format('m') . '/'
-        . $date->format('YmdHis') . '-' . app_warning_letter_slug((string) ($template['key'] ?? 'surat')) . '-' . $studentSlug . '.docx';
-    $targetPath = app_project_root() . '/' . $targetRelativePath;
+    $targetDir = dirname($targetPath);
+    if (!is_dir($targetDir) && !mkdir($targetDir, 0775, true) && !is_dir($targetDir)) {
+        throw new RuntimeException('Gagal membuat direktori penyimpanan surat.');
+    }
 
     if (!copy($templatePath, $targetPath)) {
         throw new RuntimeException('Template surat gagal disalin.');
@@ -1206,6 +1408,17 @@ function app_warning_letter_generate_docx(array $template, array $payload): stri
 
     $xpath = new DOMXPath($document);
     $xpath->registerNamespace('w', 'http://schemas.openxmlformats.org/wordprocessingml/2006/main');
+    $xpath->registerNamespace('a', 'http://schemas.openxmlformats.org/drawingml/2006/main');
+    $xpath->registerNamespace('r', 'http://schemas.openxmlformats.org/officeDocument/2006/relationships');
+
+    app_warning_letter_remove_image_relation($zip, $document, 'rId8');
+
+    $signatureQrData = (string) ($payload['signature_qr_data'] ?? '');
+    if ($signatureQrData !== '') {
+        $imageData = app_warning_letter_generate_qr_png_data($signatureQrData);
+        $relationId = app_warning_letter_add_image_to_docx($zip, $imageData);
+        app_warning_letter_insert_qr_image_after_role($document, $xpath, $relationId);
+    }
 
     $dateReplaceCount = app_warning_letter_replace_all_in_document(
         $xpath,
@@ -1300,18 +1513,14 @@ function app_warning_letter_create(mysqli $connect, int $studentId, string $lett
     $sequence = app_warning_letter_next_monthly_sequence($connect, (int) $date->format('Y'), (int) $date->format('n'));
     $letterNumber = app_warning_letter_number($sequence, $date);
     $dateText = app_warning_letter_date_text($date);
-    $generatedPath = app_warning_letter_generate_docx($template, [
-        'date' => $date,
-        'date_text' => $dateText,
-        'letter_number' => $letterNumber,
-        'student_name' => (string) ($student['nama_lengkap'] ?? ''),
-        'student_class' => trim((string) ($student['nama_kelas'] ?? '')),
-    ]);
+
+    $studentSlug = app_warning_letter_slug((string) ($student['nama_lengkap'] ?? 'siswa'));
+    $targetRelativePath = app_warning_letter_generated_relative_path($date, (string) ($template['key'] ?? $letterType), $studentSlug);
+    $safeGeneratedPath = $connect->real_escape_string($targetRelativePath);
 
     $safeLetterType = $connect->real_escape_string($letterType);
     $safeState = $connect->real_escape_string((string) ($studentState['key'] ?? ''));
     $safeLetterNumber = $connect->real_escape_string($letterNumber);
-    $safeGeneratedPath = $connect->real_escape_string($generatedPath);
     $safeCreatedByName = $connect->real_escape_string((string) ($session['nama_lengkap'] ?? ''));
     $safeCreatedByRole = $connect->real_escape_string(app_user_role_label($session));
     $tanggalSurat = $date->format('Y-m-d');
@@ -1345,7 +1554,7 @@ function app_warning_letter_create(mysqli $connect, int $studentId, string $lett
         )";
 
     if (!$connect->query($insertQuery)) {
-        @unlink(app_warning_letter_absolute_path($generatedPath));
+        @unlink(app_warning_letter_absolute_path($targetRelativePath));
 
         if ((int) $connect->errno === 1062) {
             $existingLetter = app_warning_letter_find_by_student_and_type($connect, $studentId, $letterType);
@@ -1362,9 +1571,26 @@ function app_warning_letter_create(mysqli $connect, int $studentId, string $lett
         throw new RuntimeException('Data surat gagal disimpan ke database.');
     }
 
-    $createdLetter = app_warning_letter_find_by_id($connect, (int) $connect->insert_id);
+    $createdLetterId = (int) $connect->insert_id;
+    $createdLetter = app_warning_letter_find_by_id($connect, $createdLetterId);
     if ($createdLetter === null) {
         throw new RuntimeException('Surat berhasil dibuat, tetapi data hasil simpan tidak ditemukan.');
+    }
+
+    try {
+        app_warning_letter_generate_docx($template, [
+            'date' => $date,
+            'date_text' => $dateText,
+            'letter_number' => $letterNumber,
+            'student_name' => (string) ($student['nama_lengkap'] ?? ''),
+            'student_class' => trim((string) ($student['nama_kelas'] ?? '')),
+            'signature_qr_data' => app_warning_letter_qr_json_data($createdLetter, $student),
+            'target_relative_path' => $targetRelativePath,
+        ]);
+    } catch (Throwable $exception) {
+        $connect->query("DELETE FROM surat_peringatan WHERE id_surat = '{$createdLetterId}' LIMIT 1");
+        @unlink(app_warning_letter_absolute_path($targetRelativePath));
+        throw $exception;
     }
 
     return [
@@ -1409,6 +1635,8 @@ function app_warning_letter_regenerate(mysqli $connect, int $letterId): array
         'letter_number' => (string) ($letter['no_surat'] ?? ''),
         'student_name' => (string) ($student['nama_lengkap'] ?? ''),
         'student_class' => trim((string) ($student['nama_kelas'] ?? '')),
+        'signature_qr_data' => app_warning_letter_qr_json_data($letter, $student),
+        'target_relative_path' => (string) ($letter['file_path'] ?? ''),
     ]);
 
     $safeGeneratedPath = $connect->real_escape_string($generatedPath);

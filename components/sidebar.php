@@ -8,8 +8,8 @@ $menuItems = app_sidebar_menu_items($_SESSION);
                 <img src="assets/img/icon.png" alt="Bimbingan Konseling">
             </span>
             <div>
-                <h1>Student Care</h1>
-                <p>Sistem bimbingan konseling</p>
+                <h1>SMAN 4 Banjarmasin</h1>
+                <p>Sistem Kesiswaan</p>
             </div>
         </a>
     </div>

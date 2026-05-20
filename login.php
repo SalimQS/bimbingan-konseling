@@ -113,9 +113,9 @@ $summary = app_student_source_summary();
     <main class="auth-shell">
         <section class="auth-card">
             <div class="auth-showcase">
-                <span class="auth-kicker">Student Care</span>
-                <h1>Masuk ke sistem bimbingan konseling</h1>
-                <p>Dashboard ini memusatkan pemantauan siswa, poin pelanggaran, dan data kelas yang diperbarui dari upload Excel siswa terakhir.</p>
+                <span class="auth-kicker">SMAN 4 Banjarmasin</span>
+                <h1>Masuk ke sistem kesiswaan</h1>
+                <p>Dashboard ini memusatkan pemantauan siswa, poin pelanggaran, dan data kelas.</p>
                 <!-- <div class="inline-meta">
                     <span class="meta-chip"><?= app_h($summary['source_file']) ?></span>
                     <?php if (!empty($summary['student_count'])) : ?>

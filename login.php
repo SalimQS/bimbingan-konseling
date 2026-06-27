@@ -113,8 +113,8 @@ $summary = app_student_source_summary();
     <main class="auth-shell">
         <section class="auth-card">
             <div class="auth-showcase">
-                <span class="auth-kicker">SMAN 4 Banjarmasin</span>
-                <h1>Masuk ke sistem kesiswaan</h1>
+                <h1 class="auth-title">SMAN 4 Banjarmasin</h1>
+                <h1 class="auth-subtitle">Sistem Kesiswaan</h1>
                 <p>Dashboard ini memusatkan pemantauan siswa, poin pelanggaran, dan data kelas.</p>
                 <!-- <div class="inline-meta">
                     <span class="meta-chip"><?= app_h($summary['source_file']) ?></span>

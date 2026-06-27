@@ -107,7 +107,7 @@ echo app_render_page_intro(
                 <?php foreach ($statePreview as $state) : ?>
                     <div>
                         <span><?= app_h($state['description']) ?></span>
-                        <strong><?= app_h($state['label']) ?> aktif saat poin tersisa <= <?= app_h($state['min_points']) ?></strong>
+                        <div><strong><?= app_h($state['label']) ?></strong> aktif saat poin tersisa kurang dari <strong><?= app_h($state['min_points']) ?></strong></div>
                     </div>
                 <?php endforeach; ?>
                 <div>
